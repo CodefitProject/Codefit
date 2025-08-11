@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/common.css';
-import Header from '../components/common/Header.tsx';
-import Footer from '../components/common/Footer.tsx';
+import Header from '../components/Header/Header.tsx';
+import Footer from '../components/Footer/Footer.tsx';
 
 interface Company {
     userId: number;
