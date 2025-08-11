@@ -271,115 +271,123 @@ const MainPage: React.FC = () => {
 
             {/* Analysis Section */}
             <section className="section section-white">
-                <span className="section-title">성향을 분석하고 나와 맞는 기업에 지원하세요!</span>
-                
-                <div className="cards-container">
-                    <div className="card card-green" onClick={handleCard1Click}>
-                        <div className="card-icon card-icon-green">
-                            <img 
-                                src="/images/ws5/mbti/png/BITF.png" 
-                                alt="성향 유형"
-                                style={{width: '150px', height: '150px'}}
-                            />
-                        </div>
-                        <span className="card-title">성향 유형</span>
-                    </div>
+                <div className="section-container">
+                    <span className="section-title">성향을 분석하고 나와 맞는 기업에 지원하세요!</span>
                     
-                    <div className={`card card-blue ${userInfo?.isMbtiChecked ? 'completed' : ''}`} onClick={handleCard2Click}>
-                        <div className="card-icon card-icon-blue">
-                            <img 
-                                src="/images/ws5/main/mbti_check.png" 
-                                alt="개발자 성향분석"
-                                style={{width: '150px', height: '150px'}}
-                            />
+                    <div className="cards-container">
+                        <div className="card card-green" onClick={handleCard1Click}>
+                            <div className="card-icon card-icon-green">
+                                <img 
+                                    src="/images/ws5/mbti/png/BITF.png" 
+                                    alt="성향 유형"
+                                    style={{width: '150px', height: '150px'}}
+                                />
+                            </div>
+                            <span className="card-title">성향 유형</span>
                         </div>
-                        <span className="card-title">개발자 성향분석</span>
-                    </div>
-                    
-                    <div className={`card card-orange ${userInfo?.isCodeChecked ? 'completed' : ''}`} onClick={handleCard3Click}>
-                        <div className="card-icon card-icon-orange">
-                            <img 
-                                src="/images/ws5/main/code_check.png" 
-                                alt="코드분석"
-                                style={{width: '150px', height: '150px'}}
-                            />
+                        
+                        <div className={`card card-blue ${userInfo?.isMbtiChecked ? 'completed' : ''}`} onClick={handleCard2Click}>
+                            <div className="card-icon card-icon-blue">
+                                <img 
+                                    src="/images/ws5/main/mbti_check.png" 
+                                    alt="개발자 성향분석"
+                                    style={{width: '150px', height: '150px'}}
+                                />
+                            </div>
+                            <span className="card-title">개발자 성향분석</span>
                         </div>
-                        <span className="card-title">코드분석</span>
+                        
+                        <div className={`card card-orange ${userInfo?.isCodeChecked ? 'completed' : ''}`} onClick={handleCard3Click}>
+                            <div className="card-icon card-icon-orange">
+                                <img 
+                                    src="/images/ws5/main/code_check.png" 
+                                    alt="코드분석"
+                                    style={{width: '150px', height: '150px'}}
+                                />
+                            </div>
+                            <span className="card-title">코드분석</span>
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* Job Postings Section */}
             <section className="section section-gray">
-                <span className="section-title">최근 등록된 기업 공고</span>
-                
-                <div className="positions-container">
-                    {jobPostings.length > 0 ? (
-                        jobPostings.map((posting, index) => (
-                            <div 
-                                key={posting.jobPostingId}
-                                className="position-card" 
-                                onClick={() => handleJobPostingClick(posting.jobPostingId)}
-                            >
-                                <div className="position-header">
-                                    <img 
-                                        src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/ws5/default_job.png'}
-                                        alt="Job Image"
-                                        style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
-                                    />
+                <div className="section-container">
+                    <span className="section-title">최근 등록된 기업 공고</span>
+                    
+                    <div className="positions-container">
+                        {jobPostings.length > 0 ? (
+                            jobPostings.map((posting, index) => (
+                                <div 
+                                    key={posting.jobPostingId}
+                                    className="position-card" 
+                                    onClick={() => handleJobPostingClick(posting.jobPostingId)}
+                                >
+                                    <div className="position-header">
+                                        <img 
+                                            src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/ws5/default_job.png'}
+                                            alt="Job Image"
+                                            style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
+                                        />
+                                    </div>
+                                    <span className="position-company">{posting.name}</span>
+                                    <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
+                                    <div className="dev-type-tag-container">
+                                        {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
+                                            <span key={idx} className="dev-type-tag">{type}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                                <span className="position-company">{posting.name}</span>
-                                <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
-                                <div className="dev-type-tag-container">
-                                    {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
-                                        <span key={idx} className="dev-type-tag">{type}</span>
-                                    ))}
-                                </div>
+                            ))
+                        ) : (
+                            <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+                                등록된 공고가 없습니다.
                             </div>
-                        ))
-                    ) : (
-                        <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
-                            등록된 공고가 없습니다.
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 
             {/* Participating Companies Section */}
             <section className="section section-white">
-                <span className="section-title">매칭 참여 기업</span>
-                <span className="section-subtitle">참여 기업: {companies.length}개</span>
-                
-                <div className="companies-container">
-                    {companies.length > 0 ? (
-                        companies.map((company) => (
-                            <div 
-                                key={company.userId}
-                                className="company-item"
-                                onClick={() => handleCompanyClick(company)}
-                            >
-                                <img 
-                                    className="company-logo"
-                                    src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/ws5/default_company.png'}
-                                    alt={`${company.name} Logo`}
-                                />
-                                <span className="company-name">{company.name}</span>
+                <div className="section-container">
+                    <span className="section-title">매칭 참여 기업</span>
+                    <span className="section-subtitle">참여 기업: {companies.length}개</span>
+                    
+                    <div className="companies-container">
+                        {companies.length > 0 ? (
+                            companies.map((company) => (
+                                <div 
+                                    key={company.userId}
+                                    className="company-item"
+                                    onClick={() => handleCompanyClick(company)}
+                                >
+                                    <img 
+                                        className="company-logo"
+                                        src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/ws5/default_company.png'}
+                                        alt={`${company.name} Logo`}
+                                    />
+                                    <span className="company-name">{company.name}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+                                등록된 기업이 없습니다.
                             </div>
-                        ))
-                    ) : (
-                        <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
-                            등록된 기업이 없습니다.
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 
             {/* Footer */}
             <footer className="footer">
-                <span className="footer-title">WeaveType</span>
-                <span className="footer-text">(주)위브타입 | 대표이사 홍길동 | 대표고객문의 support@weavetype.com</span>
-                <span className="footer-text">서울특별시 강남구 테헤란로 123 위브타워 15층 | 전화번호: 02-123-4567</span>
-                <span className="footer-text">© 2023 WeaveType Inc. All Rights Reserved.</span>
+                <div className="footer-container">
+                    <span className="footer-title">WeaveType</span>
+                    <span className="footer-text">(주)위브타입 | 대표이사 홍길동 | 대표고객문의 support@weavetype.com</span>
+                    <span className="footer-text">서울특별시 강남구 테헤란로 123 위브타워 15층 | 전화번호: 02-123-4567</span>
+                    <span className="footer-text">© 2023 WeaveType Inc. All Rights Reserved.</span>
+                </div>
             </footer>
         </div>
     );
