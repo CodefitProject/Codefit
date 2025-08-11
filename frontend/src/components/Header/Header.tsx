@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Header.css';
+import Modal from '../Modal/Modal';
+import Login from '../../pages/auth/Login';
 
 interface UserInfo {
     accountId: string;
@@ -10,36 +12,24 @@ interface UserInfo {
 const Header: React.FC = () => {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
     useEffect(() => {
         updateHeaderUI();
     }, []);
 
-    const getUserInfoByCookie = (): UserInfo | null => {
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                return JSON.parse(decodeURIComponent(userInfoStr));
-            } catch (e) {
-                console.error("사용자 정보 파싱 오류:", e);
-                return null;
-            }
-        }
-        return null;
-    };
-
     const updateHeaderUI = () => {
-        const user = getUserInfoByCookie();
-        setUserInfo(user);
-        setIsLoggedIn(user !== null);
+        // setUserInfo(user);
+        // setIsLoggedIn(user !== null);
     };
 
     const handleLogin = () => {
-        alert("로그인 팝업을 열어야 합니다.");
+        setShowLoginModal(true);
+    };
+
+    const handleCloseLoginModal = () => {
+        setShowLoginModal(false);
+        updateHeaderUI(); // 로그인 후 헤더 UI 업데이트
     };
 
     const handleLogout = () => {
@@ -167,6 +157,10 @@ const Header: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <Modal isOpen={showLoginModal} onClose={handleCloseLoginModal}>
+                <Login onClose={handleCloseLoginModal} />
+            </Modal>
         </header>
     );
 };
