@@ -124,7 +124,7 @@ const MainPage: React.FC = () => {
     
     const handleCard1Click = () => {
         // MBTI 예제 페이지로 이동
-        alert("성향 유형 페이지로 이동합니다.");
+        window.location.href = '/mbti-example';
     };
     
     const handleCard2Click = () => {

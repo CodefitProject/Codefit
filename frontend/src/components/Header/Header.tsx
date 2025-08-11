@@ -75,9 +75,9 @@ const Header: React.FC = () => {
 
     const handleEnterpriseService = () => {
         if (userInfo === null) {
-            alert("기업 메인 페이지로 이동합니다.");
+            window.location.href = "/company";
         } else if (userInfo.role === "USER") {
-            alert("기업 메인 페이지로 이동합니다.");
+            window.location.href = "/company";
         } else if (userInfo.role === "COMPANY") {
             alert("채용 대시보드로 이동합니다.");
         }
