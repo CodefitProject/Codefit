@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -29,7 +29,7 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-jdbc"
 
 	// mysql
-	implementation 'mysql:mysql-connector-java:8.0.33'
+	implementation 'mysql:mysql-connector-java:8.0.43'
 
 	// security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
