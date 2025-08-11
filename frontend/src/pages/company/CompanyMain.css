@@ -1,0 +1,46 @@
+body {
+  background-color: #181919;
+  width: 100vw;
+  height: 100vh;
+}
+
+#nodeBackground {
+  width: 100%;
+  height: 100%;
+  filter: blur(3px);
+}
+
+.company-buttons {
+  margin-top: 30px;
+}
+
+.company-btn {
+  padding: 12px 24px;
+  margin: 0 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  fontSize: 16px;
+  transition: all 0.3s ease;
+}
+
+.company-btn-back {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+}
+
+.company-btn-back:hover {
+  background-color: white;
+  color: #181919;
+}
+
+.company-btn-start {
+  background-color: #124559;
+  border: 2px solid #124559;
+  color: white;
+}
+
+.company-btn-start:hover {
+  background-color: #0d3545;
+  border-color: #0d3545;
+}
