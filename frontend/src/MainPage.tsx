@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './common.css';
+import Header from './components/Header.tsx';
 
 interface Company {
     userId: number;
@@ -31,8 +32,6 @@ const MainPage: React.FC = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
     const [profileCompletion, setProfileCompletion] = useState<number>(0);
-    const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-    const [searchText, setSearchText] = useState<string>("");
 
     useEffect(() => {
         console.log("메인 페이지가 로드되었습니다.");
@@ -68,14 +67,8 @@ const MainPage: React.FC = () => {
     const loadCompanyList = async () => {
         // 실제 구현에서는 API 호출
         try {
-            // Mock data for demonstration
-            const mockCompanies: Company[] = [
-                { userId: 1, name: 'kakaobank', logoFileName: 'kakaobank.png' },
-                { userId: 2, name: '(주)카카오페이', logoFileName: 'kakaopay.png' },
-                { userId: 3, name: '(주)파라다이스', logoFileName: 'paradise.png' },
-                { userId: 4, name: 'SHINSEGAE', logoFileName: 'shinsegae.png' },
-            ];
-            setCompanies(mockCompanies);
+            // 빈 배열로 초기화
+            setCompanies([]);
         } catch (error) {
             console.error('회사 목록 로드 실패:', error);
         }
@@ -84,25 +77,8 @@ const MainPage: React.FC = () => {
     const loadJobPostings = async () => {
         // 실제 구현에서는 API 호출
         try {
-            const mockPostings: JobPosting[] = [
-                {
-                    jobPostingId: '1',
-                    name: '(주)이디야',
-                    location: '서울',
-                    experienceLevel: '경력',
-                    preferredDeveloperTypes: ['백엔드', '프론트엔드'],
-                    jobImageFileName: 'ediya.jpg'
-                },
-                {
-                    jobPostingId: '2',
-                    name: '동아사이그룹',
-                    location: '수도권',
-                    experienceLevel: '신입/경력',
-                    preferredDeveloperTypes: ['풀스택', '백엔드'],
-                    jobImageFileName: 'donga.jpg'
-                }
-            ];
-            setJobPostings(mockPostings);
+            // 빈 배열로 초기화
+            setJobPostings([]);
         } catch (error) {
             console.error('채용 공고 로드 실패:', error);
         }
@@ -139,11 +115,6 @@ const MainPage: React.FC = () => {
 
     // Event Handlers
     const handleLogoClick = () => window.location.reload();
-    
-    const handleLoginClick = () => {
-        // 실제 구현에서는 로그인 팝업 열기
-        alert("로그인/회원가입 페이지로 이동합니다.");
-    };
     
     const handleMainLoginClick = () => {
         // 실제 구현에서는 로그인 팝업 열기
@@ -199,108 +170,10 @@ const MainPage: React.FC = () => {
     const handleAdClick = () => {
         alert("회원가입 페이지로 이동합니다!");
     };
-    
-    const goToUserDetail = () => {
-        alert("사용자 상세 페이지로 이동합니다.");
-        closeSideMenu();
-    };
-    
-    const handleEnterpriseClick = () => {
-        alert("기업 서비스 페이지로 이동합니다.");
-    };
-    
-    const goToCompanyRegister = () => {
-        alert("기업 등록 페이지로 이동합니다.");
-        closeSideMenu();
-    };
-    
-    const handleMenu1Click = () => {
-        alert("매칭 페이지로 이동합니다.");
-        closeSideMenu();
-    };
-    
-    const handleMenu2Click = () => {
-        alert("MBTI 검사 페이지로 이동합니다.");
-        closeSideMenu();
-    };
-    
-    const handleMenu3Click = () => {
-        alert("기업 둘러보기 페이지로 이동합니다.");
-        closeSideMenu();
-    };
-
-    const handleSearch = () => {
-        if (searchText && searchText.trim() !== "") {
-            alert(`'${searchText}'를 검색합니다.`);
-        }
-    };
-
-    const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
-    };
-
-    const toggleSideMenu = () => setIsMenuOpen(!isMenuOpen);
-    const closeSideMenu = () => setIsMenuOpen(false);
 
     return (
         <div className="main-wrap">
-            {/* Header */}
-            <header className="header clearfix">
-                <div className="header-left">
-                    <div className="hamburger-menu" onClick={toggleSideMenu}>
-                        <div className="hamburger-line"></div>
-                        <div className="hamburger-line"></div>
-                        <div className="hamburger-line"></div>
-                    </div>
-                    <div className="nav-menu">
-                        <img src="/images/ws5/weaveTypeLogo.png" style={{ width: '120px', height: '32px', objectFit: 'contain' }} alt="WeaveType Logo" className="logo" onClick={handleLogoClick} />
-                        <a href="#" className="nav-link" onClick={handleMenu1Click}>매칭</a>
-                        <a href="#" className="nav-link" onClick={handleMenu2Click}>mbti검사</a>
-                        <a href="#" className="nav-link" onClick={handleMenu3Click}>기업 둘러보기</a>
-                    </div>
-                </div>
-                <div className="header-right">
-                    <div className="search-container">
-                        <input 
-                            id="searchInput" 
-                            className="search-input" 
-                            placeholder="검색어를 입력하세요" 
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            onKeyPress={handleSearchKeyPress}
-                        />
-                        <button className="search-btn" onClick={handleSearch}>🔍</button>
-                    </div>
-                    <button className="btn-login" onClick={handleLoginClick}>로그인/회원가입</button>
-                    <button className="btn-enterprise" onClick={handleEnterpriseClick}>기업 서비스</button>
-                </div>
-            </header>
-
-            {/* Side Menu */}
-            <div className={`side-menu-overlay ${isMenuOpen ? 'open' : ''}`} onClick={closeSideMenu}></div>
-            <nav className={`side-menu ${isMenuOpen ? 'open' : ''}`}>
-                <span className="side-menu-title">메뉴</span>
-                <div className="side-menu-section">
-                    <span className="side-menu-section-title">매칭 서비스</span>
-                    <a href="#" className="side-menu-item" onClick={handleMenu1Click}>💼 매칭</a>
-                    <a href="#" className="side-menu-item" onClick={handleMenu2Click}>🧠 MBTI 검사</a>
-                    <a href="#" className="side-menu-item" onClick={handleMenu3Click}>🏢 기업 둘러보기</a>
-                </div>
-                <div className="side-menu-section">
-                    <span className="side-menu-section-title">개인 서비스</span>
-                    <a href="#" className="side-menu-item" onClick={goToUserDetail}>👤 내 정보</a>
-                    <a href="#" className="side-menu-item">📝 지원현황</a>
-                    <a href="#" className="side-menu-item">❤️ 관심기업</a>
-                    <a href="#" className="side-menu-item">🔖 북마크</a>
-                </div>
-                <div className="side-menu-section">
-                    <span className="side-menu-section-title">기업 서비스</span>
-                    <a href="#" className="side-menu-item" onClick={handleEnterpriseClick}>📊 채용관리 대시보드</a>
-                    <a href="#" className="side-menu-item" onClick={goToCompanyRegister}>📋 기업 등록</a>
-                </div>
-            </nav>
+            <Header />
 
             {/* Hero Section */}
             <section className="hero-section">
@@ -441,28 +314,34 @@ const MainPage: React.FC = () => {
                 <span className="section-title">최근 등록된 기업 공고</span>
                 
                 <div className="positions-container">
-                    {jobPostings.map((posting, index) => (
-                        <div 
-                            key={posting.jobPostingId}
-                            className="position-card" 
-                            onClick={() => handleJobPostingClick(posting.jobPostingId)}
-                        >
-                            <div className="position-header">
-                                <img 
-                                    src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/ws5/default_job.png'}
-                                    alt="Job Image"
-                                    style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
-                                />
+                    {jobPostings.length > 0 ? (
+                        jobPostings.map((posting, index) => (
+                            <div 
+                                key={posting.jobPostingId}
+                                className="position-card" 
+                                onClick={() => handleJobPostingClick(posting.jobPostingId)}
+                            >
+                                <div className="position-header">
+                                    <img 
+                                        src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/ws5/default_job.png'}
+                                        alt="Job Image"
+                                        style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
+                                    />
+                                </div>
+                                <span className="position-company">{posting.name}</span>
+                                <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
+                                <div className="dev-type-tag-container">
+                                    {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
+                                        <span key={idx} className="dev-type-tag">{type}</span>
+                                    ))}
+                                </div>
                             </div>
-                            <span className="position-company">{posting.name}</span>
-                            <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
-                            <div className="dev-type-tag-container">
-                                {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
-                                    <span key={idx} className="dev-type-tag">{type}</span>
-                                ))}
-                            </div>
+                        ))
+                    ) : (
+                        <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+                            등록된 공고가 없습니다.
                         </div>
-                    ))}
+                    )}
                 </div>
             </section>
 
@@ -472,20 +351,26 @@ const MainPage: React.FC = () => {
                 <span className="section-subtitle">참여 기업: {companies.length}개</span>
                 
                 <div className="companies-container">
-                    {companies.map((company) => (
-                        <div 
-                            key={company.userId}
-                            className="company-item"
-                            onClick={() => handleCompanyClick(company)}
-                        >
-                            <img 
-                                className="company-logo"
-                                src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/ws5/default_company.png'}
-                                alt={`${company.name} Logo`}
-                            />
-                            <span className="company-name">{company.name}</span>
+                    {companies.length > 0 ? (
+                        companies.map((company) => (
+                            <div 
+                                key={company.userId}
+                                className="company-item"
+                                onClick={() => handleCompanyClick(company)}
+                            >
+                                <img 
+                                    className="company-logo"
+                                    src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/ws5/default_company.png'}
+                                    alt={`${company.name} Logo`}
+                                />
+                                <span className="company-name">{company.name}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+                            등록된 기업이 없습니다.
                         </div>
-                    ))}
+                    )}
                 </div>
             </section>
 

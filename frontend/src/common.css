@@ -29,57 +29,54 @@ body {
     flex-direction: column;
 }
 
-/* 헤더 스타일 */
+/* Header Component CSS */
+
+/* 기본 설정 */
+.main-wrap {
+    width: 100%;
+    background-color: #ffffff;
+    font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+}
+
+/* 헤더 */
 .header {
-    background-color: #fff;
+    width: 100%;
+    height: 70px;
+    background-color: #ffffff;
     border-bottom: 1px solid #e0e0e0;
-    padding: 0 4vw;
-    height: 60px;
+    position: relative;
+    padding: 0 min(30px, 4vw);
+}
+
+.header-container {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    align-items: center;
+    height: 100%;
 }
 
 .header-left {
     display: flex;
     align-items: center;
-}
-
-.hamburger-menu {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-    margin-right: 15px;
-}
-
-.hamburger-line {
-    width: 20px;
-    height: 2px;
-    background-color: #333;
-    margin: 2px 0;
-    transition: 0.3s;
+    gap: 15px;
 }
 
 .nav-menu {
     display: flex;
     align-items: center;
-}
-
-.logo {
-    cursor: pointer;
-    margin-right: 30px;
+    gap: 20px;
 }
 
 .nav-link {
-    margin-right: 20px;
+    font-size: 14px;
     color: #333;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
     cursor: pointer;
+    margin-right: 20px;
+    transition: color 0.2s ease;
 }
 
 .nav-link:hover {
@@ -89,65 +86,57 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-.search-container {
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    width: 200px;
-    outline: none;
-}
-
-.search-input:focus {
-    border-color: #007bff;
-}
-
-.search-btn {
-    background: none;
-    border: none;
-    font-size: 16px;
-    margin-left: 5px;
-    cursor: pointer;
-    padding: 8px;
-}
-
-.btn-login,
-.btn-enterprise {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    white-space: nowrap;
+    gap: 8px;
 }
 
 .btn-login {
-    background-color: #007bff;
-    color: #fff;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    height: 32px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-login:hover {
-    background-color: #0056b3;
+    background-color: #f8f9fa;
+    border-color: #007bff;
 }
 
 .btn-enterprise {
-    background-color: #28a745;
+    background-color: #333;
     color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    height: 32px;
+    transition: background-color 0.2s ease;
 }
 
 .btn-enterprise:hover {
-    background-color: #1e7e34;
+    background-color: #555;
+}
+
+.user-name-link {
+    font-size: 16px;
+    color: #666666;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-right: 10px;
+    line-height: 32px;
+    transition: color 0.2s ease;
+}
+
+.user-name-link:hover {
+    color: #007bff;
+}
+
+.logo {
+    cursor: pointer;
 }
 
 /* 사이드 메뉴 */
