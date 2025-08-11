@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head meta_screenName="매칭제안">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_scoutListVo" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column id="name" name="회사명" dataType="text"></w2:column>
+						<w2:column id="jobPostingId" name="공고ID" dataType="number"></w2:column>
+						<w2:column dataType="text" name="공고명" id="title"></w2:column>
+						<w2:column dataType="text" name="경력" id="experienceLevel"></w2:column>
+						<w2:column dataType="text" name="MBTI List" id="preferredDeveloperTypes"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="dmp_searchParam">
+					<w2:keyInfo>
+						<w2:key id="pageIndex" name="페이지번호" dataType="number"></w2:key>
+						<w2:key id="pageSize" name="페이지크기" dataType="number"></w2:key>
+						<w2:key id="userId" name="사용자ID" dataType="number"></w2:key>
+						<w2:key id="scoutStatus" name="상태" dataType="text"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<xf:submission id="sbm_scoutList" action="/InsWebApp/POS0008List.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dmp_searchParam", "key":"scoutSearchVo"}'
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="매칭을 원하는 기업 조회중..."
+				ev:submitdone="scwin.sbm_scoutList_submitdone" ev:submiterror="scwin.sbm_scoutList_submiterror" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<style type="text/css"><![CDATA[
+
+            .main-wrap {
+                width: 100%;
+                background-color: #ffffff;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            }
+            
+            .main-container {
+                display: flex;
+                min-height: calc(100vh - 70px);
+                max-width: 1400px;
+                margin: 0 auto;
+                background-color: #f8f9fa;
+            }
+
+            .main-content {
+                flex: 1;
+                padding: min(30px, 4vw);
+                overflow-y: auto;
+            }
+
+            .page-header {
+                margin-bottom: 30px;
+            }
+
+            .page-info h1 {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 8px;
+            }
+
+            .page-description {
+                color: #666;
+                font-size: 16px;
+            }
+
+            @media (max-width: 1024px) {}
+
+            @media (max-width: 768px) {}
+
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: #999;
+            }
+
+            .empty-state .empty-icon {
+                font-size: 48px;
+                margin-bottom: 16px;
+                display: block;
+            }
+
+            .empty-state .empty-text {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+
+            .empty-state .empty-subtext {
+                font-size: 14px;
+                color: #ccc;
+            }   
+
+            .dev-type-tag-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-top: 10px;
+            }
+
+            .dev-type-tag {
+                background-color: #e0f7fa;
+                color: #00796b;
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 12px;
+                font-weight: 500;
+                white-space: nowrap;
+                border: 1px solid #b2ebf2;
+            }
+
+            @media (max-width: 768px) {
+                .scout-row {
+                    padding: 15px !important;
+                    margin-bottom: 10px !important;
+                }
+                
+                .scout-row span {
+                    font-size: 14px !important;
+                }
+            }
+        ]]></style>
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    scwin.init();
+
+    var mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.addEventListener('scroll', function() {
+            if (mainContent.scrollTop + mainContent.clientHeight >= mainContent.scrollHeight - 100) {
+                scwin.loadMoreScouts();
+            }
+        });
+    }
+};
+
+scwin.init = function () {
+    dmp_searchParam.set("pageIndex", 1);
+    dmp_searchParam.set("pageSize", 10);
+
+    scwin.isLoading = false;
+    scwin.hasMoreData = true;
+
+    scwin.userInfo = $p.parent().dma_userInfoVo.getJSON();
+    if (scwin.userInfo && scwin.userInfo.accountId) {
+        dmp_searchParam.set("userId", scwin.userInfo.accountId);
+    }
+
+    scwin.loadMoreScouts();
+};
+
+scwin.loadMoreScouts = function () {
+    if (scwin.isLoading || !scwin.hasMoreData) {
+        return;
+    }
+    scwin.isLoading = true;
+    $c.sbm.execute($p, sbm_scoutList);
+};
+
+scwin.bindScoutData = function () {
+    var rowCount = dlt_scoutListVo.getRowCount();
+    
+    gen_scouts.removeAll(); 
+    if (rowCount === 0) {
+        return;
+    }
+
+    for (var i = 0; i < rowCount; i++) {
+        gen_scouts.insertChild();
+
+        var name = dlt_scoutListVo.getCellData(i, "name") || "";
+        var title = dlt_scoutListVo.getCellData(i, "title") || "";
+        var experienceLevel = dlt_scoutListVo.getCellData(i, "experienceLevel") || "";
+        var preferredDeveloperTypesRaw = dlt_scoutListVo.getCellData(i, "preferredDeveloperTypes") || "";
+
+        var txt_company_name = gen_scouts.getChild(i, "txt_company_name");
+        var txt_job_title = gen_scouts.getChild(i, "txt_job_title");
+        var txt_experience_level = gen_scouts.getChild(i, "txt_experience_level");
+
+        if (txt_company_name) txt_company_name.setValue(name);
+        if (txt_job_title) txt_job_title.setValue(title);
+        if (txt_experience_level) txt_experience_level.setValue(experienceLevel);
+
+        function escapeHtml(text) {
+            var div = document.createElement('xf:group');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        try {
+            var preferredDeveloperTypes = JSON.parse(preferredDeveloperTypesRaw || '[]');
+            for (var j = 1; j <= 4; j++) {
+                var tag = gen_scouts.getChild(i, "tag" + j);
+                if (j <= preferredDeveloperTypes.length) {
+                    tag.setValue(escapeHtml(preferredDeveloperTypes[j - 1]));
+                    tag.show();
+                } else {
+                    tag.hide();
+                }
+            }
+        } catch (err) {
+            for (var j = 1; j <= 4; j++) {
+                gen_scouts.getChild(i, "tag" + j).hide();
+            }
+        }
+    }
+};
+
+scwin.sbm_scoutList_submiterror = function (e) {
+    $c.win.alert("지원현황을 불러오는데 실패했습니다.");
+    scwin.isLoading = false;
+};
+
+scwin.handleScoutRowClick = function (e) {
+    var index = this.getGeneratedIndex();
+    if (typeof index === 'number' && index >= 0) {
+        var jobPostingId = dlt_scoutListVo.getCellData(index, "jobPostingId");
+        if (jobPostingId != null && jobPostingId !== "") {
+            $p.url("/InsWebApp/ui/post/PostDetail.xml?jobPostingId=" + String(jobPostingId));
+        }
+    }
+};
+
+scwin.sbm_scoutList_submitdone = function (e) {
+    try {
+        var res = e.responseJSON;
+
+        if (res && res.scoutListVoList) {
+            var currentData = dlt_scoutListVo.getAllJSON();
+            var newData = res.scoutListVoList;
+
+            if (dmp_searchParam.get("pageIndex") === 1) {
+                dlt_scoutListVo.setJSON(newData);
+            } else {
+                dlt_scoutListVo.setJSON(currentData.concat(newData));
+            }
+
+            if (newData.length < dmp_searchParam.get("pageSize")) {
+                scwin.hasMoreData = false;
+            } else {
+                scwin.hasMoreData = true;
+            }
+
+            dmp_searchParam.set("pageIndex", dmp_searchParam.get("pageIndex") + 1);
+            scwin.bindScoutData();
+
+            var emptyState = document.getElementById('empty_state');
+            if (dlt_scoutListVo.getRowCount() === 0) {
+                if (emptyState) emptyState.style.display = 'block';
+            } else {
+                if (emptyState) emptyState.style.display = 'none';
+            }
+        }
+        scwin.isLoading = false;
+    } catch (err) {
+        console.error("Error in sbm_scoutList_submitdone:", err);
+        $c.win.alert("지원현황 조회 중 오류가 발생했습니다.");
+        scwin.isLoading = false;
+    }
+};
+]]>
+		</script>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="main-wrap">
+			<xf:group class="main-container">
+				<main class="main-content">
+					<section class="page-header">
+						<xf:group class="page-info">
+							<xf:group class="page-details">
+								<h1>매칭 현황</h1>
+								<xf:group class="page-description">해당 기업이 당신을 알아보고 싶어합니다.</xf:group>
+							</xf:group>
+						</xf:group>
+					</section>
+
+					<section class="scouts-section">
+						<xf:group class="scouts-grid">
+							<w2:generator id="gen_scouts" style="">
+								<xf:group
+									style="padding: 20px; margin-bottom: 15px; border: 1px solid #e8e8e8; border-radius: 8px; background-color: white; cursor: pointer;"
+									class="scout-row" ev:onclick="scwin.handleScoutRowClick" id="group2">
+									<xf:group style="display: flex; align-items: center; font-size: 16px; color: #333; flex-wrap: wrap;">
+										<span style="font-weight: bold; color: #4285f4; margin-right: 8px;">
+											<w2:textbox id="txt_company_name"></w2:textbox>
+										</span>
+										<span style="margin-right: 8px;">에서 </span>
+										<span style="font-weight: 600; color: #333; margin-right: 8px; font-weight: bold;">
+											<w2:textbox id="txt_experience_level"></w2:textbox>
+										</span>
+										<span style="margin-right: 8px;"> 개발자를 찾는 </span>
+										<span style="font-weight: 600; color: #333; margin-right: 8px; font-weight: bold;">
+											<w2:textbox id="txt_job_title"></w2:textbox>
+										</span>
+										<span style="margin-right: 8px;"> 공고에서 당신을 스카웃하고 싶어 합니다.</span>
+									</xf:group>
+									<xf:group id="grp_tags_container" class="dev-type-tag-container" style="margin-top: 10px;">
+										<w2:textbox id="tag1" class="dev-type-tag" style="display:none;"></w2:textbox>
+										<w2:textbox id="tag2" class="dev-type-tag" style="display:none;"></w2:textbox>
+										<w2:textbox id="tag3" class="dev-type-tag" style="display:none;"></w2:textbox>
+										<w2:textbox id="tag4" class="dev-type-tag" style="display:none;"></w2:textbox>
+									</xf:group>
+								</xf:group>
+							</w2:generator>
+						</xf:group>
+
+						<xf:group class="empty-state" style="display: none;" id="empty_state">
+							<div class="empty-text">지원 내역이 없습니다.</div>
+							<div class="empty-subtext">공고에 지원하시면 여기에 표시됩니다.</div>
+						</xf:group>
+					</section>
+				</main>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

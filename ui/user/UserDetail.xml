@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head meta_screenName="개인정보 수정">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_userInfoVo">
+					<w2:keyInfo>
+						<w2:key id="accountId" name="계정 ID" dataType="number"></w2:key>
+						<w2:key id="name" name="사용자명" dataType="text"></w2:key>
+						<w2:key id="career" name="경력수준" dataType="text"></w2:key>
+						<w2:key id="preferredLocations" name="지역" dataType="text"></w2:key>
+						<w2:key id="currentPosition" name="직무분야" dataType="text"></w2:key>
+						<w2:key id="yearSalary" name="희망연봉" dataType="number"></w2:key>
+						<w2:key id="email" name="이메일" dataType="text"></w2:key>
+						<w2:key id="bio" name="자기소개" dataType="text"></w2:key>
+						<w2:key id="testChecked" name="테스트완료여부" dataType="boolean"></w2:key>
+						<w2:key id="isMbtiChecked" name="MBTI검사완료여부" dataType="number"></w2:key>
+						<w2:key id="isCodeChecked" name="코드분석완료여부" dataType="number"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<xf:submission id="sbm_userDetail" action="/InsWebApp/US0002UpdView.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dma_userInfoVo", "key":"userInfoVo"}' target='data:json,{"id":"dma_userInfoVo", "key":"elData"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="유저 정보 조회중" ev:submit="" ev:submitdone="scwin.updateCardStatus" ev:submiterror="scwin.sbm_userDetail_submiterror" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<style type="text/css"><![CDATA[
+    
+        /* 메인 레이아웃 */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 20px 20px 5px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: clamp(18px, 3vw, 20px);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+            margin-left: 0px; /* 제목 좌측 여백 제거 */
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-category {
+            margin-bottom: 30px;
+        }
+
+        .menu-category-title {
+            font-size: clamp(14px, 2vw, 16px);
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            padding-left: 5px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 12px 16px 12px 8px;
+            margin-bottom: 4px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: clamp(13px, 1.8vw, 14px);
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+
+        .menu-item.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .menu-item.incomplete {
+            color: #dc3545;
+        }
+
+        .menu-item.incomplete::after {
+            content: "미완료";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .new-badge {
+            background-color: #ff4757;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-left: 8px;
+        }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            padding: min(30px, 4vw);
+            overflow-y: auto;
+        }
+
+        /* 사용자 프로필 헤더 */
+        .profile-header {
+            background-color: white;
+            border-radius: 12px;
+            padding: min(30px, 4vw);
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f0f0f0; /* 이미지 로딩 전 배경색 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden; /* 이미지가 원형 영역을 벗어나지 않도록 */
+        }
+
+        .profile-career {
+            margin: 4px 0 8px 0;
+        }
+
+        .profile-details h2 {
+            font-size: clamp(20px, 3.5vw, 24px);
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 4px 0; /* 하단 마진 줄임 */
+        }
+
+        .status-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: clamp(11px, 1.5vw, 12px);
+            font-weight: 500;
+        }
+
+        /* 매칭 토글 */
+        .matching-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .toggle-label {
+            font-size: clamp(14px, 2vw, 16px);
+            font-weight: 600;
+            color: #333;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #28a745;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-switch.off {
+            background-color: #ccc;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.off::after {
+            transform: translateX(0);
+        }
+
+        .toggle-switch:not(.off)::after {
+            transform: translateX(30px);
+        }
+
+        /* 섹션 */
+        .section {
+            background-color: white;
+            border-radius: 12px;
+            padding: min(30px, 4vw);
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: clamp(18px, 3vw, 20px);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+                padding: 15px 15px 15px 10px;
+            }
+
+            .sidebar-menu {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                height: 60px;
+                padding: 0 15px;
+            }
+            
+            .header-left, .header-right {
+                padding-top: 13px;
+            }
+
+            .nav-link {
+                display: none;
+            }
+
+            .sidebar, .main-content {
+                padding: 15px;
+            }
+
+            .sidebar {
+                padding-left: 10px; /* 모바일에서도 좌측 패딩 유지 */
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .info-content-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .sidebar-menu {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .menu-category {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar, .main-content {
+                padding: 10px;
+            }
+
+            .sidebar {
+                padding-left: 8px; /* 작은 화면에서는 더 줄임 */
+            }
+
+            .profile-header, .section {
+                padding: 20px;
+            }
+
+            .action-card {
+                padding: 20px;
+            }
+
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        ]]></style>
+
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+    if (!userInfoStr) {
+        $p.url("../common/MainPage.xml");
+        return;
+    }
+    var userInfo = JSON.parse(userInfoStr);
+    dma_userInfoVo.set("accountId", userInfo.accountId);
+
+    // 서버 통신
+    $c.sbm.execute($p, sbm_userDetail);
+
+    var executeFunction = $p.getParameter("executeFunction");
+
+    if (executeFunction === "menu_interest_onclick") {
+        // 매칭 호출
+        setTimeout(function () {
+            scwin.menu_interest_onclick();
+        }, 50);
+    } else if (executeFunction === "menu_history_onclick") {
+        // 지원현황 호출
+        setTimeout(function () {
+            scwin.menu_history_onclick();
+        }, 50);
+    }
+};
+
+// 사용자 정보 조회 완료 처리
+scwin.updateCardStatus = function (e) {
+    try {
+        var res = e.responseJSON;
+        if (!res) {
+            console.warn("응답 JSON이 없습니다.");
+            return;
+        }
+
+        var data = res.elData || res;
+
+
+        if (data) {
+            dma_userInfoVo.setJSON(data);
+            // 페이지 로드 시 첫 화면으로 UserDetailMain.xml 설정
+            contentFrame.setSrc('UserDetailMain.xml', { dataObject: dma_userInfoVo.getJSON() });
+        }
+
+        // isMbtiChecked와 isCodeChecked 값을 확인하여 프로필 메뉴의 'incomplete' 클래스 제어
+        let isMbtiDone = dma_userInfoVo.get("isMbtiChecked") == 1;
+        let isCodeDone = dma_userInfoVo.get("isCodeChecked") == 1;
+
+        if (isMbtiDone && isCodeDone) {
+            menu_profile.removeClass("incomplete");
+        } else {
+            menu_profile.addClass("incomplete");
+        }
+    } catch (err) {
+        console.error("updateCardStatus 오류:", err);
+    }
+};
+
+// 오류 처리
+scwin.sbm_userDetail_submiterror = function (e) {
+    $c.win.alert("사용자 정보를 불러오는데 실패했습니다.");
+};
+
+// 메뉴 활성화 상태 변경 공통 함수
+scwin.setActiveMenu = function (activeMenu) {
+    // 모든 메뉴 비활성화
+    menu_profile.removeClass("active");
+    menu_history.removeClass("active");
+    menu_interest.removeClass("active");
+
+    // 선택된 메뉴 활성화
+    activeMenu.addClass("active");
+};
+
+// 프로필 메뉴 클릭 이벤트
+scwin.menu_profile_onclick = function () {
+    scwin.setActiveMenu(menu_profile);
+    contentFrame.setSrc('UserDetailMain.xml');
+};
+
+// 지원현황 메뉴 클릭 이벤트
+scwin.menu_history_onclick = function () {
+    scwin.setActiveMenu(menu_history);
+    contentFrame.setSrc('ApplicationHistory.xml');
+};
+
+// 매칭제안 메뉴 클릭 이벤트
+scwin.menu_interest_onclick = function () {
+    scwin.setActiveMenu(menu_interest);
+    contentFrame.setSrc('UserMatchPage.xml');
+};]]></script>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<w2:wframe src="../common/Header.xml" id="headerFrame" />
+		<xf:group class="main-wrap">
+			<!-- 메인 컨테이너 -->
+			<xf:group class="main-container">
+				<!-- 사이드바 -->
+				<aside class="sidebar">
+					<w2:textbox label="내 정보" class="menu-category-title"></w2:textbox>
+					<xf:group id="menu_profile" class="menu-item active" ev:onclick="scwin.menu_profile_onclick">
+						<w2:textbox label="프로필" style="background:transparent; border:none; pointer-events: none;"></w2:textbox>
+					</xf:group>
+					<xf:group id="menu_history" class="menu-item" ev:onclick="scwin.menu_history_onclick">
+						<w2:textbox label="지원현황" style="background:transparent; border:none; pointer-events: none;"></w2:textbox>
+					</xf:group>
+					<xf:group id="menu_interest" class="menu-item" ev:onclick="scwin.menu_interest_onclick">
+						<w2:textbox label="매칭제안" style="background:transparent; border:none; pointer-events: none;"></w2:textbox>
+					</xf:group>
+				</aside>
+
+				<!-- 메인 콘텐츠 -->
+				<xf:group class="main-content">
+					<w2:pageFrame id="contentFrame" src="/InsWebApp/ui/user/UserDetailMain.xml" style="width: 100%; height: 100%;"></w2:pageFrame>
+						</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

@@ -1,0 +1,1173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dmp_tutorial">
+                    <w2:keyInfo>
+                        <w2:key id="currentStep" name="현재단계" dataType="number" defaultValue="0"></w2:key>
+                        <w2:key id="totalSteps" name="총단계수" dataType="number" defaultValue="7"></w2:key>
+                        <w2:key id="isLoggedIn" name="로그인여부" dataType="text" defaultValue="false"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection/>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+    
+    // 초기화 함수 실행
+    scwin.initializeTutorial();
+};
+
+// 튜토리얼 초기화
+scwin.initializeTutorial = function() {
+    // 여러 번 시도하여 안정성 확보
+    var attempts = 0;
+    var maxAttempts = 10;
+    
+    var init = function() {
+        attempts++;
+        console.log("초기화 시도:", attempts);
+        
+        var firstStep = document.getElementById('step-0');
+        if (firstStep || attempts >= maxAttempts) {
+            console.log("초기화 성공, 첫 번째 단계:", firstStep);
+            
+            // 로그인 상태 확인
+            scwin.checkLoginStatus();
+            
+            // 첫 번째 단계로 시작
+            scwin.showStep(0);
+            
+            return;
+        }
+        
+        // 100ms 후 재시도
+        setTimeout(init, 100);
+    };
+    
+    // 즉시 시도
+    init();
+};
+
+// 로그인 상태 확인
+scwin.checkLoginStatus = function() {
+    var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+    var isLoggedIn = userInfoCookie ? true : false;
+    dmp_tutorial.set("isLoggedIn", isLoggedIn ? "true" : "false");
+    
+    if (isLoggedIn) {
+        // 로그인된 사용자 정보 표시
+        try {
+            var userInfo = JSON.parse(userInfoCookie);
+            var welcomeElement = document.querySelector('.welcome-message');
+            if (welcomeElement && userInfo.name) {
+                welcomeElement.textContent = userInfo.name + "님, 환영합니다!";
+            }
+        } catch (e) {
+            console.error("사용자 정보 파싱 오류:", e);
+        }
+    }
+};
+
+// 단계 표시
+scwin.showStep = function(stepIndex) {
+    console.log("showStep 호출:", stepIndex);
+    dmp_tutorial.set("currentStep", stepIndex);
+    
+    // DOM 요소 확인 후 실행
+    setTimeout(function() {
+        // 모든 단계에서 active 클래스 제거
+        var allSteps = document.querySelectorAll('.tutorial-step');
+        console.log("찾은 단계 수:", allSteps.length);
+        for (var i = 0; i < allSteps.length; i++) {
+            allSteps[i].classList.remove('active');
+            allSteps[i].style.display = 'none';
+        }
+        
+        // 현재 단계에 active 클래스 추가 (여러 방법으로 시도)
+        var currentStepElement = null;
+        
+        // 방법 1: ID로 찾기
+        currentStepElement = document.getElementById('step-' + stepIndex);
+        
+        // 방법 2: 클래스로 찾기
+        if (!currentStepElement) {
+            currentStepElement = document.querySelector('.step-' + stepIndex);
+        }
+        
+        // 방법 3: 인덱스로 찾기
+        if (!currentStepElement && allSteps[stepIndex]) {
+            currentStepElement = allSteps[stepIndex];
+        }
+        
+        console.log("현재 단계 요소:", currentStepElement);
+        if (currentStepElement) {
+            currentStepElement.classList.add('active');
+            currentStepElement.style.display = 'block';
+            console.log("단계", stepIndex, "표시됨");
+        } else {
+            console.error("단계 요소를 찾을 수 없음:", 'step-' + stepIndex);
+        }
+        
+        // 버튼 상태 업데이트
+        scwin.updateButtons();
+        scwin.updateProgress();
+        
+        // 단계별 특별 처리
+        scwin.handleStepSpecialActions(stepIndex);
+    }, 50);
+};
+
+// 단계별 특별 처리
+scwin.handleStepSpecialActions = function(stepIndex) {
+    switch(stepIndex) {
+        case 2: // MBTI 성향 분석 단계
+            scwin.animateMbtiCards();
+            break;
+        case 3: // 코드 분석 단계
+            scwin.animateCodeAnalysis();
+            break;
+        case 4: // 매칭 시스템 단계
+            scwin.animateMatching();
+            break;
+    }
+};
+
+// MBTI 카드 애니메이션
+scwin.animateMbtiCards = function() {
+    setTimeout(function() {
+        var mbtiCards = document.querySelectorAll('.mbti-demo-card');
+        mbtiCards.forEach(function(card, index) {
+            setTimeout(function() {
+                card.style.transform = 'scale(1)';
+                card.style.opacity = '1';
+            }, index * 200);
+        });
+    }, 300);
+};
+
+// 코드 분석 애니메이션
+scwin.animateCodeAnalysis = function() {
+    setTimeout(function() {
+        var codeUpload = document.querySelector('.code-upload-demo');
+        if (codeUpload) {
+            codeUpload.classList.add('uploading');
+            
+            setTimeout(function() {
+                codeUpload.classList.remove('uploading');
+                codeUpload.classList.add('completed');
+                
+                var resultElement = document.querySelector('.code-result-demo');
+                if (resultElement) {
+                    resultElement.style.display = 'block';
+                    resultElement.style.animation = 'fadeInUp 0.5s ease';
+                }
+            }, 2000);
+        }
+    }, 500);
+};
+
+// 매칭 애니메이션
+scwin.animateMatching = function() {
+    setTimeout(function() {
+        var matchingElements = document.querySelectorAll('.matching-animation');
+        matchingElements.forEach(function(element, index) {
+            setTimeout(function() {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * 400);
+        });
+    }, 300);
+};
+
+// 다음 단계
+scwin.nextStep = function() {
+    var currentStep = dmp_tutorial.get("currentStep");
+    var totalSteps = dmp_tutorial.get("totalSteps");
+    
+    if (currentStep < totalSteps - 1) {
+        scwin.showStep(currentStep + 1);
+    }
+};
+
+// 이전 단계
+scwin.prevStep = function() {
+    var currentStep = dmp_tutorial.get("currentStep");
+    
+    if (currentStep > 0) {
+        scwin.showStep(currentStep - 1);
+    }
+};
+
+// 특정 단계로 이동
+scwin.goToStep = function(stepIndex) {
+    scwin.showStep(stepIndex);
+};
+
+// 버튼 상태 업데이트
+scwin.updateButtons = function() {
+    var currentStep = dmp_tutorial.get("currentStep");
+    var totalSteps = dmp_tutorial.get("totalSteps");
+    
+    var prevBtn = document.getElementById('btn-prev');
+    var nextBtn = document.getElementById('btn-next');
+    var startBtn = document.getElementById('btn-start');
+    
+    if (prevBtn) {
+        prevBtn.disabled = (currentStep === 0);
+        prevBtn.style.opacity = (currentStep === 0) ? '0.5' : '1';
+    }
+    
+    if (nextBtn) {
+        if (currentStep === totalSteps - 1) {
+            nextBtn.style.display = 'none';
+            if (startBtn) startBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+            if (startBtn) startBtn.style.display = 'none';
+        }
+    }
+};
+
+// 진행률 업데이트
+scwin.updateProgress = function() {
+    var currentStep = dmp_tutorial.get("currentStep");
+    var totalSteps = dmp_tutorial.get("totalSteps");
+    var progressPercent = ((currentStep + 1) / totalSteps) * 100;
+    
+    var progressBar = document.querySelector('.progress-bar-fill');
+    var progressText = document.querySelector('.progress-text');
+    
+    if (progressBar) {
+        progressBar.style.width = progressPercent + '%';
+    }
+    
+    if (progressText) {
+        progressText.textContent = (currentStep + 1) + ' / ' + totalSteps;
+    }
+    
+    // 단계 인디케이터 업데이트
+    var indicators = document.querySelectorAll('.step-indicator');
+    indicators.forEach(function(indicator, index) {
+        if (index <= currentStep) {
+            indicator.classList.add('completed');
+        } else {
+            indicator.classList.remove('completed');
+        }
+        
+        if (index === currentStep) {
+            indicator.classList.add('current');
+        } else {
+            indicator.classList.remove('current');
+        }
+    });
+};
+
+// 실제 기능으로 이동하는 함수들
+scwin.goToSignup = function() {
+    var isLoggedIn = dmp_tutorial.get("isLoggedIn");
+    if (isLoggedIn === "true") {
+        $c.win.alert("이미 로그인되어 있습니다!");
+        return;
+    }
+    $p.url("../user/Signup.xml");
+};
+
+scwin.goToMbtiTest = function() {
+    $p.url("../survey/SurveyMbti.xml");
+};
+
+scwin.goToCodeAnalysis = function() {
+    $p.url("../user/CodeAnalysisMain.xml");
+};
+
+scwin.goToMainPage = function() {
+    $p.url("../common/MainPage.xml");
+};
+
+scwin.goToJobList = function() {
+    $p.url("../post/PostList.xml");
+};
+
+scwin.startJourney = function() {
+    var isLoggedIn = dmp_tutorial.get("isLoggedIn");
+    if (isLoggedIn === "true") {
+        // 로그인된 사용자는 메인 페이지로
+        scwin.goToMainPage();
+    } else {
+        // 비로그인 사용자는 회원가입으로
+        scwin.goToSignup();
+    }
+};
+
+// 데모 기능들
+scwin.demoMbtiQuestion = function() {
+    var options = document.querySelectorAll('.demo-mbti-option');
+    options.forEach(function(option) {
+        option.addEventListener('click', function() {
+            options.forEach(function(opt) {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+        });
+    });
+};
+
+scwin.demoCodeUpload = function() {
+    var uploadArea = document.querySelector('.demo-upload-area');
+    if (uploadArea) {
+        uploadArea.classList.add('active');
+        setTimeout(function() {
+            uploadArea.classList.remove('active');
+        }, 1500);
+    }
+};
+]]></script>
+        <style type="text/css"><![CDATA[
+.tutorial-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+}
+
+.tutorial-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+}
+
+.tutorial-title {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.tutorial-subtitle {
+    font-size: 20px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.welcome-message {
+    font-size: 16px;
+    opacity: 0.8;
+    margin-top: 8px;
+}
+
+.tutorial-progress {
+    background: rgba(255,255,255,0.2);
+    border-radius: 25px;
+    padding: 8px;
+    margin: 30px auto;
+    max-width: 600px;
+    backdrop-filter: blur(10px);
+}
+
+.progress-bar {
+    background: rgba(255,255,255,0.3);
+    height: 8px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    background: linear-gradient(90deg, #4CAF50, #45a049);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+    border-radius: 20px;
+}
+
+.progress-text {
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.step-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.step-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.step-indicator.completed {
+    background: #4CAF50;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.step-indicator.current {
+    background: #FF9800;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.tutorial-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    min-height: 420px;
+}
+
+.tutorial-step {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.tutorial-step:first-child,
+.step-0,
+#step-0 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.tutorial-step.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.step-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.step-description {
+    font-size: 18px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.step-content {
+    margin: 30px 0;
+}
+
+/* 단계별 특별 스타일 */
+.journey-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.journey-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.6s ease forwards;
+}
+
+.journey-card:nth-child(2) { animation-delay: 0.2s; }
+.journey-card:nth-child(3) { animation-delay: 0.4s; }
+.journey-card:nth-child(4) { animation-delay: 0.6s; }
+.journey-card:nth-child(5) { animation-delay: 0.8s; }
+
+.journey-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.journey-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.journey-desc {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* MBTI 데모 스타일 */
+.mbti-demo-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.mbti-demo-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+.mbti-demo-card:hover {
+    border-color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,123,255,0.15);
+}
+
+.mbti-type {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.mbti-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.mbti-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* 코드 분석 데모 */
+.code-demo-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.code-upload-demo {
+    border: 3px dashed #ddd;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.code-upload-demo.uploading {
+    border-color: #007bff;
+    background: #e3f2fd;
+    animation: pulse 1s infinite;
+}
+
+.code-upload-demo.completed {
+    border-color: #4CAF50;
+    background: #e8f5e9;
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: #666;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.upload-text {
+    font-size: 18px;
+    color: #333;
+    font-weight: 500;
+}
+
+.code-result-demo {
+    display: none;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+}
+
+.result-type {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.result-name {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.result-desc {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+/* 매칭 시스템 데모 */
+.matching-demo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 40px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+}
+
+.matching-user, .matching-company {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.matching-arrow {
+    font-size: 48px;
+    color: #4CAF50;
+    animation: bounce 2s infinite;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.matching-animation {
+    transition: all 0.6s ease;
+}
+
+/* 버튼 스타일 */
+.tutorial-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding: 20px 0;
+}
+
+.nav-button {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.btn-prev {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-prev:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-next, .btn-start {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.btn-next:hover, .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,123,255,0.3);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.action-button {
+    padding: 12px 25px;
+    border: 2px solid #007bff;
+    border-radius: 25px;
+    background: white;
+    color: #007bff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.action-button:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.action-button.primary {
+    background: #007bff;
+    color: white;
+}
+
+.action-button.primary:hover {
+    background: #0056b3;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .tutorial-container {
+        padding: 10px;
+    }
+    
+    .tutorial-title {
+        font-size: 32px;
+    }
+    
+    .tutorial-content {
+        padding: 20px;
+    }
+    
+    .journey-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .mbti-demo-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .code-demo-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .matching-demo {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .tutorial-navigation {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .mbti-demo-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .step-indicators {
+        gap: 8px;
+    }
+    
+    .step-indicator {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+}
+]]></style>
+    </head>
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="Header.xml" id="headerFrame" />
+        
+        <xf:group class="tutorial-container">
+            <!-- 튜토리얼 헤더 -->
+            <xf:group class="tutorial-header">
+                <w2:textbox class="tutorial-title" label="CodeFIT 사용법 가이드"></w2:textbox>
+                <w2:textbox class="tutorial-subtitle" label="당신의 개발자 여정을 시작해보세요"></w2:textbox>
+                <w2:textbox class="welcome-message" label="튜토리얼을 통해 모든 기능을 알아보세요"></w2:textbox>
+            </xf:group>
+
+            <!-- 진행률 표시 -->
+            <xf:group class="tutorial-progress">
+                <xf:group class="progress-bar">
+                    <xf:group class="progress-bar-fill"></xf:group>
+                </xf:group>
+                <w2:textbox class="progress-text" label="1 / 7"></w2:textbox>
+            </xf:group>
+
+            <!-- 단계 인디케이터 -->
+            <xf:group class="step-indicators">
+                <xf:trigger class="step-indicator completed current" ev:onclick="scwin.goToStep(0)">
+                    <xf:label>1</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(1)">
+                    <xf:label>2</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(2)">
+                    <xf:label>3</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(3)">
+                    <xf:label>4</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(4)">
+                    <xf:label>5</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(5)">
+                    <xf:label>6</xf:label>
+                </xf:trigger>
+                <xf:trigger class="step-indicator" ev:onclick="scwin.goToStep(6)">
+                    <xf:label>7</xf:label>
+                </xf:trigger>
+            </xf:group>
+
+            <!-- 튜토리얼 콘텐츠 -->
+            <xf:group class="tutorial-content">
+                
+                <!-- 1단계: 시작하기 -->
+                <xf:group class="tutorial-step step-0" id="step-0">
+                    <w2:textbox class="step-title" label="CodeFIT에 오신 것을 환영합니다! 🎉"></w2:textbox>
+                    <w2:textbox class="step-description" label="AI 기반 개발자 매칭 플랫폼 CodeFIT은 당신의 코딩 스타일과 성향을 분석하여 최적의 기업과 연결해드립니다."></w2:textbox>
+                    
+                    <xf:group class="journey-overview">
+                        <xf:group class="journey-card">
+                            <w2:textbox class="journey-icon" label="👤"></w2:textbox>
+                            <w2:textbox class="journey-title" label="회원가입"></w2:textbox>
+                            <w2:textbox class="journey-desc" label="기본 정보를 입력하고 프로필을 생성하세요"></w2:textbox>
+                        </xf:group>
+                        <xf:group class="journey-card">
+                            <w2:textbox class="journey-icon" label="🧠"></w2:textbox>
+                            <w2:textbox class="journey-title" label="성향 분석"></w2:textbox>
+                            <w2:textbox class="journey-desc" label="설문을 통해 개발자 성향을 분석합니다"></w2:textbox>
+                        </xf:group>
+                        <xf:group class="journey-card">
+                            <w2:textbox class="journey-icon" label="💻"></w2:textbox>
+                            <w2:textbox class="journey-title" label="코드 분석"></w2:textbox>
+                            <w2:textbox class="journey-desc" label="실제 코드로 개발 스타일을 파악합니다"></w2:textbox>
+                        </xf:group>
+                        <xf:group class="journey-card">
+                            <w2:textbox class="journey-icon" label="🤝"></w2:textbox>
+                            <w2:textbox class="journey-title" label="매칭 &amp; 지원"></w2:textbox>
+                            <w2:textbox class="journey-desc" label="분석 결과를 바탕으로 기업에 지원하세요"></w2:textbox>
+                        </xf:group>
+                        <xf:group class="journey-card">
+                            <w2:textbox class="journey-icon" label="🎯"></w2:textbox>
+                            <w2:textbox class="journey-title" label="채용 완료"></w2:textbox>
+                            <w2:textbox class="journey-desc" label="꿈의 직장에서 새로운 시작을 하세요"></w2:textbox>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 2단계: 회원가입 -->
+                <xf:group class="tutorial-step step-1" id="step-1">
+                    <w2:textbox class="step-title" label="1단계: 회원가입 및 프로필 설정 📝"></w2:textbox>
+                    <w2:textbox class="step-description" label="먼저 기본 정보를 입력하고 희망하는 근무 조건을 설정해보세요."></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <xf:group style="text-align: center; margin: 30px 0;">
+                            <xf:image src="/InsWebApp/images/ws5/default_user.png" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #007bff; margin-bottom: 20px;"></xf:image>
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 15px; display: block;" label="✅ 이름, 생년월일, 성별, 연락처"></w2:textbox>
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 15px; display: block;" label="📍 희망 근무지역 선택"></w2:textbox>
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 15px; display: block;" label="💰 희망 연봉 범위 설정"></w2:textbox>
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 15px; display: block;" label="💼 경력 및 기술 스택 입력"></w2:textbox>
+                        </xf:group>
+                        
+                        <xf:group class="action-buttons">
+                            <xf:trigger class="action-button primary" ev:onclick="scwin.goToSignup">
+                                <xf:label>지금 회원가입하기</xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 3단계: MBTI 성향 분석 -->
+                <xf:group class="tutorial-step step-2" id="step-2">
+                    <w2:textbox class="step-title" label="2단계: 개발자 성향 분석 (codeFIT) 🧠"></w2:textbox>
+                    <w2:textbox class="step-description" label="16가지 질문을 통해 당신만의 개발자 성향을 분석합니다. 4가지 축으로 구성된 16가지 유형이 있어요!"></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <w2:textbox style="text-align: center; font-size: 20px; color: #333; margin-bottom: 30px; display: block;" label="예시: 당신의 개발자 성향 유형들"></w2:textbox>
+                        
+                        <xf:group class="mbti-demo-container">
+                            <xf:group class="mbti-demo-card" ev:onclick="scwin.demoMbtiQuestion()">
+                                <w2:textbox class="mbti-type" label="ARTF"></w2:textbox>
+                                <w2:textbox class="mbti-name" label="구조적 팀 빌더"></w2:textbox>
+                                <w2:textbox class="mbti-desc" label="검증된 기술로 팀과 함께 견고한 기능을 구축하는 개발자"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="mbti-demo-card">
+                                <w2:textbox class="mbti-type" label="BISF"></w2:textbox>
+                                <w2:textbox class="mbti-name" label="창의적 스피드 러너"></w2:textbox>
+                                <w2:textbox class="mbti-desc" label="혁신적 방법으로 빠르게 기능을 구현하는 개발자"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="mbti-demo-card">
+                                <w2:textbox class="mbti-type" label="AITD"></w2:textbox>
+                                <w2:textbox class="mbti-name" label="미래지향 팀 디버거"></w2:textbox>
+                                <w2:textbox class="mbti-desc" label="새로운 기술로 팀과 함께 안정적인 시스템을 구축하는 개발자"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="mbti-demo-card">
+                                <w2:textbox class="mbti-type" label="BRSD"></w2:textbox>
+                                <w2:textbox class="mbti-name" label="실용적 안정성 추구자"></w2:textbox>
+                                <w2:textbox class="mbti-desc" label="검증된 방법으로 안정적인 솔루션을 만드는 개발자"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                        
+                        <xf:group class="action-buttons">
+                            <xf:trigger class="action-button primary" ev:onclick="scwin.goToMbtiTest">
+                                <xf:label>성향 분석 시작하기</xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 4단계: 코드 분석 -->
+                <xf:group class="tutorial-step step-3" id="step-3">
+                    <w2:textbox class="step-title" label="3단계: 코드 분석 (weaveType) 💻"></w2:textbox>
+                    <w2:textbox class="step-description" label="실제 작성한 코드를 업로드하여 개발 스타일을 분석합니다. AI가 당신의 코딩 패턴을 읽어내요!"></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <xf:group class="code-demo-container">
+                            <xf:group class="code-upload-demo" ev:onclick="scwin.demoCodeUpload">
+                                <w2:textbox class="upload-icon" label="📁"></w2:textbox>
+                                <w2:textbox class="upload-text" label="Model, Controller, Service, Repository 파일을 업로드하세요"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; margin-top: 10px; display: block;" label="(클릭해서 데모를 확인해보세요!)"></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group class="code-result-demo">
+                                <w2:textbox class="result-type" label="AR"></w2:textbox>
+                                <w2:textbox class="result-name" label="개선형 아키텍트"></w2:textbox>
+                                <w2:textbox class="result-desc" label="기존 코드를 체계적으로 개선하고 최적화하는 개발자입니다. 안정성과 효율성을 중시하며, 코드의 구조를 개선하는 데 뛰어납니다."></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                        
+                        <xf:group style="text-align: center; margin: 30px 0;">
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 15px; display: block;" label="🤖 AI가 분석하는 요소들:"></w2:textbox>
+                            <w2:textbox style="font-size: 16px; color: #666; margin-bottom: 10px; display: block;" label="• 코드 구조와 설계 패턴"></w2:textbox>
+                            <w2:textbox style="font-size: 16px; color: #666; margin-bottom: 10px; display: block;" label="• 변수명과 함수명 작성 스타일"></w2:textbox>
+                            <w2:textbox style="font-size: 16px; color: #666; margin-bottom: 10px; display: block;" label="• 주석과 문서화 정도"></w2:textbox>
+                            <w2:textbox style="font-size: 16px; color: #666; margin-bottom: 10px; display: block;" label="• 오류 처리와 예외 상황 대응"></w2:textbox>
+                        </xf:group>
+                        
+                        <xf:group class="action-buttons">
+                            <xf:trigger class="action-button primary" ev:onclick="scwin.goToCodeAnalysis">
+                                <xf:label>코드 분석 시작하기</xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 5단계: AI 매칭 시스템 -->
+                <xf:group class="tutorial-step step-4" id="step-4">
+                    <w2:textbox class="step-title" label="4단계: AI 매칭 시스템 🤝"></w2:textbox>
+                    <w2:textbox class="step-description" label="분석된 성향과 코드 스타일을 바탕으로 당신에게 가장 적합한 기업을 찾아드립니다."></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <xf:group class="matching-demo">
+                            <xf:group class="matching-user matching-animation">
+                                <xf:image src="/InsWebApp/images/ws5/default_user.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;"></xf:image>
+                                <w2:textbox style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px; display: block;" label="당신의 프로필"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;" label="ARTF - 구조적 팀 빌더"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;" label="AR - 개선형 아키텍트"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; display: block;" label="Java, Spring 전문가"></w2:textbox>
+                            </xf:group>
+                            
+                            <w2:textbox class="matching-arrow matching-animation" label="⚡"></w2:textbox>
+                            
+                            <xf:group class="matching-company matching-animation">
+                                <xf:image src="/InsWebApp/images/ws5/default_company.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;"></xf:image>
+                                <w2:textbox style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px; display: block;" label="매칭된 기업"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;" label="95% 매칭률"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;" label="ARTF 성향 우대"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; display: block;" label="백엔드 시니어 개발자 채용"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                        
+                        <xf:group style="text-align: center; margin: 30px 0;">
+                            <w2:textbox style="font-size: 18px; color: #333; margin-bottom: 20px; display: block;" label="🎯 매칭 점수 계산 요소:"></w2:textbox>
+                            <xf:group style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <xf:group style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <w2:textbox style="font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 10px; display: block;" label="성향 일치도 (40%)"></w2:textbox>
+                                    <w2:textbox style="font-size: 14px; color: #666; display: block;" label="개발자 성향과 기업이 원하는 성향의 일치 정도"></w2:textbox>
+                                </xf:group>
+                                <xf:group style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <w2:textbox style="font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 10px; display: block;" label="기술 스택 (30%)"></w2:textbox>
+                                    <w2:textbox style="font-size: 14px; color: #666; display: block;" label="보유 기술과 요구 기술의 매칭 정도"></w2:textbox>
+                                </xf:group>
+                                <xf:group style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <w2:textbox style="font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 10px; display: block;" label="근무 조건 (20%)"></w2:textbox>
+                                    <w2:textbox style="font-size: 14px; color: #666; display: block;" label="희망 연봉, 지역, 경력의 일치 정도"></w2:textbox>
+                                </xf:group>
+                                <xf:group style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <w2:textbox style="font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 10px; display: block;" label="코드 스타일 (10%)"></w2:textbox>
+                                    <w2:textbox style="font-size: 14px; color: #666; display: block;" label="개발 스타일과 기업 문화의 적합성"></w2:textbox>
+                                </xf:group>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 6단계: 지원 및 채용 -->
+                <xf:group class="tutorial-step step-5" id="step-5">
+                    <w2:textbox class="step-title" label="5단계: 지원 및 채용 프로세스 📋"></w2:textbox>
+                    <w2:textbox class="step-description" label="매칭된 기업에 지원하고 채용 과정을 진행해보세요. 모든 과정이 플랫폼 내에서 이루어집니다."></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <xf:group style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                            <xf:group style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                                <w2:textbox style="font-size: 40px; margin-bottom: 15px; display: block;" label="📄"></w2:textbox>
+                                <w2:textbox style="font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block;" label="1. 지원서 작성"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; opacity: 0.9; display: block;" label="분석 결과가 자동으로 포함되어 간편하게 지원할 수 있어요"></w2:textbox>
+                            </xf:group>
+                            <xf:group style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                                <w2:textbox style="font-size: 40px; margin-bottom: 15px; display: block;" label="💬"></w2:textbox>
+                                <w2:textbox style="font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block;" label="2. 기업과 소통"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; opacity: 0.9; display: block;" label="플랫폼 내 메시징으로 기업 담당자와 직접 소통하세요"></w2:textbox>
+                            </xf:group>
+                            <xf:group style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                                <w2:textbox style="font-size: 40px; margin-bottom: 15px; display: block;" label="🎯"></w2:textbox>
+                                <w2:textbox style="font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block;" label="3. 면접 진행"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; opacity: 0.9; display: block;" label="성향 분석 결과를 바탕으로 한 맞춤형 면접을 진행해요"></w2:textbox>
+                            </xf:group>
+                            <xf:group style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                                <w2:textbox style="font-size: 40px; margin-bottom: 15px; display: block;" label="🎉"></w2:textbox>
+                                <w2:textbox style="font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block;" label="4. 채용 완료"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; opacity: 0.9; display: block;" label="성공적인 채용과 함께 새로운 커리어를 시작하세요"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                        
+                        <xf:group class="action-buttons">
+                            <xf:trigger class="action-button" ev:onclick="scwin.goToJobList">
+                                <xf:label>채용 공고 둘러보기</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="action-button primary" ev:onclick="scwin.goToMainPage">
+                                <xf:label>메인 페이지로</xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+                <!-- 7단계: 추가 기능 소개 -->
+                <xf:group class="tutorial-step step-6" id="step-6">
+                    <w2:textbox class="step-title" label="추가 기능들 ✨"></w2:textbox>
+                    <w2:textbox class="step-description" label="CodeFIT의 다양한 부가 기능들로 더욱 효율적인 구직 활동을 해보세요."></w2:textbox>
+                    
+                    <xf:group class="step-content">
+                        <xf:group style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 30px 0;">
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="📊"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="성향 분석 리포트"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="상세한 성향 분석 결과와 개발자로서의 강점, 개선점을 확인할 수 있습니다. PDF로 다운로드도 가능해요!"></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="🔔"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="맞춤 알림 서비스"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="당신의 성향과 조건에 맞는 새로운 채용 공고가 올라오면 즉시 알림을 받아보세요."></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="📈"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="성장 트래킹"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="주기적인 코드 분석을 통해 개발 실력의 성장을 추적하고 개선 방향을 제시합니다."></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="👥"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="개발자 커뮤니티"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="같은 성향의 개발자들과 네트워킹하고 경험을 공유할 수 있는 커뮤니티에 참여하세요."></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="🎓"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="성향별 학습 가이드"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="당신의 성향에 맞는 학습 방법과 기술 스택 추천을 받아 더 효율적으로 성장하세요."></w2:textbox>
+                            </xf:group>
+                            
+                            <xf:group style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease;">
+                                <w2:textbox style="font-size: 48px; margin-bottom: 20px; display: block;" label="💼"></w2:textbox>
+                                <w2:textbox style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; display: block;" label="이력서 자동 생성"></w2:textbox>
+                                <w2:textbox style="font-size: 14px; color: #666; line-height: 1.5; display: block;" label="성향 분석 결과를 바탕으로 당신만의 특별한 이력서를 자동으로 생성해드립니다."></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                        
+                        <xf:group style="text-align: center; margin: 40px 0;">
+                            <w2:textbox style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 20px; display: block;" label="🚀 지금 시작해보세요!"></w2:textbox>
+                            <w2:textbox style="font-size: 16px; color: #666; margin-bottom: 30px; display: block;" label="AI가 분석한 당신만의 개발자 성향으로 꿈의 직장을 찾아보세요."></w2:textbox>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+
+            </xf:group>
+
+            <!-- 네비게이션 버튼 -->
+            <xf:group class="tutorial-navigation">
+                <xf:trigger class="nav-button btn-prev" id="btn-prev" ev:onclick="scwin.prevStep">
+                    <xf:label>← 이전</xf:label>
+                </xf:trigger>
+                
+                <xf:group style="flex: 1;"></xf:group>
+                
+                <xf:trigger class="nav-button btn-next" id="btn-next" ev:onclick="scwin.nextStep">
+                    <xf:label>다음 →</xf:label>
+                </xf:trigger>
+                
+                <xf:trigger class="nav-button btn-start" id="btn-start" style="display: none;" ev:onclick="scwin.startJourney">
+                    <xf:label>🚀 시작하기</xf:label>
+                </xf:trigger>
+            </xf:group>
+
+        </xf:group>
+    </body>
+</html>

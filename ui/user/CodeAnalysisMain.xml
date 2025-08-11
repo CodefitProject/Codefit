@@ -1,0 +1,2841 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head meta_screenName="CodeFIT 코드 분석">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_codeFiles">
+					<w2:keyInfo>
+						<w2:key id="modelFile" name="모델파일" dataType="text" value=""></w2:key>
+						<w2:key id="controllerFile" name="컨트롤러파일" dataType="text" value=""></w2:key>
+						<w2:key id="serviceFile" name="서비스파일" dataType="text" value=""></w2:key>
+						<w2:key id="repositoryFile" name="레포지토리파일" dataType="text" value=""></w2:key>
+						<w2:key id="modelFileName" name="모델파일명" dataType="text" value=""></w2:key>
+						<w2:key id="controllerFileName" name="컨트롤러파일명" dataType="text" value=""></w2:key>
+						<w2:key id="serviceFileName" name="서비스파일명" dataType="text" value=""></w2:key>
+						<w2:key id="repositoryFileName" name="레포지토리파일명" dataType="text" value=""></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection></w2:workflowCollection>
+			<xf:submission id="sbm_codeAnalyze" ref='data:json,{"id":"dma_codeFiles"}' target=""
+				action="/InsWebApp/CA0001Analyze.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="코드 분석 중입니다..." ev:submit=""
+				ev:submitdone="scwin.sbm_codeAnalyze_submitdone" ev:submiterror="scwin.sbm_codeAnalyze_submiterror" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<script type="text/javascript"><![CDATA[
+            // 업로드된 파일들을 저장할 전역 변수
+            scwin.uploadedFiles = [];
+            
+            scwin.onpageload = function() {
+                console.log("코드분석 메인 페이지 로드됨");
+                
+                // 사용자 인증 확인 먼저 수행
+                if (!scwin.checkUserAuthentication()) {
+                    return; // 인증 실패 시 여기서 종료
+                }
+                
+                // 사용자 인증 정보 확인 및 설정
+                scwin.initializeUserInfo();
+                
+                // 멀티 파일 업로드 이벤트 설정
+                scwin.initializeMultiFileUpload();
+            };
+            
+            // 사용자 인증 체크 함수
+            scwin.checkUserAuthentication = function() {
+                // 쿠키에서 사용자 정보 확인
+                var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+                var userInfo = null;
+                
+                if (userInfoCookie) {
+                    try {
+                        userInfo = JSON.parse(userInfoCookie);
+                    } catch (e) {
+                        console.error("사용자 정보 파싱 오류:", e);
+                        userInfo = null;
+                    }
+                }
+                
+                // 로그인하지 않은 사용자 처리
+                if (!userInfo || !userInfo.accountId) {
+                    console.warn("로그인되지 않은 사용자의 코드분석 페이지 접근 시도");
+                    
+                    // 사용자에게 알림
+                    $c.win.alert("로그인이 필요한 서비스입니다. 메인 페이지로 이동합니다.", function() {
+                        // 메인 페이지로 리다이렉트
+                        $p.url("/InsWebApp/ui/common/MainPage.xml");
+                    });
+                    return false;
+                }
+                
+                // 기업 사용자 접근 차단
+                if (userInfo.role === "COMPANY") {
+                    console.warn("기업 사용자의 코드분석 페이지 접근 차단:", userInfo.accountId);
+                    
+                    $c.win.alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.", function() {
+                        // 메인 페이지로 리다이렉트
+                        $p.url("/InsWebApp/ui/common/MainPage.xml");
+                    });
+                    return false;
+                }
+                
+                console.log("사용자 인증 성공:", userInfo.accountId, "역할:", userInfo.role);
+                return true;
+            };
+            
+            // 사용자 정보 초기화
+            scwin.initializeUserInfo = function() {
+                var userId = null;
+                
+                // 1. ProWorks 헤더에서 사용자 정보 가져오기 시도
+                try {
+                    if (typeof WebSquare !== "undefined" && 
+                        typeof WebSquare.WebSquareExtension !== "undefined" && 
+                        typeof WebSquare.WebSquareExtension.getProworksUserHeader === "function") {
+                        var userHeader = WebSquare.WebSquareExtension.getProworksUserHeader();
+                        console.log("ProWorks 헤더 정보:", userHeader);
+                        if (userHeader && userHeader.accountId) {
+                            userId = userHeader.accountId;
+                            console.log("ProWorks 헤더에서 가져온 사용자 ID:", userId);
+                        }
+                    }
+                } catch (e) {
+                    console.error("ProWorks 헤더 조회 오류:", e);
+                }
+                
+                // 2. 쿠키에서 사용자 정보 가져오기 시도
+                if (!userId) {
+                    try {
+                        var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+                        if (userInfoStr && userInfoStr !== "undefined") {
+                            var userInfo = JSON.parse(userInfoStr);
+                            console.log("쿠키에서 가져온 사용자 정보:", userInfo);
+                            if (userInfo && userInfo.accountId) {
+                                userId = userInfo.accountId;
+                                console.log("쿠키에서 가져온 사용자 ID:", userId);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("쿠키 조회 오류:", e);
+                    }
+                }
+                
+                // 3. 세션 스토리지에서 사용자 정보 가져오기 시도
+                if (!userId && window.sessionStorage) {
+                    try {
+                        var sessionUserInfo = sessionStorage.getItem("userInfo");
+                        if (sessionUserInfo) {
+                            var sessionUser = JSON.parse(sessionUserInfo);
+                            if (sessionUser && sessionUser.accountId) {
+                                userId = sessionUser.accountId;
+                                console.log("세션 스토리지에서 가져온 사용자 ID:", userId);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("세션 스토리지 조회 오류:", e);
+                    }
+                }
+                
+                // 4. URL 파라미터에서 사용자 정보 가져오기 시도
+                if (!userId) {
+                    try {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var paramUserId = urlParams.get("userId") || urlParams.get("user_id") || urlParams.get("accountId");
+                        if (paramUserId) {
+                            userId = parseInt(paramUserId, 10);
+                            if (!isNaN(userId)) {
+                                console.log("URL 파라미터에서 가져온 사용자 ID:", userId);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("URL 파라미터 조회 오류:", e);
+                    }
+                }
+                
+                // 5. 테스트용 기본값 설정 (개발 환경에서만)
+                if (!userId && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+                    userId = 1; // 테스트용 숫자 ID
+                    console.warn("로컬 개발 환경에서 테스트용 사용자 ID 설정:", userId);
+                }
+                
+                // 최종 사용자 ID 설정
+                if (userId) {
+                    scwin.currentUserId = userId;
+                    console.log("최종 사용자 ID 설정:", userId);
+                } else {
+                    // 로그인이 필요한 경우
+                    console.warn("사용자 ID를 찾을 수 없습니다. 로그인이 필요할 수 있습니다.");
+                    scwin.currentUserId = 1; // 기본값으로 1 설정 (테스트용)
+                }
+            };
+            
+            // 멀티 파일 업로드 초기화
+            scwin.initializeMultiFileUpload = function() {
+                var fileInput = document.getElementById('multiFileInput');
+                if (fileInput) {
+                    fileInput.addEventListener('change', function(e) {
+                        scwin.handleMultiFileUpload(e);
+                    });
+                }
+                
+                // 드래그 앤 드롭 이벤트 설정
+                var uploadArea = document.querySelector('.upload-area');
+                if (uploadArea) {
+                    uploadArea.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        uploadArea.classList.add('drag-over');
+                    });
+                    
+                    uploadArea.addEventListener('dragleave', function(e) {
+                        e.preventDefault();
+                        uploadArea.classList.remove('drag-over');
+                    });
+                    
+                    uploadArea.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        uploadArea.classList.remove('drag-over');
+                        
+                        var files = e.dataTransfer.files;
+                        scwin.processFiles(files);
+                    });
+                }
+                
+                // 파일 목록 컨테이너에 이벤트 위임 설정
+                setTimeout(function() {
+                    scwin.initializeFileListEvents();
+                }, 100);
+            };
+            
+            // 파일 목록 이벤트 위임 초기화
+            scwin.initializeFileListEvents = function() {
+                var fileListContainer = document.querySelector('.file-list');
+                if (fileListContainer && !fileListContainer._eventDelegationAdded) {
+                    fileListContainer.addEventListener('click', function(e) {
+                        var target = e.target;
+                        var button = null;
+                        var index = -1;
+                        
+                        // 클릭된 요소가 버튼이거나 버튼 내부 요소인지 확인
+                        var currentElement = target;
+                        var depth = 0;
+                        while (currentElement && depth < 5) {
+                            if (currentElement.classList) {
+                                if (currentElement.classList.contains('btn-change-type')) {
+                                    button = currentElement;
+                                    break;
+                                } else if (currentElement.classList.contains('btn-remove')) {
+                                    button = currentElement;
+                                    break;
+                                }
+                            }
+                            currentElement = currentElement.parentNode;
+                            depth++;
+                        }
+                        
+                        if (button) {
+                            // 파일 아이템에서 인덱스 찾기
+                            var fileItem = button.closest('.file-item');
+                            if (fileItem) {
+                                var allFileItems = fileListContainer.querySelectorAll('.file-item');
+                                for (var i = 0; i < allFileItems.length; i++) {
+                                    if (allFileItems[i] === fileItem) {
+                                        index = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (index >= 0) {
+                                if (button.classList.contains('btn-change-type')) {
+                                    console.log('파일 타입 변경 클릭됨:', index);
+                                    scwin.changeFileType(index);
+                                } else if (button.classList.contains('btn-remove')) {
+                                    console.log('파일 삭제 클릭됨:', index);
+                                    scwin.removeFile(index);
+                                }
+                            }
+                            
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+                    
+                    fileListContainer._eventDelegationAdded = true;
+                    console.log('파일 목록 이벤트 위임 설정 완료');
+                }
+            };
+            
+            // 멀티 파일 업로드 핸들러
+            scwin.handleMultiFileUpload = function(event) {
+                var files = event.target.files;
+                scwin.processFiles(files);
+            };
+            
+            // 파일들 처리
+            scwin.processFiles = function(files) {
+                if (files.length === 0) return;
+                
+                console.log('선택된 파일 수:', files.length);
+                
+                // 기존 파일 목록 초기화
+                scwin.uploadedFiles = [];
+                scwin.clearDataMap();
+                
+                // 각 파일 처리
+                for (var i = 0; i < files.length; i++) {
+                    scwin.processFile(files[i], i);
+                }
+            };
+            
+            // 개별 파일 처리
+            scwin.processFile = function(file, index) {
+                // 파일 유효성 검사
+                if (file.size > 50 * 1024) {
+                    $c.win.alert('파일 크기는 50KB를 초과할 수 없습니다: ' + file.name);
+                    return;
+                }
+                
+                // 파일 타입 자동 분류
+                var fileType = scwin.classifyFileType(file.name);
+                
+                // 파일 읽기
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var fileContent = e.target.result;
+                    
+                    // 파일 정보 저장
+                    var fileInfo = {
+                        name: file.name,
+                        type: fileType,
+                        content: fileContent,
+                        size: file.size
+                    };
+                    
+                    scwin.uploadedFiles.push(fileInfo);
+                    
+                    // DataMap에 저장
+                    scwin.saveToDataMap(fileInfo);
+                    
+                    // UI 업데이트
+                    scwin.updateFileList();
+                    
+                    // 사용자 친화적인 타입 라벨로 로그 출력
+                    console.log('파일 처리 완료:', file.name, '타입:', scwin.getTypeLabel(fileType));
+                    
+                    // 이벤트 위임 재설정 (새로운 요소가 추가되었으므로)
+                    setTimeout(function() {
+                        scwin.initializeFileListEvents();
+                    }, 50);
+                };
+                reader.readAsText(file);
+            };
+            
+            // 파일 타입 자동 분류 (언어 중립적 범용 시스템)
+            scwin.classifyFileType = function(fileName) {
+                var lowerName = fileName.toLowerCase();
+                var extension = fileName.split('.').pop().toLowerCase();
+                
+                // Frontend Code 분류 (UI/화면 관련)
+                if (lowerName.includes('component') || lowerName.includes('view') || lowerName.includes('ui') || 
+                    lowerName.includes('page') || lowerName.includes('screen') || lowerName.includes('template') ||
+                    lowerName.includes('widget') || lowerName.includes('layout') || lowerName.includes('form') ||
+                    extension === 'jsx' || extension === 'tsx' || extension === 'vue' || 
+                    extension === 'html' || extension === 'css' || extension === 'scss' || extension === 'sass') {
+                    return 'controller'; // Frontend → controllerFile 매핑
+                }
+                
+                // Backend Code 분류 (서버/API/로직 관련)
+                else if (lowerName.includes('server') || lowerName.includes('api') || lowerName.includes('service') || 
+                         lowerName.includes('controller') || lowerName.includes('handler') || lowerName.includes('router') ||
+                         lowerName.includes('endpoint') || lowerName.includes('logic') || lowerName.includes('business') ||
+                         lowerName.includes('processor') || lowerName.includes('manager')) {
+                    return 'service'; // Backend → serviceFile 매핑
+                }
+                
+                // Data Code 분류 (데이터 모델/구조 관련)
+                else if (lowerName.includes('model') || lowerName.includes('entity') || lowerName.includes('schema') || 
+                         lowerName.includes('dto') || lowerName.includes('vo') || lowerName.includes('struct') ||
+                         lowerName.includes('interface') || lowerName.includes('type') || lowerName.includes('class') ||
+                         lowerName.includes('data') || lowerName.includes('domain') || lowerName.includes('bean')) {
+                    return 'model'; // Data → modelFile 매핑
+                }
+                
+                // Utility Code 분류 (유틸리티/헬퍼/기타)
+                else if (lowerName.includes('util') || lowerName.includes('helper') || lowerName.includes('common') || 
+                         lowerName.includes('shared') || lowerName.includes('tool') || lowerName.includes('lib') ||
+                         lowerName.includes('config') || lowerName.includes('constant') || lowerName.includes('enum') ||
+                         lowerName.includes('repository') || lowerName.includes('dao') || lowerName.includes('mapper') ||
+                         lowerName.includes('test') || lowerName.includes('spec')) {
+                    return 'repository'; // Utility → repositoryFile 매핑
+                }
+                
+                // 확장자 기반 추가 분류
+                else {
+                    // 프론트엔드 확장자
+                    if (extension === 'js' && (lowerName.includes('react') || lowerName.includes('angular') || lowerName.includes('client'))) {
+                        return 'controller'; // Frontend
+                    }
+                    // 백엔드 확장자
+                    else if (extension === 'py' || extension === 'rb' || extension === 'php' || extension === 'go' || 
+                             extension === 'rs' || extension === 'kt' || extension === 'swift') {
+                        return 'service'; // Backend
+                    }
+                    // 데이터 관련 확장자
+                    else if (extension === 'sql' || extension === 'json' || extension === 'xml' || extension === 'yaml' || extension === 'yml') {
+                        return 'model'; // Data
+                    }
+                    // 기본값은 파일 순서에 따라 배정 (중복 방지)
+                    else {
+                        var typeOrder = ['model', 'service', 'controller', 'repository']; // Data, Backend, Frontend, Utility 순서
+                        var existingTypes = scwin.uploadedFiles.map(function(f) { return f.type; });
+                        
+                        for (var i = 0; i < typeOrder.length; i++) {
+                            if (existingTypes.indexOf(typeOrder[i]) === -1) {
+                                return typeOrder[i];
+                            }
+                        }
+                        
+                        return 'model'; // 모든 타입이 할당되었으면 Data Code로 기본 설정
+                    }
+                }
+            };
+            
+            // DataMap에 파일 정보 저장
+            scwin.saveToDataMap = function(fileInfo) {
+                // 해당 타입의 기존 파일이 있으면 덮어쓰기
+                dma_codeFiles.set(fileInfo.type + 'File', fileInfo.content);
+                dma_codeFiles.set(fileInfo.type + 'FileName', fileInfo.name);
+            };
+            
+            // DataMap 초기화
+            scwin.clearDataMap = function() {
+                var fileTypes = ['model', 'controller', 'service', 'repository'];
+                fileTypes.forEach(function(type) {
+                    dma_codeFiles.set(type + 'File', '');
+                    dma_codeFiles.set(type + 'FileName', '');
+                });
+            };
+            
+            // 파일 목록 UI 업데이트
+            scwin.updateFileList = function() {
+                var fileListContainer = document.querySelector('.file-list');
+                if (!fileListContainer) return;
+                
+                // 기존 목록 초기화
+                fileListContainer.innerHTML = '';
+                
+                if (scwin.uploadedFiles.length === 0) {
+                    fileListContainer.innerHTML = '<div class="no-files">업로드된 파일이 없습니다</div>';
+                    return;
+                }
+                
+                // 파일 목록 생성
+                scwin.uploadedFiles.forEach(function(fileInfo, index) {
+                    var fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    var typeLabel = scwin.getTypeLabel(fileInfo.type);
+                    var sizeKB = Math.round(fileInfo.size / 1024 * 100) / 100;
+                    
+                    fileItem.innerHTML = 
+                        '<div class="file-info">' +
+                            '<div class="file-name">' + fileInfo.name + '</div>' +
+                            '<div class="file-details">' +
+                                '<span class="file-type">' + typeLabel + '</span>' +
+                                '<span class="file-size">' + sizeKB + 'KB</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="file-actions">' +
+                            '<button class="btn-change-type" type="button" title="파일 타입 변경">' +
+                                '<span class="change-icon"><i class="fas fa-edit"></i></span>' +
+                            '</button>' +
+                            '<button class="btn-remove" type="button" title="파일 삭제">' +
+                                '<span class="remove-icon"><i class="fas fa-trash-alt"></i></span>' +
+                            '</button>' +
+                        '</div>';
+                    
+                    fileListContainer.appendChild(fileItem);
+                });
+            };
+            
+            // 파일 타입 라벨 가져오기 (범용적 명칭)
+            scwin.getTypeLabel = function(type) {
+                var typeLabels = {
+                    'model': 'Data Code (Model/Schema)',
+                    'controller': 'Frontend Code (UI/View)', 
+                    'service': 'Backend Code (API/Logic)',
+                    'repository': 'Utility Code (Helper/Config)'
+                };
+                return typeLabels[type] || type;
+            };
+            
+            // 파일 타입 변경
+            scwin.changeFileType = function(index) {
+                var fileInfo = scwin.uploadedFiles[index];
+                var types = ['model', 'controller', 'service', 'repository'];
+                var typeLabels = ['Data Code', 'Frontend Code', 'Backend Code', 'Utility Code'];
+                
+                var currentIndex = types.indexOf(fileInfo.type);
+                var nextIndex = (currentIndex + 1) % types.length;
+                
+                // 기존 타입에서 제거
+                dma_codeFiles.set(fileInfo.type + 'File', '');
+                dma_codeFiles.set(fileInfo.type + 'FileName', '');
+                
+                // 새 타입으로 설정
+                fileInfo.type = types[nextIndex];
+                scwin.saveToDataMap(fileInfo);
+                
+                // UI 업데이트
+                scwin.updateFileList();
+                
+                // 사용자 친화적인 타입 라벨로 로그 출력
+                console.log('파일 타입 변경:', fileInfo.name, '→', scwin.getTypeLabel(fileInfo.type));
+            };
+            
+            // 파일 제거
+            scwin.removeFile = function(index) {
+                var fileInfo = scwin.uploadedFiles[index];
+                
+                // DataMap에서 제거
+                dma_codeFiles.set(fileInfo.type + 'File', '');
+                dma_codeFiles.set(fileInfo.type + 'FileName', '');
+                
+                // 배열에서 제거
+                scwin.uploadedFiles.splice(index, 1);
+                
+                // UI 업데이트
+                scwin.updateFileList();
+                
+                console.log('파일 제거:', fileInfo.name);
+            };
+            
+            // 업로드 영역 클릭 핸들러
+            scwin.handleUploadAreaClick = function() {
+                var fileInput = document.getElementById('multiFileInput');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            };
+            
+            // 다음 버튼 클릭
+            scwin.btn_next_onclick = function() {
+                // 최소 하나의 파일이 업로드되었는지 확인
+                if (scwin.uploadedFiles.length === 0) {
+                    $c.win.alert('최소 하나 이상의 파일을 업로드해주세요.');
+                    return;
+                }
+                
+                // 로딩 표시
+                scwin.showLoading(true);
+                
+                // 코드 분석 API 호출
+                var requestData = {
+                    userId: scwin.currentUserId, // 실제로는 로그인된 사용자 ID 사용
+                    modelFile: dma_codeFiles.get('modelFile') || '',
+                    controllerFile: dma_codeFiles.get('controllerFile') || '',
+                    serviceFile: dma_codeFiles.get('serviceFile') || '',
+                    repositoryFile: dma_codeFiles.get('repositoryFile') || '',
+                    modelFileName: dma_codeFiles.get('modelFileName') || '',
+                    controllerFileName: dma_codeFiles.get('controllerFileName') || '',
+                    serviceFileName: dma_codeFiles.get('serviceFileName') || '',
+                    repositoryFileName: dma_codeFiles.get('repositoryFileName') || ''
+                };
+                
+                // 요청 데이터를 DataMap에 설정
+                for (var key in requestData) {
+                    dma_codeFiles.set(key, requestData[key]);
+                }
+                
+                // Manual AJAX 호출로 wrapper 문제 해결
+                scwin.manualSubmission(requestData);
+            };
+            
+            // Manual AJAX 호출 함수 (XMLHttpRequest 사용)
+            scwin.manualSubmission = function(requestData) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/InsWebApp/CA0001Analyze.pwkjson', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                scwin.handleSubmissionSuccess(response);
+                            } catch (e) {
+                                console.error('JSON 파싱 오류:', e);
+                                scwin.handleSubmissionError(xhr, 'parsererror', 'JSON 파싱 실패');
+                            }
+                        } else {
+                            scwin.handleSubmissionError(xhr, 'error', 'HTTP ' + xhr.status);
+                        }
+                    }
+                };
+                
+                xhr.send(JSON.stringify(requestData));
+            };
+            
+            // 성공 핸들러
+            scwin.handleSubmissionSuccess = function(response) {
+                scwin.showLoading(false);
+                console.log('=== 코드 분석 응답 (Manual AJAX) ===');
+                console.log('응답 데이터:', response);
+                
+                // 인증 오류 체크
+                if (response && response.errorCode) {
+                    if (response.errorCode === 'AUTH_REQUIRED') {
+                        console.error('인증 필요:', response.message);
+                        $c.win.alert('로그인이 필요한 서비스입니다. 메인 페이지로 이동합니다.', function() {
+                            $p.url("/InsWebApp/ui/common/MainPage.xml");
+                        });
+                        return;
+                    } else if (response.errorCode === 'ACCESS_DENIED') {
+                        console.error('접근 권한 없음:', response.message);
+                        $c.win.alert(response.message, function() {
+                            $p.url("/InsWebApp/ui/common/MainPage.xml");
+                        });
+                        return;
+                    }
+                }
+                
+                // ProWorks5 오류 응답 체크
+                if (response && response.elHeader) {
+                    console.log('ProWorks5 프레임워크 응답 감지');
+                    console.log('elHeader:', response.elHeader);
+                    
+                    var header = response.elHeader;
+                    if (header.resSuc === false || header.resCode) {
+                        console.error('서버 오류 발생:', header.resMsg);
+                        $c.win.alert('서버에서 오류가 발생했습니다: ' + header.resMsg + 
+                              '\n오류 코드: ' + header.resCode + 
+                              '\n서버 로그를 확인하거나 관리자에게 문의하세요.');
+                        return;
+                    }
+                }
+                
+                // 정상적인 응답 체크
+                if (response && response.typeCode && response.typeCode.trim() !== '') {
+                    // 성공 처리
+                    scwin.displayAnalysisResult(response);
+                } else if (response && response.success !== false) {
+                    // 성공 처리 (legacy)
+                    scwin.displayAnalysisResult(response);
+                } else {
+                    // 오류 처리
+                    var errorMsg = response ? response.message : '알 수 없는 오류가 발생했습니다.';
+                    $c.win.alert('코드 분석에 실패했습니다: ' + errorMsg);
+                }
+            };
+            
+            // 오류 핸들러
+            scwin.handleSubmissionError = function(xhr, status, error) {
+                scwin.showLoading(false);
+                console.error('=== AJAX 오류 ===');
+                console.error('Status:', status);
+                console.error('Error:', error);
+                console.error('Response:', xhr.responseText);
+                
+                $c.win.alert('서버 통신 중 오류가 발생했습니다: ' + error);
+            };
+            
+            // 분석 결과 표시
+            scwin.displayAnalysisResult = function (data) {
+                console.log('분석 결과 표시:', data);
+                
+                var typeDefinitions = {
+                    'AI': { name: '혁신적 아키텍트', desc: '새로운 기술을 활용하여 체계적인 시스템을 구축하는 개발자' },
+                    'AR': { name: '개선형 아키텍트', desc: '기존 코드를 체계적으로 개선하고 최적화하는 개발자' },
+                    'BI': { name: '혁신적 빌더', desc: '새로운 기술로 빠르고 실용적인 솔루션을 만드는 개발자' },
+                    'BR': { name: '실용적 빌더', desc: '기존 방식을 개선하여 효율적인 솔루션을 구축하는 개발자' }
+                };
+                
+                var typeCode = data.typeCode || 'AR';
+                var typeInfo = typeDefinitions[typeCode] || typeDefinitions['AR'];
+                
+                // 업로드 섹션 숨기기
+                $('.upload-section').hide();
+                
+                // 결과 섹션 보이기
+                $('.result-section').show();
+                
+                // 결과 데이터 설정
+                $('.result-type-code').text(typeCode);
+                $('.result-type-name').text(typeInfo.name);
+                $('.result-type-desc').text(typeInfo.desc);
+                
+                // 새로운 통합 점수 체계 적용
+                var devStyleScore = data.developmentStyleScore || 0;
+                var devPrefScore = data.developerPreferenceScore || 0;
+                var confidenceScore = data.confidenceScore || 0;
+                
+                // 점수를 퍼센트로 변환하는 함수 (-50~+50을 0~100%로)
+                function scoreToPercentage(score) {
+                    return Math.max(0, Math.min(100, (score + 50)));
+                }
+                
+                // 순차적 애니메이션을 위한 함수
+                function animateBar(fillEl, indicatorEl, resultEl, percentage, score, leftLabel, rightLabel, leftColor, rightColor, delay, 
+                                  leftPercentEl, rightPercentEl, leftTypeEl, rightTypeEl) {
+                    setTimeout(function() {
+                        if (fillEl) {
+                            fillEl.style.width = percentage + '%';
+                        }
+                        if (indicatorEl) {
+                            indicatorEl.style.left = percentage + '%';
+                        }
+                        
+                        // 퍼센트 표시 업데이트
+                        var leftPercent = Math.max(0, Math.round(100 - percentage)); // 반전된 퍼센트값
+                        var rightPercent = Math.max(0, Math.round(percentage));
+                        
+                        if (leftPercentEl) {
+                            leftPercentEl.textContent = leftPercent + '%';
+                        }
+                        if (rightPercentEl) {
+                            rightPercentEl.textContent = rightPercent + '%';
+                        }
+                        
+                        // 유형 텍스트 강조 처리
+                        if (leftTypeEl && rightTypeEl) {
+                            // 모든 텍스트의 글씨 굵기를 동일하게 설정
+                            leftTypeEl.style.fontWeight = '400';
+                                rightTypeEl.style.fontWeight = '400';
+                                leftTypeEl.style.opacity = '1';
+                                rightTypeEl.style.opacity = '1';
+                            // 색상은 기본 검은색 사용
+                        }
+                        
+                        // 결과 텍스트 업데이트
+                        setTimeout(function() {
+                            if (resultEl) {
+                                var intensity = Math.abs(score);
+                                var intensityText = '';
+                                if (intensity < 10) intensityText = '약간';
+                                else if (intensity < 25) intensityText = '보통';
+                                else if (intensity < 40) intensityText = '강한';
+                                else intensityText = '매우 강한';
+                                
+                                if (score >= 0) {
+                                    resultEl.textContent = intensityText + ' ' + rightLabel + ' 우세';
+                                    resultEl.style.color = '#007bff'; // 항상 블루계열 색상 사용
+                                } else {
+                                    resultEl.textContent = intensityText + ' ' + leftLabel + ' 우세';
+                                    resultEl.style.color = '#007bff'; // 항상 블루계열 색상 사용
+                                }
+                                
+                                // 결과 카드 애니메이션
+                                resultEl.style.animation = 'resultFadeIn 0.6s ease-out forwards';
+                            }
+                        }, 800); // 바 애니메이션 후 결과 표시
+                    }, delay);
+                }
+                
+                // 개발 스타일 점수 (A/B 축) 표시
+                var abScore = devStyleScore;
+                var abPercentage = scoreToPercentage(abScore);
+                animateBar(
+                    document.querySelector('.score-bar-ab'),
+                    document.querySelector('.score-indicator-ab'),
+                    document.querySelector('.development-style-type'),
+                    abPercentage,
+                    abScore,
+                    'Builder',
+                    'Architect',
+                    '#0056b3',
+                    '#007bff',
+                    200,
+                    document.querySelector('.score-bar-item:nth-child(1) .left-percentage'),
+                    document.querySelector('.score-bar-item:nth-child(1) .right-percentage'),
+                    document.querySelector('.score-bar-item:nth-child(1) .builder-label'),
+                    document.querySelector('.score-bar-item:nth-child(1) .architect-label')
+                );
+                
+                // 개발자 선호도 점수 (R/I 축) 표시
+                var riScore = devPrefScore;
+                var riPercentage = scoreToPercentage(riScore);
+                animateBar(
+                    document.querySelector('.score-bar-ri'),
+                    document.querySelector('.score-indicator-ri'),
+                    document.querySelector('.developer-preference-type'),
+                    riPercentage,
+                    riScore,
+                    'Innovator',
+                    'Refactor',
+                    '#0056b3',
+                    '#007bff',
+                    500,
+                    document.querySelector('.score-bar-item:nth-child(2) .left-percentage'),
+                    document.querySelector('.score-bar-item:nth-child(2) .right-percentage'),
+                    document.querySelector('.score-bar-item:nth-child(2) .innovator-label'),
+                    document.querySelector('.score-bar-item:nth-child(2) .refactor-label')
+                );
+                
+                // 신뢰도 표시
+                $('.score-confidence').text(Math.round(confidenceScore * 100) + '%');
+                
+                // 결과 언어 표시
+                $('.result-language').text('Detected Language: ' + (data.language || 'Unknown'));
+                
+                // 상세 분석 결과 표시
+                scwin.displayDetailedAnalysis(data);
+                
+                console.log('결과 표시 완료:', typeCode, typeInfo.name);
+            };
+            
+            // 상세 분석 결과 표시 함수
+            scwin.displayDetailedAnalysis = function(data) {
+                try {
+                    // fullAnalysis JSON 파싱
+                    var fullAnalysis = {};
+                    var detailedAnalysis = {};
+                    
+                    if (data.analysisResult && typeof data.analysisResult === 'string') {
+                        try {
+                            fullAnalysis = JSON.parse(data.analysisResult);
+                            detailedAnalysis = fullAnalysis.detailed_analysis || {};
+                        } catch (e) {
+                            console.warn('fullAnalysis JSON 파싱 실패:', e);
+                        }
+                    }
+                    
+                    // 분석 근거 표시
+                    var reasoning = detailedAnalysis.reasoning || '코드 구조와 패턴을 분석하여 개발 스타일을 도출했습니다.';
+                    $('.detailed-reasoning').text(reasoning);
+                    
+                    // 코드 패턴 표시
+                    var codePatterns = detailedAnalysis.code_patterns || [];
+                    var patternsHtml = '';
+                    
+                    if (codePatterns.length > 0) {
+                        for (var i = 0; i < codePatterns.length; i++) {
+                            var pattern = codePatterns[i];
+                            var evidenceHtml = '';
+                            
+                            if (pattern.evidence && pattern.evidence.length > 0) {
+                                evidenceHtml = '<ul>';
+                                for (var j = 0; j < pattern.evidence.length; j++) {
+                                    evidenceHtml += '<li>' + pattern.evidence[j] + '</li>';
+                                }
+                                evidenceHtml += '</ul>';
+                            }
+                            
+                            var impactScore = pattern.impact_score || 0;
+                            var impactBars = '';
+                            for (var k = 0; k < 10; k++) {
+                                impactBars += '<span class="impact-bar ' + (k < impactScore ? 'filled' : '') + '"></span>';
+                            }
+                            
+                            patternsHtml += 
+                                '<div class="pattern-item">' +
+                                    '<div class="pattern-header">' +
+                                        '<h4 class="pattern-title">' + (pattern.pattern || 'Code Pattern') + '</h4>' +
+                                        '<div class="pattern-impact">' +
+                                            '<span class="impact-label">영향도</span>' +
+                                            '<div class="impact-score">' + impactBars + '</div>' +
+                                            '<span class="impact-number">' + impactScore + '/10</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<p class="pattern-description">' + (pattern.description || '') + '</p>' +
+                                    '<div class="pattern-evidence">' + evidenceHtml + '</div>' +
+                                '</div>';
+                        }
+                    } else {
+                        patternsHtml = '<div class="no-patterns">발견된 코드 패턴이 없습니다.</div>';
+                    }
+                    $('.code-patterns-list').html(patternsHtml);
+                    
+                    // 강점 표시
+                    var strengths = detailedAnalysis.strengths || [];
+                    var strengthsHtml = '';
+                    
+                    if (strengths.length > 0) {
+                        strengthsHtml = '<ul class="strengths-list">';
+                        for (var i = 0; i < strengths.length; i++) {
+                            strengthsHtml += '<li class="strength-item"><span class="strength-icon"><i class="fas fa-check"></i></span>' + strengths[i] + '</li>';
+                        }
+                        strengthsHtml += '</ul>';
+                    } else {
+                        strengthsHtml = '<div class="no-strengths">분석된 강점이 없습니다.</div>';
+                    }
+                    $('.strengths-content').html(strengthsHtml);
+                    
+                    // 개선 제안 표시
+                    var suggestions = detailedAnalysis.suggestions || [];
+                    var suggestionsHtml = '';
+                    
+                    if (suggestions.length > 0) {
+                        suggestionsHtml = '<ul class="suggestions-list">';
+                        for (var i = 0; i < suggestions.length; i++) {
+                            suggestionsHtml += '<li class="suggestion-item"><span class="suggestion-icon"><i class="fas fa-lightbulb"></i></span>' + suggestions[i] + '</li>';
+                        }
+                        suggestionsHtml += '</ul>';
+                    } else {
+                        suggestionsHtml = '<div class="no-suggestions">개선 제안사항이 없습니다.</div>';
+                    }
+                    $('.suggestions-content').html(suggestionsHtml);
+                    
+                    // 순차 애니메이션 적용
+                    setTimeout(function() {
+                        $('.detailed-section .section-item').each(function(index, element) {
+                            setTimeout(function() {
+                                $(element).addClass('animated');
+                            }, index * 200);
+                        });
+                    }, 500);
+                    
+                    console.log('상세 분석 표시 완료 - 패턴:', codePatterns.length, '강점:', strengths.length, '제안:', suggestions.length);
+                    
+                } catch (error) {
+                    console.error('상세 분석 표시 중 오류:', error);
+                    $('.detailed-reasoning').text('상세 분석 정보를 불러오는 중 오류가 발생했습니다.');
+                    $('.code-patterns-list').html('<div class="error-message">패턴 분석 결과를 불러올 수 없습니다.</div>');
+                    $('.strengths-content').html('<div class="error-message">강점 분석 결과를 불러올 수 없습니다.</div>');
+                    $('.suggestions-content').html('<div class="error-message">개선 제안을 불러올 수 없습니다.</div>');
+                }
+            };
+            
+            // 개인정보 수정으로 이동
+            scwin.goToUserDetail = function() {
+                location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/UserDetail.xml";
+            };
+            
+            // 설문조사로 이동
+            scwin.goToSurvey = function() {
+                // 현재 코드분석 결과를 세션 스토리지에 저장 (설문조사 완료 후 통합 분석을 위해)
+                var abIndicator = document.querySelector('.score-indicator-ab');
+                var riIndicator = document.querySelector('.score-indicator-ri');
+                
+                var builderPercent = document.querySelector('.score-bar-item:nth-child(1) .left-percentage').textContent;
+                var architectPercent = document.querySelector('.score-bar-item:nth-child(1) .right-percentage').textContent;
+                var innovatorPercent = document.querySelector('.score-bar-item:nth-child(2) .left-percentage').textContent;
+                var refactorPercent = document.querySelector('.score-bar-item:nth-child(2) .right-percentage').textContent;
+                
+                var currentAnalysisResult = {
+                    userId: scwin.currentUserId, // 숫자 사용자 ID 사용
+                    typeCode: $('.result-type-code').text().trim(),
+                    typeName: $('.result-type-name').text().trim(),
+                    typeDesc: $('.result-type-desc').text().trim(),
+                    developmentStyleScore: abIndicator ? abIndicator.style.left : '50%',
+                    developerPreferenceScore: riIndicator ? riIndicator.style.left : '50%',
+                    confidenceScore: $('.score-confidence').text().trim(),
+                    language: $('.result-language').text().trim(),
+                    // 새로운 퍼센트 값 추가
+                    builderPercent: builderPercent,
+                    architectPercent: architectPercent,
+                    innovatorPercent: innovatorPercent,
+                    refactorPercent: refactorPercent
+                };
+                
+                try {
+                    sessionStorage.setItem('codeAnalysisResult', JSON.stringify(currentAnalysisResult));
+                    console.log('코드분석 결과를 세션에 저장:', currentAnalysisResult);
+                } catch (e) {
+                    console.warn('세션 스토리지 저장 실패:', e);
+                }
+                
+                // 설문조사 페이지로 이동 (사용자 ID를 URL 파라미터로 전달)
+                var surveyUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/survey/SurveyMbti.xml";
+                if (scwin.currentUserId) {
+                    surveyUrl += "&userId=" + scwin.currentUserId;
+                }
+                location.href = surveyUrl;
+            };
+            
+            // 커스텀 팝업 표시
+            scwin.showCustomPopup = function(message, title, icon) {
+                // 기존 팝업 제거
+                scwin.closeCustomPopup();
+                
+                // 기본값 설정
+                title = title || '알림';
+                icon = icon || 'info-circle';
+                
+                // 팝업 HTML 생성
+                var popupHtml = 
+                    '<div class="custom-popup-overlay" id="customPopup">' +
+                        '<div class="custom-popup-content">' +
+                            '<div class="popup-icon"><i class="fas fa-' + icon + '"></i></div>' +
+                            '<div class="popup-title">' + title + '</div>' +
+                            '<div class="popup-message">' + message + '</div>' +
+                            '<button class="popup-button" id="customPopupCloseBtn">확인</button>' +
+                        '</div>' +
+                    '</div>';
+                
+                // 팝업 추가
+                document.body.insertAdjacentHTML('beforeend', popupHtml);
+                
+                // 확인 버튼에 이벤트 리스너 추가
+                var closeBtn = document.getElementById('customPopupCloseBtn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        scwin.closeCustomPopup();
+                        e.stopPropagation(); // 이벤트 전파 방지
+                    });
+                }
+                
+                // 오버레이 배경 클릭 시 닫기 기능 추가
+                var overlay = document.getElementById('customPopup');
+                if (overlay) {
+                    overlay.addEventListener('click', function(e) {
+                        if (e.target === overlay) {
+                            scwin.closeCustomPopup();
+                        }
+                    });
+                }
+                
+                // 팝업 콘텐츠 영역 클릭 시 이벤트 전파 방지
+                var popupContent = overlay ? overlay.querySelector('.custom-popup-content') : null;
+                if (popupContent) {
+                    popupContent.addEventListener('click', function(e) {
+                        e.stopPropagation(); // 이벤트 전파 방지
+                    });
+                }
+                
+                // ESC 키로 팝업 닫기 기능 추가
+                document.addEventListener('keydown', scwin.handlePopupKeydown);
+            };
+            
+            // 커스텀 팝업 닫기
+            scwin.closeCustomPopup = function() {
+                var popup = document.getElementById('customPopup');
+                if (popup) {
+                    popup.remove();
+                }
+                
+                // ESC 키 이벤트 리스너 제거
+                document.removeEventListener('keydown', scwin.handlePopupKeydown);
+            };
+            
+            // 전역 스코프에 함수 등록 (WebSquare 컴포넌트에서 호출 가능)
+            window.closeCustomPopup = scwin.closeCustomPopup;
+            
+            // 팝업 키보드 이벤트 처리
+            scwin.handlePopupKeydown = function(e) {
+                if (e.key === 'Escape') {
+                    scwin.closeCustomPopup();
+                }
+            };
+            
+            // 설문조사 건너뛰기
+            scwin.skipSurvey = function() {
+                // 설문조사 섹션 숨기기
+                $('.survey-integration-section').hide();
+                
+                // 사용자에게 알림 (커스텀 팝업 사용)
+                scwin.showCustomPopup('설문조사는 언제든지 프로필 페이지에서 참여하실 수 있습니다.', '안내', 'info-circle');
+            };
+            
+            // 로딩 표시/숨기기
+            scwin.showLoading = function(show) {
+                if (show) {
+                    // 로딩 오버레이 생성
+                    if (!document.querySelector('.loading-overlay')) {
+                        var loadingHtml = 
+                            '<div class="loading-overlay">' +
+                                '<div class="loading-content">' +
+                                    '<div class="loading-spinner"></div>' +
+                                    '<div class="loading-text"><i class="fas fa-cog fa-spin"></i> 분석 진행 중</div>' +
+                                    '<div class="loading-subtext">AI가 빠르게 코드를 분석하고 있어요!</div>' +
+                                '</div>' +
+                            '</div>';
+                        document.body.insertAdjacentHTML('beforeend', loadingHtml);
+                    }
+                    $('.loading-overlay').show();
+                } else {
+                    $('.loading-overlay').remove();
+                }
+            };
+        ]]></script>
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+		<style type="text/css"><![CDATA[
+            .main-container {
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 40px 20px;
+                max-width: 1000px;
+                margin: 0 auto;
+                width: 100%;
+            }
+            
+            .page-header {
+                text-align: center;
+                margin-bottom: 50px;
+            }
+            
+            .main-title {
+                font-size: 36px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 16px;
+            }
+            
+            .sub-title {
+                font-size: 20px;
+                color: #666;
+                line-height: 1.5;
+            }
+            
+            .info-box {
+                background: #e7f3ff;
+                border: 1px solid #b3d9ff;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 30px;
+                text-align: center;
+                width: 100%;
+                max-width: 600px;
+            }
+            
+            .info-text {
+                color: #0066cc;
+                font-size: 14px;
+                margin: 0;
+            }
+            
+            /* 멀티 업로드 영역 스타일 */
+            .upload-container {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 30px;
+            }
+            
+            .upload-area {
+                background: white;
+                border: 3px dashed #007bff;
+                border-radius: 16px;
+                padding: 40px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+                min-height: 200px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .upload-area:hover {
+                border-color: #0056b3;
+                background: #f8f9ff;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 123, 255, 0.15);
+            }
+            
+            .upload-area.drag-over {
+                border-color: #28a745;
+                background: #f8fff8;
+            }
+            
+            .upload-icon {
+                margin-bottom: 20px;
+                color: #007bff;
+            }
+            
+            .upload-icon-container {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 95px;
+                height: 95px;
+                margin: 0 auto;
+            }
+            
+            .upload-icon i, 
+            .upload-icon svg.svg-inline--fa {
+                font-size: 80px !important;
+                z-index: 2;
+                color: #007bff !important;
+                position: relative;
+                display: block;
+                height: auto !important;
+                width: auto !important;
+                text-align: center;
+            }
+            
+            .upload-icon-circle {
+                display: none;
+            }
+            
+            /* 애니메이션 제거됨 */
+            
+            .upload-area:hover .upload-icon i {
+                color: #007bff;
+            }
+            
+            .upload-area:hover .upload-icon-circle {
+                display: none;
+            }
+            
+            .upload-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 12px;
+            }
+            
+            .upload-description {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 20px;
+                line-height: 1.5;
+            }
+            
+            .upload-button {
+                background: linear-gradient(45deg, #007bff, #0056b3);
+                color: white;
+                border: none;
+                padding: 12px 32px;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .upload-button:hover {
+                background: linear-gradient(45deg, #0056b3, #004494);
+                transform: translateY(-1px);
+            }
+            
+            .file-input-hidden {
+                display: none;
+            }
+            
+            /* 파일 목록 스타일 */
+            .file-list-container {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 30px;
+            }
+            
+            .file-list-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 16px;
+                text-align: center;
+            }
+            
+            .file-list {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                min-height: 100px;
+            }
+            
+            .no-files {
+                text-align: center;
+                color: #999;
+                font-style: italic;
+                padding: 40px;
+            }
+            
+            .file-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 16px;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                margin-bottom: 8px;
+                transition: all 0.2s ease;
+            }
+            
+            .file-item:hover {
+                background: #f8f9fa;
+                border-color: #007bff;
+            }
+            
+            .file-item:last-child {
+                margin-bottom: 0;
+            }
+            
+            .file-info {
+                flex: 1;
+            }
+            
+            .file-name {
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 4px;
+            }
+            
+            .file-details {
+                display: flex;
+                gap: 12px;
+                font-size: 12px;
+                color: #666;
+            }
+            
+            .file-type {
+                background: #007bff;
+                color: white;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+            }
+            
+            .file-size {
+                color: #999;
+            }
+            
+            .file-actions {
+                display: flex;
+                gap: 8px;
+            }
+            
+            .btn-change-type, .btn-remove {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 4px;
+                transition: background 0.2s ease;
+            }
+            
+            .btn-change-type:hover {
+                background: #e7f3ff;
+            }
+            
+            .btn-remove:hover {
+                background: #ffe7e7;
+            }
+            
+            .change-icon, .remove-icon {
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .change-icon i, .remove-icon i {
+                font-size: 14px;
+                color: #666;
+            }
+            
+            .btn-change-type:hover .change-icon i {
+                color: #007bff;
+            }
+            
+            .btn-remove:hover .remove-icon i {
+                color: #dc3545;
+            }
+            
+            .action-buttons {
+                display: flex;
+                justify-content: center;
+                margin-top: 40px;
+            }
+            
+            .btn-next {
+                background: linear-gradient(45deg, #007bff, #0056b3);
+                color: white;
+                border: none;
+                padding: 16px 48px;
+                border-radius: 50px;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+            }
+            
+            .btn-next:hover {
+                background: linear-gradient(45deg, #0056b3, #004494);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+            }
+            
+            .btn-next:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
+            
+            /* 결과 섹션 스타일 */
+            .result-section {
+                text-align: center;
+                animation: fadeInUp 0.8s ease-out;
+            }
+            
+            .result-header {
+                margin-bottom: 40px;
+            }
+            
+            .result-title {
+                font-size: 36px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 16px;
+            }
+            
+            .result-subtitle {
+                font-size: 18px;
+                color: #666;
+            }
+            
+            .result-card {
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 28px;
+                padding: 50px 40px;
+                margin: 0 auto 40px auto;
+                max-width: 500px;
+                box-shadow: 
+                    0 20px 40px -12px rgba(0, 0, 0, 0.15),
+                    0 8px 24px -8px rgba(0, 0, 0, 0.08),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.8);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .result-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, 
+                    transparent, 
+                    rgba(255, 255, 255, 0.4),
+                    transparent);
+                animation: cardShine 3s ease-in-out 1s;
+            }
+            
+            @keyframes cardShine {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+            
+            .result-type-code {
+                font-size: 72px;
+                font-weight: 900;
+                background: #007bff;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 24px;
+                font-family: 'Courier New', monospace;
+                letter-spacing: 4px;
+                text-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+                
+                /* 초기 상태: 숨김 */
+                opacity: 0;
+                transform: translateY(-30px) scale(0.8);
+                animation: typeCodeReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s forwards;
+            }
+            
+            @keyframes typeCodeReveal {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-30px) scale(0.8);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            
+            .result-type-name {
+                font-size: 32px;
+                font-weight: 800;
+                color: #2d3436;
+                margin-bottom: 20px;
+                line-height: 1.2;
+                
+                /* 초기 상태: 숨김 */
+                opacity: 0;
+                transform: translateY(20px);
+                animation: textSlideUp 0.6s ease-out 1.8s forwards;
+            }
+            
+            .result-type-desc {
+                font-size: 18px;
+                color: #636e72;
+                line-height: 1.7;
+                max-width: 400px;
+                font-weight: 500;
+                
+                /* 초기 상태: 숨김 */
+                opacity: 0;
+                transform: translateY(20px);
+                animation: textSlideUp 0.6s ease-out 2.2s forwards;
+            }
+            
+            @keyframes textSlideUp {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .score-section {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                margin: 0 auto 40px auto;
+                max-width: 600px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            }
+            
+            .score-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 30px;
+            }
+            
+            .score-bars {
+                display: flex;
+                flex-direction: column;
+                gap: 35px;
+                margin-bottom: 40px;
+            }
+            
+            .score-bar-item {
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 24px;
+                padding: 32px;
+                box-shadow: 
+                    0 20px 40px -12px rgba(0, 0, 0, 0.08),
+                    0 8px 24px -8px rgba(0, 0, 0, 0.04),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+                position: relative;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .score-bar-item::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: #007bff;
+                border-radius: 24px 24px 0 0;
+            }
+            
+            .score-bar-item:hover {
+                transform: translateY(-4px);
+                box-shadow: 
+                    0 32px 64px -16px rgba(0, 0, 0, 0.12),
+                    0 16px 32px -8px rgba(0, 0, 0, 0.08),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            }
+            
+            .score-bar-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #333333;
+                text-align: center;
+                margin-bottom: 24px;
+                letter-spacing: -0.025em;
+            }
+            
+            .score-bar-container {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: 16px;
+            }
+            
+            .left-label, .right-label {
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 80px;
+                text-align: center;
+                padding: 8px 12px;
+                border-radius: 16px;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+            
+            .left-label {
+                background: #e6f2ff;
+                color: #0056b3;
+                border: 1px solid rgba(0, 86, 179, 0.2);
+            }
+            
+            .right-label {
+                background: #cce5ff;
+                color: #007bff;
+                border: 1px solid rgba(0, 123, 255, 0.2);
+            }
+            
+            .score-bar-track {
+                flex: 1;
+                height: 18px;
+                background: #007bff; /* 배경을 블루색상으로 변경 */
+                border-radius: 9px;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 
+                    inset 0 1px 4px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 2px rgba(0, 0, 0, 0.05);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+            }
+            
+            .score-bar-center {
+                position: absolute;
+                left: 50%;
+                top: 0;
+                width: 2px;
+                height: 100%;
+                background: #ffffff;
+                transform: translateX(-50%);
+                z-index: 2;
+                border-radius: 1px;
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+            }
+            
+            .score-bar-fill {
+                display: none; /* 배경이 전체적으로 블루이므로 필요없음 */
+            }
+            
+            /* @keyframes fillAnimation 제거 */
+            
+            .score-bar-fill::before {
+                display: none; /* 그라데이션 효과 제거 */
+            }
+            
+            @keyframes shimmer {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+            }
+            
+            .score-bar-ab {
+                background: #007bff;
+                box-shadow: 0 4px 16px rgba(0, 123, 255, 0.25);
+            }
+            
+            .score-bar-ri {
+                background: #0056b3;
+                box-shadow: 0 4px 16px rgba(0, 86, 179, 0.25);
+            }
+            
+            .score-bar-indicator {
+                position: absolute;
+                top: -6px;
+                width: 16px;
+                height: 30px;
+                background: #ffffff;
+                border-radius: 10px;
+                transform: translateX(-50%);
+                transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 4;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                animation: none; /* 애니메이션 효과 제거 */
+            }
+            
+            /* indicatorPulse 애니메이션 제거 */
+            
+            .score-bar-indicator::before {
+                content: '';
+                position: absolute;
+                top: -9px;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-bottom: 9px solid #ffffff;
+                transform: translateX(-50%);
+                filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.2));
+            }
+            
+            .score-bar-indicator::after {
+                display: none; /* 내부 점 효과 제거 */
+            }
+            
+            /* dotPulse 애니메이션 제거 */
+            
+            .score-bar-result {
+                font-size: 15px;
+                text-align: center;
+                font-weight: 600;
+                padding: 12px 20px;
+                border-radius: 20px;
+                background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                transition: all 0.3s ease;
+                animation: resultFadeIn 0.5s ease-out 1.5s both;
+            }
+            
+            @keyframes resultFadeIn {
+                from { 
+                    opacity: 0; 
+                    transform: translateY(10px); 
+                }
+                to { 
+                    opacity: 1; 
+                    transform: translateY(0); 
+                }
+            }
+            
+            /* 퍼센트 표시 스타일 */
+            .percentage-container {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 16px;
+                padding: 0 5px;
+            }
+            
+            .percentage-label-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+            
+            .left-label-group {
+                align-items: flex-start;
+            }
+            
+            .right-label-group {
+                align-items: flex-end;
+            }
+            
+            .percentage-label {
+                font-size: 14px;
+                font-weight: 400; /* 모든 텍스트 굵기를 400으로 통일 */
+                transition: all 0.3s ease;
+                opacity: 0;
+                animation: fadeIn 0.5s ease-out 2.2s forwards;
+            }
+            
+            .left-percentage, .right-percentage {
+                font-size: 16px;
+                font-weight: 400; /* 모든 텍스트 굵기를 400으로 통일 */
+                margin-top: 2px;
+            }
+            
+            .left-percentage {
+                color: #0056b3;
+            }
+            
+            .right-percentage {
+                color: #007bff;
+            }
+            
+            .builder-label, .innovator-label {
+                color: #333333;
+                text-align: left;
+            }
+            
+            .architect-label, .refactor-label {
+                color: #333333;
+                text-align: right;
+            }
+            
+            .percentage-space {
+                flex: 1;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            /* 반응형 스타일 수정 */
+            @media (max-width: 768px) {
+                .percentage-label {
+                font-size: 12px;
+                }
+                
+                .left-percentage, .right-percentage {
+                    font-size: 14px;
+                }
+            }
+            
+            .confidence-section {
+                background: #e7f3ff;
+                border-radius: 12px;
+                padding: 20px;
+                text-align: center;
+            }
+            
+            .confidence-label {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 8px;
+            }
+            
+            .score-confidence {
+                font-size: 32px;
+                font-weight: bold;
+                color: #007bff;
+            }
+            
+            /* ===== 상세 분석 결과 스타일 ===== */
+            .detailed-section {
+                max-width: 800px;
+                margin: 0 auto 40px auto;
+                text-align: left;
+            }
+            
+            .detailed-title {
+                font-size: 24px;
+                font-weight: 600;
+                color: #333333;
+                text-align: center;
+                margin-bottom: 30px;
+                letter-spacing: -0.02em;
+                position: relative;
+                padding-bottom: 16px;
+            }
+            
+            .detailed-title::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 60px;
+                height: 3px;
+                background: #007bff;
+                border-radius: 2px;
+            }
+            
+            .section-item {
+                background: white;
+                border-radius: 10px;
+                padding: 24px 26px;
+                margin-bottom: 22px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(0, 0, 0, 0.03);
+                
+                /* 애니메이션을 위한 초기 상태 */
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .section-item.animated {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .section-item:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            }
+            
+            .section-header {
+                font-size: 18px;
+                font-weight: 600;
+                color: #333333;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                border-bottom: 1px solid #e9ecef;
+                padding-bottom: 14px;
+                letter-spacing: -0.01em;
+                position: relative;
+            }
+            
+            .section-header::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 60px;
+                height: 3px;
+                background: #007bff;
+                border-radius: 2px;
+            }
+            
+            .reasoning-content {
+                background: #f8faff;
+                border-radius: 8px;
+                padding: 24px;
+                border-left: 3px solid #007bff;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                position: relative;
+            }
+
+            .reasoning-content::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: #007bff;
+                border-radius: 3px 0 0 3px;
+            }
+            
+            .detailed-reasoning {
+                font-size: 15px;
+                line-height: 1.6;
+                color: #333333;
+                margin: 0;
+                font-style: normal;
+                font-weight: 400;
+                letter-spacing: -0.01em;
+                padding-left: 8px;
+                border-left: 2px solid #e6f2ff;
+            }
+            
+            .code-patterns-list {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .pattern-item {
+                background: #ffffff;
+                border-radius: 10px;
+                padding: 22px;
+                border: 1px solid #e9ecef;
+                margin-bottom: 20px;
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+                transition: all 0.2s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .pattern-item:hover {
+                border-color: #007bff;
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+            }
+            
+            .pattern-item::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: #007bff;
+                opacity: 0.8;
+            }
+            
+            .pattern-header {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #edf2f7;
+                position: relative;
+                gap: 10px;
+            }
+            
+            .pattern-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #333333;
+                margin: 0;
+                letter-spacing: -0.01em;
+                padding-left: 12px;
+                border-left: 3px solid #007bff;
+                flex: 1;
+                min-width: 0;
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+            }
+            
+            .pattern-impact {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: #f0f7ff;
+                padding: 8px 14px;
+                border-radius: 6px;
+                border: 1px solid #e1ebfa;
+                flex-shrink: 0;
+                white-space: nowrap;
+                min-width: 160px;
+            }
+            
+            .impact-label {
+                font-size: 12px;
+                color: #2d3748;
+                font-weight: 600;
+            }
+            
+            .impact-score {
+                display: flex;
+                gap: 4px;
+                padding: 4px;
+                background: rgba(255, 255, 255, 0.7);
+                border-radius: 12px;
+            }
+            
+            .impact-bar {
+                width: 8px;
+                height: 8px;
+                background: #e9ecef;
+                border-radius: 50%;
+                border: 1px solid #dde5ef;
+            }
+            
+            .impact-bar.filled {
+                background: #007bff;
+                border-color: #0056b3;
+                box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+            }
+            
+            .impact-number {
+                font-size: 12px;
+                font-weight: 700;
+                color: #0056b3;
+                background: #e6f2ff;
+                padding: 2px 8px;
+                border-radius: 10px;
+                margin-left: 4px;
+            }
+            
+            .pattern-description {
+                font-size: 15px;
+                color: #333333;
+                line-height: 1.6;
+                margin: 18px 0;
+                padding: 8px 12px;
+                background-color: #f9fbfe;
+                border-radius: 6px;
+                border-left: 3px solid #e6f0fd;
+            }
+            
+            .pattern-evidence {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 16px 18px;
+                position: relative;
+                margin-top: 16px;
+                border-top: 1px dashed #e9ecef;
+                padding-top: 20px;
+            }
+            
+            .pattern-evidence::before {
+                content: '코드';
+                position: absolute;
+                top: -9px;
+                left: 16px;
+                padding: 2px 12px;
+                font-size: 12px;
+                background: #f0f4f8;
+                color: #4a5568;
+                border-radius: 12px;
+                font-weight: 500;
+            }
+            
+            .pattern-evidence ul {
+                margin: 0;
+                padding-left: 16px;
+            }
+            
+            .pattern-evidence li {
+                font-size: 13px;
+                color: #495057;
+                margin-bottom: 8px;
+                line-height: 1.5;
+                padding: 6px 8px;
+                background: #ffffff;
+                border-radius: 4px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            }
+            
+            .strengths-list, .suggestions-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .strength-item {
+                background: #f9fcff;
+                border-radius: 8px;
+                padding: 16px 20px;
+                border-left: 3px solid #007bff;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 15px;
+                color: #333333;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+                transition: all 0.2s ease;
+                position: relative;
+            }
+            
+            .strength-item:hover {
+                background: #f0f7ff;
+                border-color: #0056b3;
+                box-shadow: 0 3px 10px rgba(0, 123, 255, 0.12);
+            }
+            
+            .strength-item:nth-child(odd) {
+                background: #f3f9ff;
+            }
+            
+            .strength-item::after {
+                content: '';
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 8px;
+                height: 8px;
+                background: #007bff;
+                opacity: 0.3;
+                border-radius: 50%;
+            }
+            
+            .strength-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 28px;
+                height: 28px;
+                background: #e6f2ff;
+                border-radius: 50%;
+                color: #007bff;
+                font-size: 12px;
+                box-shadow: 0 2px 5px rgba(0, 123, 255, 0.15);
+                border: 1px solid #cce5ff;
+            }
+            
+            .strength-icon i {
+                color: #007bff;
+                font-size: 12px;
+            }
+            
+            .suggestion-item {
+                background: #fafeff;
+                border-radius: 8px;
+                padding: 16px 20px 16px 16px;
+                border-left: 3px solid #0284c7;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                font-size: 15px;
+                color: #333333;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+                transition: all 0.2s ease;
+                position: relative;
+                margin-left: 4px;
+            }
+            
+            .suggestion-item:hover {
+                background: #f0faff;
+                border-color: #0369a1;
+                box-shadow: 0 3px 10px rgba(2, 132, 199, 0.12);
+            }
+            
+            .suggestion-item:nth-child(odd) {
+                background: #f3fcff;
+            }
+            
+            .suggestion-item::before {
+                content: '';
+                position: absolute;
+                left: -4px;
+                top: 12px;
+                height: calc(100% - 24px);
+                width: 1px;
+                background: #bae6fd;
+            }
+            
+            .suggestion-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 28px;
+                height: 28px;
+                background: #e0f2fe;
+                border-radius: 50%;
+                color: #0284c7;
+                font-size: 12px;
+                box-shadow: 0 2px 5px rgba(2, 132, 199, 0.15);
+                border: 1px solid #bae6fd;
+            }
+            
+            .suggestion-icon i {
+                color: #0284c7;
+                font-size: 12px;
+            }
+            
+            .no-patterns, .no-strengths, .no-suggestions, .error-message {
+                text-align: center;
+                color: #64748b;
+                padding: 30px 16px;
+                background: #f8fafc;
+                border-radius: 8px;
+                font-size: 15px;
+                border: 1px dashed #e2e8f0;
+                position: relative;
+            }
+            
+            .no-patterns::before, .no-strengths::before, .no-suggestions::before, .error-message::before {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: -12px;
+                width: 24px;
+                height: 24px;
+                background: #f8fafc;
+                border: 1px dashed #e2e8f0;
+                border-radius: 50%;
+                transform: translateX(-50%) rotate(45deg);
+            }
+            
+            .loading-patterns, .loading-strengths, .loading-suggestions {
+                text-align: center;
+                color: #64748b;
+                padding: 30px 16px;
+                background: #f8fafc;
+                border-radius: 8px;
+                font-size: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100px;
+                border: 1px solid #f1f5f9;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .loading-patterns::after, .loading-strengths::after, .loading-suggestions::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+                animation: loadingShimmer 1.5s infinite;
+            }
+            
+            @keyframes loadingShimmer {
+                100% {
+                    left: 100%;
+                }
+            }
+            
+            /* ===== 설문조사 통합 섹션 ===== */
+            .survey-integration-section {
+                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                color: white;
+                text-align: center;
+                border: none !important;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 8px 32px rgba(0, 123, 255, 0.3);
+            }
+            
+            .survey-integration-section::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+                animation: pulse 4s ease-in-out infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 0.8; transform: scale(1); }
+                50% { opacity: 1; transform: scale(1.05); }
+            }
+            
+            .survey-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: white !important;
+                margin-bottom: 16px;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .survey-description {
+                font-size: 16px;
+                color: rgba(255, 255, 255, 0.95) !important;
+                line-height: 1.6;
+                margin-bottom: 24px;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .survey-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .btn-survey {
+                background: linear-gradient(45deg, #ffffff, #f8f9fa);
+                color: #007bff;
+                border: none;
+                padding: 14px 32px;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 16px rgba(255, 255, 255, 0.4);
+                border: 2px solid transparent;
+            }
+            
+            .btn-survey:hover {
+                background: linear-gradient(45deg, #f8f9fa, #ffffff);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 255, 255, 0.5);
+                border-color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .btn-survey-skip {
+                background: transparent;
+                color: rgba(255, 255, 255, 0.8);
+                border: 2px solid rgba(255, 255, 255, 0.5);
+                padding: 14px 32px;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-survey-skip:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-color: white;
+                transform: translateY(-2px);
+            }
+            
+            .result-buttons {
+                margin-top: 40px;
+            }
+            
+            .btn-restart {
+                background: linear-gradient(45deg, #6c757d, #5a6268);
+                color: white;
+                border: none;
+                padding: 16px 48px;
+                border-radius: 50px;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 16px rgba(108, 117, 125, 0.3);
+            }
+            
+            .btn-restart:hover {
+                background: linear-gradient(45deg, #5a6268, #495057);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            /* ===== 로딩 오버레이 ===== */
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.85);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                backdrop-filter: blur(3px);
+            }
+            
+            /* ===== 커스텀 팝업 ===== */
+            .custom-popup-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            }
+            
+            .loading-content {
+                text-align: center;
+                color: #333;
+                padding: 30px;
+                border-radius: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(0, 123, 255, 0.2);
+                box-shadow: 0 8px 32px rgba(0, 123, 255, 0.15);
+                max-width: 350px;
+                width: 90%;
+            }
+            
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid rgba(0, 123, 255, 0.1);
+                border-top: 3px solid #007bff;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto 15px auto;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .loading-text {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: #007bff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .loading-text i {
+                font-size: 16px;
+                margin-right: 4px;
+            }
+            
+            .loading-subtext {
+                font-size: 13px;
+                color: #666;
+                line-height: 1.4;
+            }
+            
+            .custom-popup-content {
+                text-align: center;
+                color: #333;
+                padding: 30px;
+                border-radius: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(0, 123, 255, 0.2);
+                box-shadow: 0 8px 32px rgba(0, 123, 255, 0.15);
+                max-width: 350px;
+                width: 90%;
+            }
+            
+            .popup-icon {
+                font-size: 36px;
+                color: #007bff;
+                margin-bottom: 15px;
+            }
+            
+            .popup-title {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: #007bff;
+            }
+            
+            .popup-message {
+                font-size: 15px;
+                color: #555;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+            
+            .popup-button {
+                background: linear-gradient(45deg, #007bff, #0056b3);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 50px;
+                font-size: 15px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+            }
+            
+            .popup-button:hover {
+                background: linear-gradient(45deg, #0056b3, #004494);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+            }
+            
+            @media (max-width: 768px) {
+                .main-title {
+                    font-size: 28px;
+                }
+                
+                .sub-title {
+                    font-size: 16px;
+                }
+                
+                .upload-area {
+                    padding: 30px 20px;
+                    min-height: 150px;
+                }
+                
+                .upload-icon {
+                    font-size: 48px;
+                }
+                
+                .upload-title {
+                    font-size: 20px;
+                }
+                
+                .upload-description {
+                    font-size: 14px;
+                }
+                
+                .result-type-code {
+                    font-size: 48px;
+                }
+                
+                .result-type-name {
+                    font-size: 24px;
+                }
+                
+                .score-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .detailed-title {
+                    font-size: 24px;
+                }
+                
+                .section-item {
+                    padding: 20px;
+                }
+                
+                .survey-buttons {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                
+                .btn-survey, .btn-survey-skip {
+                    width: 100%;
+                    max-width: 280px;
+                }
+                
+                .result-hint-box {
+                    margin: 15px auto 25px auto;
+                    padding: 12px 16px;
+                }
+                
+                .result-hint-text {
+                    font-size: 14px;
+                    color: #664d00;
+                    font-weight: 600;
+                }
+            }
+            
+            /* ===== 결과 힌트 박스 스타일 ===== */
+            .result-hint-box {
+                background: #f0f7ff;
+                border: 1px solid rgba(0, 123, 255, 0.3);
+                border-radius: 10px;
+                padding: 16px 20px;
+                margin: 20px auto 30px auto;
+                text-align: center;
+                width: 100%;
+                max-width: 500px;
+                box-shadow: 0 2px 8px rgba(0, 123, 255, 0.08);
+                opacity: 0;
+                transform: translateY(-20px);
+                animation: hintBoxReveal 0.8s ease-out 2.8s forwards;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .result-hint-box::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: #007bff;
+            }
+            
+            @keyframes hintBoxReveal {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .result-hint-text {
+                color: #333333;
+                font-size: 15px;
+                margin: 0;
+                font-weight: 500;
+                line-height: 1.5;
+                position: relative;
+                padding-left: 28px;
+            }
+            
+            .result-hint-text::before {
+                content: "\f05a"; /* fa-info-circle 아이콘의 유니코드 */
+                font-family: "Font Awesome 5 Free";
+                font-weight: 900;
+                color: #007bff;
+                font-size: 18px;
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        ]]></style>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<w2:wframe src="../common/Header.xml" id="headerFrame" />
+		<xf:group class="main-container">
+			<xf:group class="content-area">
+				<!-- 업로드 섹션 -->
+				<xf:group class="upload-section">
+					<xf:group class="page-header">
+						<w2:textbox class="main-title" label="다양한 언어의 코드를 분석해드립니다" tagname="h1"></w2:textbox>
+						<w2:textbox class="sub-title" label="Java, Python, JavaScript 등 어떤 언어든 분석 가능합니다" tagname="p"></w2:textbox>
+					</xf:group>
+
+					<xf:group class="info-box">
+						<w2:textbox class="info-text" label="[정보] 다양한 언어 지원, 여러 파일 동시 업로드, 파일당 최대 50KB, 드래그 앤 드롭 지원" tagname="p"></w2:textbox>
+					</xf:group>
+
+					<!-- 멀티 파일 업로드 영역 -->
+					<xf:group class="upload-container">
+						<xf:group class="upload-area" ev:onclick="scwin.handleUploadAreaClick()">
+							<xf:group class="upload-icon">
+								<div class="upload-icon-container">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="85" height="85" style="fill: #007bff;">
+										<!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
+										<path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm65.18 216.01H224v80c0 8.84-7.16 16-16 16h-32c-8.84 0-16-7.16-16-16v-80H94.82c-14.28 0-21.41-17.29-11.27-27.36l96.42-95.7c6.65-6.61 17.39-6.61 24.04 0l96.42 95.7c10.15 10.07 3.03 27.36-11.25 27.36zM377 105L279.1 7c-4.5-4.5-10.6-7-17-7H256v128h128v-6.1c0-6.3-2.5-12.4-7-16.9z"></path>
+									</svg>
+								</div>
+							</xf:group>
+							<w2:textbox class="upload-title" label="코드 파일 업로드" tagname="div"></w2:textbox>
+							<w2:textbox class="upload-description" label="여러 파일을 선택하거나 드래그 앤 드롭으로 업로드하세요" tagname="div"></w2:textbox>
+							<xf:trigger class="upload-button">
+								<xf:label>파일 선택</xf:label>
+							</xf:trigger>
+							<input type="file" id="multiFileInput" class="file-input-hidden" multiple="multiple"
+								accept=".java,.js,.ts,.py,.cpp,.c,.cs,.php,.rb,.go,.kt,.swift,.scala,.rs,.jsx,.tsx,.vue,.html,.css,.scss,.sass,.sql,.json,.xml,.yaml,.yml,.sh,.bat,.ps1,.r,.m,.pl,.lua,.dart" />
+						</xf:group>
+					</xf:group>
+
+					<!-- 파일 목록 표시 영역 -->
+					<xf:group class="file-list-container">
+						<w2:textbox class="file-list-title" label="업로드된 파일 목록" tagname="div"></w2:textbox>
+						<xf:group class="file-list">
+							<w2:textbox class="no-files" label="업로드된 파일이 없습니다" tagname="div"></w2:textbox>
+						</xf:group>
+					</xf:group>
+
+					<xf:group class="action-buttons">
+						<xf:trigger class="btn-next" ev:onclick="scwin.btn_next_onclick">
+							<xf:label>다음</xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+
+				<!-- 결과 섹션 -->
+				<xf:group class="result-section" style="display: none;">
+					<xf:group class="result-header">
+						<w2:textbox class="result-title" label="분석 결과" tagname="h1"></w2:textbox>
+						<w2:textbox class="result-subtitle" label="당신의 CodeFIT은..." tagname="p"></w2:textbox>
+					</xf:group>
+					
+					<!-- 설문조사 유도 힌트 박스 -->
+					<xf:group class="result-hint-box">
+						<w2:textbox class="result-hint-text" label="정확한 분석을 원하신다면 아래 설문조사 섹션을 확인해보세요!" tagname="p"></w2:textbox>
+					</xf:group>
+
+					<xf:group class="result-card">
+						<w2:textbox class="result-type-code" label="AR" tagname="div"></w2:textbox>
+						<w2:textbox class="result-type-name" label="개선형 아키텍트" tagname="div"></w2:textbox>
+						<w2:textbox class="result-type-desc" label="기존 코드를 체계적으로 개선하고 최적화하는 개발자" tagname="div"></w2:textbox>
+						<w2:textbox class="result-language" label="Detected Language: Unknown" tagname="div"
+							style="font-size: 16px; color: #666; margin-bottom: 16px;"></w2:textbox>
+					</xf:group>
+
+					<xf:group class="score-section">
+						<w2:textbox class="score-title" label="상세 점수" tagname="div"></w2:textbox>
+
+						<xf:group class="score-bars">
+                            <!-- 개발 스타일 (Architect vs Builder) -->
+                            <xf:group class="score-bar-item">
+                                <w2:textbox class="score-bar-title" label="개발 스타일" tagname="div"></w2:textbox>
+                                <xf:group class="score-bar-container">
+                                    <w2:textbox class="left-label" label="Builder" tagname="div"></w2:textbox>
+                                    <xf:group class="score-bar-track">
+                                        <w2:textbox class="score-bar-center" label="" tagname="div"></w2:textbox>
+                                        <w2:textbox class="score-bar-fill score-bar-ab" label="" tagname="div" style="width: 50%;"></w2:textbox>
+                                        <w2:textbox class="score-bar-indicator score-indicator-ab" label="" tagname="div" style="left: 50%;"></w2:textbox>
+                                    </xf:group>
+                                    <w2:textbox class="right-label" label="Architect" tagname="div"></w2:textbox>
+                                </xf:group>
+                                <xf:group class="percentage-container">
+                                    <xf:group class="percentage-label-group left-label-group">
+                                        <w2:textbox class="percentage-label builder-label" label="빌더형" tagname="div"></w2:textbox>
+                                        <w2:textbox class="percentage-label left-percentage" label="50%" tagname="div"></w2:textbox>
+                                    </xf:group>
+                                    <w2:textbox class="percentage-space" label="" tagname="div"></w2:textbox>
+                                    <xf:group class="percentage-label-group right-label-group">
+                                        <w2:textbox class="percentage-label architect-label" label="아키텍트형" tagname="div"></w2:textbox>
+                                        <w2:textbox class="percentage-label right-percentage" label="50%" tagname="div"></w2:textbox>
+                                    </xf:group>
+                                </xf:group>
+                                <w2:textbox class="score-bar-result development-style-type" label="분석 중..." tagname="div"></w2:textbox>
+							</xf:group>
+
+                            <!-- 개발자 선호도 (Refactor vs Innovator) -->
+                            <xf:group class="score-bar-item">
+                                <w2:textbox class="score-bar-title" label="개발자 선호도" tagname="div"></w2:textbox>
+                                <xf:group class="score-bar-container">
+                                    <w2:textbox class="left-label" label="Innovator" tagname="div"></w2:textbox>
+                                    <xf:group class="score-bar-track">
+                                        <w2:textbox class="score-bar-center" label="" tagname="div"></w2:textbox>
+                                        <w2:textbox class="score-bar-fill score-bar-ri" label="" tagname="div" style="width: 50%;"></w2:textbox>
+                                        <w2:textbox class="score-bar-indicator score-indicator-ri" label="" tagname="div" style="left: 50%;"></w2:textbox>
+                                    </xf:group>
+                                    <w2:textbox class="right-label" label="Refactor" tagname="div"></w2:textbox>
+                                </xf:group>
+                                <xf:group class="percentage-container">
+                                    <xf:group class="percentage-label-group left-label-group">
+                                        <w2:textbox class="percentage-label innovator-label" label="혁신형" tagname="div"></w2:textbox>
+                                        <w2:textbox class="percentage-label left-percentage" label="50%" tagname="div"></w2:textbox>
+                                    </xf:group>
+                                    <w2:textbox class="percentage-space" label="" tagname="div"></w2:textbox>
+                                    <xf:group class="percentage-label-group right-label-group">
+                                        <w2:textbox class="percentage-label refactor-label" label="개선형" tagname="div"></w2:textbox>
+                                        <w2:textbox class="percentage-label right-percentage" label="50%" tagname="div"></w2:textbox>
+                                    </xf:group>
+                                </xf:group>
+                                <w2:textbox class="score-bar-result developer-preference-type" label="분석 중..." tagname="div"></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<xf:group class="confidence-section">
+							<w2:textbox class="confidence-label" label="분석 신뢰도" tagname="div"></w2:textbox>
+							<w2:textbox class="score-confidence" label="0%" tagname="div"></w2:textbox>
+						</xf:group>
+					</xf:group>
+
+					<!-- 상세 분석 결과 섹션 -->
+					<xf:group class="detailed-section">
+						<w2:textbox class="detailed-title" label="상세 분석 결과" tagname="h2"></w2:textbox>
+						
+						<!-- 분석 근거 -->
+						<xf:group class="section-item reasoning-section">
+							<w2:textbox class="section-header" label="분석 근거" tagname="h3"></w2:textbox>
+							<xf:group class="reasoning-content">
+								<w2:textbox class="detailed-reasoning" label="코드 구조와 패턴을 분석하여 개발 스타일을 도출했습니다." tagname="p"></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<!-- 코드 패턴 분석 -->
+						<xf:group class="section-item patterns-section">
+							<w2:textbox class="section-header" label="발견된 코드 패턴" tagname="h3"></w2:textbox>
+							<xf:group class="code-patterns-list">
+								<w2:textbox class="loading-patterns" label="패턴 분석 중..." tagname="div"></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<!-- 개발 강점 -->
+						<xf:group class="section-item strengths-section">
+							<w2:textbox class="section-header" label="개발 강점" tagname="h3"></w2:textbox>
+							<xf:group class="strengths-content">
+								<w2:textbox class="loading-strengths" label="강점 분석 중..." tagname="div"></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<!-- 개선 제안 -->
+						<xf:group class="section-item suggestions-section">
+							<w2:textbox class="section-header" label="개선 제안" tagname="h3"></w2:textbox>
+							<xf:group class="suggestions-content">
+								<w2:textbox class="loading-suggestions" label="개선점 분석 중..." tagname="div"></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<!-- 설문조사 연결 섹션 -->
+						<xf:group class="survey-integration-section section-item">
+							<w2:textbox class="survey-title" label="더 정확한 분석을 원하시나요?" tagname="h3"></w2:textbox>
+							<w2:textbox class="survey-description" label="MBTI 기반 개발 성향 설문조사를 통해 코드 분석 결과와 통합된 더욱 정확한 CodeFIT을 확인하세요!" tagname="p"></w2:textbox>
+							<xf:group class="survey-buttons">
+								<xf:trigger class="btn-survey" ev:onclick="scwin.goToSurvey">
+									<xf:label>설문조사 참여하기</xf:label>
+								</xf:trigger>
+								<xf:trigger class="btn-survey-skip" ev:onclick="scwin.skipSurvey">
+									<xf:label>나중에 하기</xf:label>
+								</xf:trigger>
+							</xf:group>
+						</xf:group>
+					</xf:group>
+
+					<xf:group class="result-buttons">
+						<xf:trigger class="btn-restart" ev:onclick="scwin.goToUserDetail">
+							<xf:label>프로필로 이동</xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html> 

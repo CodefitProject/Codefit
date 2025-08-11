@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="회원가입 플로우 공통 헤더">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_header">
+                    <w2:keyInfo>
+                        <w2:key id="showProgress" name="진행바표시여부" dataType="text" value="false"></w2:key>
+                        <w2:key id="progressPercent" name="진행률" dataType="text" value="0"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method="setProgress,showProgress,hideProgress"/>
+        
+        <script type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+};
+
+// 진행률 설정 (0-100)
+scwin.setProgress = function (percent) {
+    dma_header.set("progressPercent", percent);
+    var progressBar = document.querySelector('.header-progress');
+    if (progressBar) {
+        progressBar.style.background = 'linear-gradient(90deg, #007bff 0%, #007bff ' + percent + '%, #e0e0e0 ' + percent + '%, #e0e0e0 100%)';
+    }
+};
+
+// 진행바 표시
+scwin.showProgress = function (percent) {
+    dma_header.set("showProgress", "true");
+    if (percent !== undefined) {
+        scwin.setProgress(percent);
+    }
+    var progressElement = document.querySelector('.header-progress');
+    if (progressElement) {
+        progressElement.style.display = 'block';
+    }
+};
+
+// 진행바 숨김
+scwin.hideProgress = function () {
+    dma_header.set("showProgress", "false");
+    var progressElement = document.querySelector('.header-progress');
+    if (progressElement) {
+        progressElement.style.display = 'none';
+    }
+};
+
+// 로고 클릭 시 메인 페이지로 이동
+scwin.logo_onclick = function () {
+    if (confirm("회원가입을 중단하고 메인 페이지로 이동하시겠습니까?")) {
+        $p.url("../common/MainPage.xml");
+    }
+};
+]]></script>
+        
+        <style type="text/css"><![CDATA[
+            .signup-header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                height: 40px;
+                width: auto;
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+            }
+            
+            .header-logo:hover {
+                opacity: 0.8;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #007bff 0%, #007bff 0%, #e0e0e0 0%, #e0e0e0 100%);
+                width: 100%;
+                display: none;
+                transition: all 0.3s ease;
+            }
+            
+            .header-progress.show {
+                display: block;
+            }
+        ]]></style>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <xf:group class="signup-header">
+            <xf:image src="/InsWebApp/images/ws5/codefit_logo.png" class="header-logo" ev:onclick="scwin.logo_onclick"></xf:image>
+            <xf:group class="header-progress"></xf:group>
+        </xf:group>
+    </body>
+</html> 

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap id="dmp_loginVo" baseNode="map">
+                    <w2:keyInfo>
+                        <w2:key id="email" name="이메일" dataType="text"/>
+                        <w2:key id="password" name="비밀번호" dataType="text"/>
+                    </w2:keyInfo>
+                </w2:dataMap>
+                <w2:dataMap id="dmp_loginResult" baseNode="map">
+                    <w2:keyInfo>
+                        <w2:key id="email" name="email" dataType="text"/>
+                        <w2:key id="roleId" name="roleId" dataType="text"/>
+                        <w2:key id="userName" name="userName" dataType="text"/>
+                        <w2:key id="success" name="success" dataType="text"/>
+                        <w2:key id="message" name="message" dataType="text"/>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection/>
+            <xf:submission id="sbm_login" 
+                action="/InsWebApp/USLogin.pwkjson" 
+                method="post" 
+                mediatype="application/json"
+                ref='data:json,["dmp_loginVo",{"id":"dmp_loginVo","key":"loginVo"}]' 
+                target=""
+                encoding="UTF-8" 
+                instance="" 
+                replace="" 
+                errorHandler="" 
+                customHandler=""
+                mode="asynchronous" 
+                processMsg="로그인 중..." 
+                ev:submit="" 
+                ev:submitdone="scwin.sbm_login_submitdone" 
+                ev:submiterror="scwin.sbm_login_submiterror" 
+                abortTrigger="">
+            </xf:submission>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <style type="text/css"><![CDATA[
+            .login-container {
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
+                padding: 30px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            
+            .login-title2 {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 8px;
+            }
+            
+            .login-subtitle {
+                font-size: 14px;
+                color: #666;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-label {
+                display: block;
+                font-size: 14px;
+                font-weight: 500;
+                color: #333;
+                margin-bottom: 8px;
+            }
+            
+            .form-input {
+                width: 100%;
+                height: 45px;
+                padding: 0 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                transition: border-color 0.3s;
+            }
+            
+            .form-input:focus {
+                outline: none;
+                border-color: #007bff;
+            }
+            
+            .password-group {
+                position: relative;
+            }
+            
+            .checkbox-group {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                margin-right: 8px;
+            }
+            
+            .checkbox-label {
+                font-size: 14px;
+                color: #666;
+            }
+            
+            .btn-login2 {
+                width: 100%;
+                height: 45px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            
+            .btn-login2:hover {
+                background-color: #0056b3;
+            }
+            
+            .btn-login2:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+            
+            .login-links {
+                text-align: center;
+                margin-top: 20px;
+            }
+            
+            .login-link {
+                font-size: 14px;
+                color: #007bff;
+                text-decoration: none;
+                cursor: pointer;
+                margin: 0 10px;
+            }
+            
+            .login-link:hover {
+                text-decoration: underline;
+            }
+            
+            .divider {
+                text-align: center;
+                margin: 20px 0;
+                color: #999;
+                font-size: 14px;
+            }
+        ]]></style>
+        <script type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    // 페이지 로드 시 초기화
+    scwin.initializeLogin();
+};
+
+scwin.initializeLogin = function () {
+};
+
+scwin.btn_login_onclick = function (e) {
+    var userId = inp_userId.getValue();
+    var userPw = inp_userPw.getValue();
+
+    // 유효성 검사
+    if (!userId || userId.trim() === "") {
+        $c.win.alert("아이디를 입력해주세요.");
+        inp_userId.focus();
+        return;
+    }
+
+    if (!userPw || userPw.trim() === "") {
+        $c.win.alert("비밀번호를 입력해주세요.");
+        inp_userPw.focus();
+        return;
+    }
+
+    // 로그인 버튼 비활성화
+    btn_login.setDisabled(true);
+
+    // 로그인 처리 (서버 통신)
+    $c.sbm.execute(sbm_login);
+};
+
+// 로그인 성공 시 처리
+scwin.sbm_login_submitdone = function (e) {
+    try {
+        const resultObj = e.responseJSON;
+        const elHeader = resultObj.elHeader;
+        const userHeader = resultObj.userHeader;
+
+        if (elHeader && elHeader.resSuc === true) {
+            // 로그인 성공
+            WebSquare.cookie.setCookie("userInfo", JSON.stringify(userHeader));
+
+            $p.closePopup();
+            if (userHeader.role == "USER") {
+                $c.win.reload();
+            } else if(userHeader.role == "COMPANY") {
+                $p.url("../corporate/RecruitmentDashboard.xml");
+            }
+
+        } else {
+            // 로그인 실패 (resSuc가 false거나 없음)
+            const errMsg = elHeader && elHeader.errMsg ? elHeader.errMsg : "로그인에 실패했습니다.";
+            $c.win.alert(errMsg);
+            btn_login.setDisabled(false);
+        }
+    } catch (error) {
+        console.error("submitdone 처리 중 예외 발생:", error);
+        $c.win.alert("로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+        btn_login.setDisabled(false);
+    }
+}
+
+// 로그인 실패 시 처리
+scwin.sbm_login_submiterror = function (e) {
+    btn_login.setDisabled(false);
+    $c.win.alert("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+};
+
+scwin.link_forgot_onclick = function (e) {
+    $c.win.alert("비밀번호 재설정 기능은 준비 중입니다.");
+};
+
+scwin.link_signup_onclick = function (e) {
+    $p.url("../user/Signup.xml");
+    $p.closePopup();
+};
+
+// Enter 키 이벤트 처리
+scwin.inp_userId_onkeypress = function (e) {
+    if (e.keyCode === 13) { // Enter key
+        inp_userPw.focus();
+    }
+};
+
+scwin.inp_userPw_onkeydown = function (e) {
+    if (e.keyCode === 13) { // Enter key
+        scwin.btn_login_onclick();
+    }
+};]]></script>
+    </head>
+    <body ev:onpageload="scwin.onpageload" style="margin: 0; padding: 0;">
+        <xf:group class="login-container">
+            <!-- 로그인 헤더 -->
+            <xf:group class="login-header">
+                <w2:textbox class="login-title2" label="로그인"></w2:textbox>
+                <w2:textbox class="login-subtitle" label="CodeFIT에 오신 것을 환영합니다"></w2:textbox>
+            </xf:group>
+            
+            <!-- 로그인 폼 -->
+            <xf:group class="form-group">
+                <w2:textbox class="form-label" label="아이디"></w2:textbox>
+                <xf:input class="form-input" id="inp_userId" placeholder="아이디를 입력하세요" 
+                    ev:onkeypress="scwin.inp_userId_onkeypress" ref="data:dmp_loginVo.email"></xf:input>
+            </xf:group>
+            
+            <xf:group class="form-group">
+                <w2:textbox class="form-label" label="비밀번호"></w2:textbox>
+                <xf:group class="password-group">
+                    <xf:secret class="form-input" id="inp_userPw" placeholder="비밀번호를 입력하세요" 
+                        ref="data:dmp_loginVo.password" ev:onkeydown="scwin.inp_userPw_onkeydown"></xf:secret>
+                </xf:group>
+            </xf:group>
+            
+            <!-- 로그인 버튼 -->
+            <xf:trigger class="btn-login2" id="btn_login" 
+                ev:onclick="scwin.btn_login_onclick" type="button">
+                <xf:label>로그인</xf:label>
+            </xf:trigger>
+            
+            <!-- 링크들 -->
+            <xf:group class="login-links">
+                <w2:anchor class="login-link" ev:onclick="scwin.link_forgot_onclick">
+                    <xf:label>비밀번호 찾기</xf:label>
+                </w2:anchor>
+                <w2:span label="|" style="color: #ddd; margin: 0 10px;"></w2:span>
+                <w2:anchor class="login-link" ev:onclick="scwin.link_signup_onclick" id="link_signup">
+                    <xf:label>회원가입</xf:label>
+                </w2:anchor>
+            </xf:group>
+        </xf:group>
+    </body>
+</html>

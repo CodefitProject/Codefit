@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head meta_screenName="개발자 스카웃">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<link rel="stylesheet" type="text/css" href="/cm/css/gridview-enhancement.css" />
+		<style>
+			.filter-container {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 15px 20px;
+			background-color: #ffffff;
+			border-bottom: 1px solid #e9ecef;
+			gap: 15px;
+			}
+			.filter-group {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			}
+			.filter-label {
+			font-weight: 500;
+			color: #333;
+			min-width: 60px;
+			}
+			.control-bar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 15px 20px;
+			background-color: #ffffff;
+			border-bottom: 1px solid #e9ecef;
+			}
+			.selected-count {
+			color: #6c757d;
+			font-size: 14px;
+			}
+			.button-group {
+			display:
+			flex;
+			align-items: center;
+			gap: 10px;
+			}
+			.btn-scout-all {
+			background-color: #28a745;
+			color: white;
+			border: none;
+			padding: 8px 16px;
+			border-radius:
+			4px;
+			cursor: pointer;
+			}
+			.btn-reset {
+			background-color: #6c757d;
+			color: white;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 4px;
+			cursor:
+			pointer;
+			}
+			.skill-tag {
+			display: inline-block;
+			background-color: #e3f2fd;
+			color: #1976d2;
+			padding: 2px 8px;
+			margin: 2px;
+			border-radius: 12px;
+			font-size: 12px;
+			border: 1px solid #bbdefb;
+			}
+			.mbti-badge {
+			background-color: #9c27b0;
+			color: white;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-weight: bold;
+			}
+			.interest-level {
+			color: #ff9800;
+			font-weight: bold;
+			}
+			.status-available {
+			background-color: #28a745;
+			color: white;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-weight: bold;
+			}
+			.status-interested {
+			background-color: #17a2b8;
+			color:
+			white;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-weight: bold;
+			}
+			.status-contacted {
+			background-color: #ffc107;
+			color: #212529;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-weight: bold;
+			}
+
+			/* 스카웃 메시지 모달 스타일 */
+			.scout-modal {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background-color: white;
+			border-radius: 8px;
+			padding: 30px;
+			box-shadow: 0 4px 20px
+			rgba(0, 0, 0, 0.15);
+			width: 500px;
+			z-index: 1000;
+			}
+			.scout-modal-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height:
+			100%;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 999;
+			}
+			.scout-modal h3 {
+			margin-top: 0;
+			color: #333;
+			border-bottom: 2px solid #007bff;
+			padding-bottom: 10px;
+			}
+			.scout-modal input, .scout-modal textarea {
+			width: 100%;
+			margin: 8px 0;
+			padding: 12px;
+			border-radius: 4px;
+			border: 1px
+			solid #ddd;
+			box-sizing: border-box;
+			}
+			.scout-modal textarea {
+			height: 150px;
+			resize: vertical;
+			}
+			.scout-modal button {
+			padding: 10px 20px;
+			margin: 5px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-weight: 500;
+			}
+			.scout-modal .btn-send {
+			background-color: #007bff;
+			color:
+			white;
+			}
+			.scout-modal .btn-cancel {
+			background-color: #6c757d;
+			color: white;
+			}
+			.resume-link-text {
+			color: #007bff;
+			cursor: pointer;
+			text-decoration: underline;
+			}
+			.resume-none-text {
+			color: #6c757d;
+			}
+		</style>
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_scoutListVo" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="체크박스" id="chk"></w2:column>
+						<w2:column dataType="text" name="이름" id="name"></w2:column>
+						<w2:column dataType="text" name="경력" id="career"></w2:column>
+						<w2:column dataType="text" name="포지션" id="currentPosition"></w2:column>
+						<w2:column dataType="text" name="기술스택" id="techStack"></w2:column>
+						<w2:column dataType="text" name="mbti" id="typeCode"></w2:column>
+						<w2:column dataType="text" name="이력서" id="resumeFileName"></w2:column>
+						<w2:column dataType="text" name="이메일" id="email"></w2:column>
+						<w2:column dataType="text" name="유저 ID" id="accountId"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="dmp_scoutVo">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="페이지_번호" id="pageIndex" defaultValue="1"></w2:key>
+						<w2:key dataType="text" name="페이지_건수" id="pageSize" defaultValue="10"></w2:key>
+						<w2:key dataType="text" name="공고_id" id="jobPostingId"></w2:key>
+						<w2:key dataType="text" name="스카웃_상태" id="scoutStatus" defaultValue="NOT_SCOUTED"></w2:key>
+						<w2:key dataType="text" name="Mbti_필터" id="mbtiMatchFilter"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dmp_scoutRequest">
+					<w2:keyInfo>
+						<w2:key id="jobPostingId" name="공고_id" dataType="text"></w2:key>
+						<w2:key id="accountIdVo" name="유저_ID_VO_목록" dataType="other"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<xf:submission id="sbm_selectScoutVo" action="/InsWebApp/US0003List.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dmp_scoutVo","key":"scoutVo"}' target='data:json,[{"id":"dlt_scoutListVo","key":"elData.scoutDetailVo"}]'
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="매칭 유저 불러오는중.." ev:submit=""
+				ev:submitdone="scwin.sbm_scoutVo_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_scoutDevelopers" action="/InsWebApp/POS0006List.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dmp_scoutRequest","key":"scoutUserVo"}' encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mode="asynchronous" processMsg="스카웃 제안을 보내는 중입니다..." ev:submitdone="scwin.sbm_scoutDevelopers_submitdone">
+			</xf:submission>
+		</xf:model>
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+    if (!userInfoStr) {
+        $p.url("../common/MainPage.xml");
+        return;
+    }
+    
+    // window 객체에 formatter 함수 등록
+    window.scwin = window.scwin || {};
+    window.scwin.openResumePreview = scwin.openResumePreview;
+    window.scwin.displayResumeFileName = scwin.displayResumeFileName;
+
+    // 기술스택 필터 초기값 설정 (chooseOption 상태로 유지)
+    msb_techStackFilter.setValue("");
+
+    // 회사 아이디로 유저 불러오기
+    scwin.getJobPostingId();
+
+    // 그리드뷰 갱신하기
+    setTimeout(function () {
+        if (gridView1) {
+            gridView1.refresh();
+        }
+    }, 500);
+};
+
+// 파라미터로 postId 받기
+scwin.getJobPostingId = function () {
+    var jobPostingId = scwin.getUrlParameter("jobPostingId");
+
+    if (!jobPostingId) {
+        $c.win.alert("잘못된 접근입니다. 다시 시도해주세요");
+        $p.url("../common/MainPage.xml");
+        return;
+    }
+
+    dmp_scoutVo.set("jobPostingId", jobPostingId);
+    dmp_scoutVo.set("scoutStatus", "NOT_SCOUTED"); // 기본값 설정
+    $c.sbm.execute(sbm_selectScoutVo);
+};
+
+// URL 파라미터 추출
+scwin.getUrlParameter = function (name) {
+    const regex = new RegExp("[?&]" + name + "=([^&#]*)");
+    const results = regex.exec(window.location.href);
+    return results ? decodeURIComponent(results[1]) : null;
+};
+
+// 스카웃 상태 필터 변경 이벤트
+scwin.onScoutStatusFilterChange = function (e) {
+    var selectedStatus = scoutStatusFilter.getValue();
+    dmp_scoutVo.set("scoutStatus", selectedStatus);
+    dmp_scoutVo.set("pageIndex", 1); // 페이지를 처음으로 리셋
+    $c.sbm.execute(sbm_selectScoutVo);
+
+    if (selectedStatus === 'NOT_SCOUTED') {
+        scout_all_btn.setDisabled(false);
+        scout_all_btn.setStyle("background-color", "#28a745");
+    } else {
+        scout_all_btn.setDisabled(true);
+        scout_all_btn.setStyle("background-color", "#cccccc");
+    }
+};
+
+// 쿠키에서 사용자 가져오기
+scwin.getUserInfoByCookie = function () {
+    var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+    var userInfo = null;
+
+    if (userInfoCookie) {
+        try {
+            userInfo = JSON.parse(userInfoCookie);
+            console.log(userInfo);
+        } catch (e) {
+            console.error("사용자 정보 파싱 오류:", e);
+        }
+    }
+    return userInfo;
+}
+
+
+// 일괄 스카웃 제안
+scwin.scoutSelected = function () {
+    var checkedRows = gridView1.getCheckedJSON("chk");
+    if (checkedRows.length === 0) {
+        $c.win.alert("스카웃할 개발자를 선택해주세요.");
+        return;
+    }
+
+    // AccountIdVo 객체 배열 생성
+    var accountIdVoList = checkedRows.map(function (row) {
+        return { accountId: row.accountId };
+    });
+
+    var jobPostingId = dmp_scoutVo.get("jobPostingId");
+
+    // dmp_scoutRequest에 데이터 설정
+    dmp_scoutRequest.set("jobPostingId", jobPostingId);
+    dmp_scoutRequest.set("accountIdVo", accountIdVoList);
+
+    $c.sbm.execute(sbm_scoutDevelopers);
+};
+
+scwin.sbm_scoutDevelopers_submitdone = function (e) {
+    $c.win.alert("스카웃 제안이 성공적으로 전송되었습니다.");
+    // 성공 후 그리드 및 관련 데이터 새로고침
+    $c.sbm.execute(sbm_selectScoutVo);
+};
+
+// 그리드 체크박스 변경
+scwin.gridView_oncheck = function (info) {
+    scwin.updateSelectedCount();
+};
+
+// 그리드 전체 체크박스 변경 이벤트  
+scwin.gridView_oncheckall = function (info) {
+    scwin.updateSelectedCount();
+};
+
+// 경력 필터 변경
+scwin.experienceFilter_onchange = function () {
+    scwin.applyFilters();
+};
+
+// 포지션 필터 변경
+scwin.positionFilter_onchange = function () {
+    scwin.applyFilters();
+};
+
+scwin.w2selectbox_disabled_onselected = function () {
+    // 쿠키에서 userMbti 가져오기
+    var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+    if (!userInfoCookie) {
+        $c.win.alert("로그인 후 사용가능한 기능입니다.");
+        $p.url("../commom/MainPage.xml");
+    }
+
+    var userInfo;
+    try {
+        userInfo = JSON.parse(userInfoCookie);
+    } catch (e) {
+        console.error("사용자 정보 파싱 오류:", e);
+        return; // 함수 종료
+    }
+
+    // userInfo.mbti가 존재하는지 확인
+    if (userInfo.role !== 'COMPANY') {
+        $c.win.alert("잘못된 접근입니다. 다시 로그인 해주세요.");
+        $p.url("../commom/MainPage.xml");
+    }
+
+    var selectedValue = w2selectbox_disabled.getValue();
+
+    // DataMap에 값 설정
+    dmp_scoutVo.set("mbtiMatchFilter", selectedValue);
+    dmp_scoutVo.set("pageIndex", "1");
+
+    // API 호출
+    $c.sbm.execute($p, sbm_selectScoutVo);
+};
+
+scwin.sbm_scoutVo_submitdone = function (e) {
+    try {
+        if (e && e.responseJSON && e.responseJSON.elData && e.responseJSON.elData.scoutDetailVo) {
+            // 데이터 로드 후 커스텀 렌더러 재적용
+            setTimeout(function () {
+                // 전체 그리드 새로고침
+                gridView1.refresh();
+            }, 200);
+        }
+    } catch (error) {
+        console.error("스카웃 데이터 처리 중 오류:", error);
+    }
+
+    // 기술스택 필터 초기화
+    scwin.initTechStackFilter();
+};
+
+// 이력서 필드에 대한 formatter 함수 구현
+scwin.displayResumeFileName = function (value) {
+    // 이력서 파일명이 있는지 확인
+    var hasResume = value && value.trim() !== "";
+
+    if (hasResume) {
+        return "<span class='resume-link-text'>이력서 보기</span>";
+    } else {
+        return "<span class='resume-none-text'>이력서 없음</span>";
+    }
+};
+
+// 그리드 셀 클릭 이벤트 (이력서 컬럼)
+scwin.gridView1_oncellclick = function (row, col, colId) {
+    console.log("그리드 셀 클릭: row=" + row + ", col=" + col + ", colId=" + colId);
+
+    if (colId === "resumeFileName") {
+        // 해당 행의 이력서 파일명 확인
+        var resumeFileName = dlt_scoutListVo.getCellData(row, "resumeFileName");
+
+        // 이력서가 없으면 무시
+        if (!resumeFileName || resumeFileName.trim() === "") {
+            console.log("이력서 파일이 없습니다.");
+            return;
+        }
+
+        console.log("이력서 미리보기 열기 시도: " + resumeFileName);
+        scwin.openResumePreview(row);
+    }
+};
+
+// 이력서 미리보기 팝업 열기
+scwin.openResumePreview = function (rowIndex) {
+    try {
+        console.log("이력서 미리보기 팝업 열기 - 행 인덱스:", rowIndex);
+
+        // 선택된 행의 데이터 가져오기
+        var accountId = dlt_scoutListVo.getCellData(rowIndex, "accountId");
+        var userName = dlt_scoutListVo.getCellData(rowIndex, "name");
+        var resumeFileName = dlt_scoutListVo.getCellData(rowIndex, "resumeFileName");
+
+        console.log("선택된 사용자 정보:", {
+            accountId: accountId,
+            userName: userName,
+            resumeFileName: resumeFileName
+        });
+
+        // 이력서가 없는 경우
+        if (!resumeFileName || resumeFileName.trim() === "") {
+            $c.win.alert("등록된 이력서가 없습니다.");
+            return;
+        }
+
+        // 팝업에 전달할 데이터
+        var popupData = {
+            accountId: accountId,
+            userName: userName || "사용자",
+            resumeFileName: resumeFileName
+        };
+
+        // 전역 변수로 파라미터 저장
+        window.scwin.paramData = popupData;
+
+        // 세션 스토리지에도 저장
+        try {
+            sessionStorage.setItem("resumePreviewParams", JSON.stringify(popupData));
+        } catch (e) {
+            console.error("세션 스토리지 저장 오류:", e);
+        }
+
+        // 팝업 옵션
+        var popupOptions = {
+            id: "resume_preview_popup_" + accountId,
+            type: "wframePopup", // pageFramePopup에서 wframePopup으로 변경
+            width: "900px",
+            height: "700px",
+            modal: true,
+            popupName: "이력서 미리보기",
+            resizable: true
+        };
+
+        console.log("팝업 데이터:", popupData);
+        console.log("팝업 옵션:", popupOptions);
+
+        // 팝업 열기
+        $c.win.openPopup("../common/ResumePreviewPopup.xml", popupOptions, popupData);
+
+    } catch (error) {
+        console.error("이력서 미리보기 팝업 열기 중 오류:", error);
+        $c.win.alert("이력서 미리보기를 열 수 없습니다: " + error.message);
+    }
+};
+
+// 기술스택 필터 초기화 함수
+scwin.initTechStackFilter = function () {
+    var rowCount = gridView1.getRowCount();
+    var techStackList = [];
+    for (var i = 0; i < rowCount; i++) {
+        var techStackData = dlt_scoutListVo.getCellData(i, "techStack");
+        if (techStackData && techStackData.trim() !== "") {
+            // 쉼표로 구분된 기술스택들을 분리
+            var techStacks = techStackData.split(",");
+            for (var j = 0; j < techStacks.length; j++) {
+                var techStack = techStacks[j].trim();
+                console.log("techStack : " + techStack);
+                if (techStack !== "" && techStackList.indexOf(techStack) === -1) {
+                    techStackList.push(techStack);
+                }
+            }
+        }
+    }
+    console.log("rowCount : " + rowCount);
+    console.log("techStackList : " + techStackList);
+
+    // 기술스택 목록 정렬
+    techStackList.sort();
+
+    // selectbox에 옵션 추가 (기본 chooseOption은 유지)
+    // 기존 데이터 아이템만 제거 (chooseOption 유지)
+    msb_techStackFilter.removeAll(true);
+    
+    // 새로운 기술스택 목록 추가
+    for (var k = 0; k < techStackList.length; k++) {
+        msb_techStackFilter.addItem(techStackList[k], techStackList[k]);
+    }
+};
+
+// 기술스택 필터 적용 함수 (selectbox용)
+scwin.applyTechStackFilter = function () {
+    console.log("=== applyTechStackFilter 함수 호출됨 ===");
+    var selectedTechStack = msb_techStackFilter.getValue();
+    console.log("selectedTechStack from selectbox:", selectedTechStack);
+
+    // 선택된 기술스택이 없거나 빈 값이면 모든 행 표시
+    if (!selectedTechStack || selectedTechStack === "") {
+        var rowCount = dlt_scoutListVo.getRowCount();
+        for (var i = 0; i < rowCount; i++) {
+            gridView1.setRowVisible(i, true);
+        }
+        return;
+    }
+
+    var dataList = dlt_scoutListVo;
+    var rowCount = dataList.getRowCount();
+    var selectedTechLower = selectedTechStack.toLowerCase();
+
+    // 필터링 로직
+    for (var i = 0; i < rowCount; i++) {
+        var techStackData = dataList.getCellData(i, "techStack");
+        var showRow = false;
+
+        if (techStackData && techStackData.trim() !== "") {
+            // 기술스택 데이터를 쉼표로 분리하여 확인
+            var rowTechStacks = techStackData.split(",").map(function(item) { 
+                return item.trim().toLowerCase(); 
+            });
+
+            // 선택된 기술스택이 행의 기술스택 목록에 포함되어 있는지 확인
+            if (rowTechStacks.indexOf(selectedTechLower) !== -1) {
+                showRow = true;
+            }
+        }
+
+        // 행 표시/숨김 설정
+        gridView1.setRowVisible(i, showRow);
+    }
+};
+
+// 기술스택 필터 초기화 버튼 (선택사항)
+scwin.btn_resetFilter_onclick = function () {
+    msb_techStackFilter.setValue(""); // selectbox의 선택 초기화
+    var rowCount = dlt_scoutListVo.getRowCount();
+    for (var i = 0; i < rowCount; i++) {
+        gridView1.setRowVisible(i, true);
+    }
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<w2:wframe src="../common/Header.xml" id="headerFrame" />
+		<xf:group class="sub_contents" style="background-color:#f8f9fa;">
+
+			<!-- 헤더 영역 -->
+			<xf:group class="header-container"
+				style="display:flex; justify-content:space-between; align-items:center; padding:20px; background-color:#f8f9fa; border-bottom:1px solid #e9ecef;">
+				<xf:group class="header-left" style="display:flex; align-items:center;">
+					<w2:textbox id="" label="개발자 매칭"
+						style="font-size:24px; font-weight:bold; color:#2c3e50; border:none; background:transparent;" />
+				</xf:group>
+
+			</xf:group>
+
+			<!-- 컨트롤 바 -->
+			<xf:group
+				style="display:flex; justify-content:center; background-color:#ffffff; border-bottom:1px solid #e9ecef; padding:15px 0;">
+				<xf:group class="control-bar"
+					style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;width:94.92%;padding:0 min(30px, 4vw);">
+					<xf:group style="display:flex; align-items:center; gap:10px;">
+
+						<!-- 스카웃 상태 필터 -->
+						<w2:selectbox id="scoutStatusFilter" style="width: 150px;height: 32px;" submenuSize="auto" appearance="minimal"
+							direction="auto" chooseOption="true" chooseOptionLabel="스카웃 상태" ev:onviewchange="scwin.onScoutStatusFilterChange">
+							<w2:choices>
+								<w2:item>
+									<w2:label><![CDATA[매칭가능한 유저]]></w2:label>
+									<w2:value><![CDATA[NOT_SCOUTED]]></w2:value>
+								</w2:item>
+								<w2:item>
+									<w2:label><![CDATA[매칭을 제안한 유저]]></w2:label>
+									<w2:value><![CDATA[SCOUTED]]></w2:value>
+								</w2:item>
+							</w2:choices>
+						</w2:selectbox>
+
+						<!-- MBTI 필터 -->
+						<xf:select1 id="w2selectbox_disabled" chooseOption="" style="width: 180px;height: 32px;" submenuSize="auto"
+							allOption="" disabled="false" direction="auto" appearance="minimal" disabledClass="w2selectbox_disabled" chooseOptionLabel="모든 성향"
+							ref="" ev:onselected="scwin.w2selectbox_disabled_onselected" class="SelectBox" ev:onchange="scwin.w2selectbox_disabled_onchange">
+							<xf:choices>
+								<xf:item>
+									<xf:label><![CDATA[모든 성향]]></xf:label>
+									<xf:value><![CDATA[0]]></xf:value>
+								</xf:item>
+								<xf:item>
+									<xf:label><![CDATA[4개 이상]]></xf:label>
+									<xf:value><![CDATA[4]]></xf:value>
+								</xf:item>
+								<xf:item>
+									<xf:label><![CDATA[3개 이상]]></xf:label>
+									<xf:value><![CDATA[3]]></xf:value>
+								</xf:item>
+								<xf:item>
+									<xf:label><![CDATA[2개 이상]]></xf:label>
+									<xf:value><![CDATA[2]]></xf:value>
+								</xf:item>
+								<xf:item>
+									<xf:label><![CDATA[1개 이상]]></xf:label>
+									<xf:value><![CDATA[1]]></xf:value>
+								</xf:item>
+							</xf:choices>
+						</xf:select1>
+						<w2:selectbox id="msb_techStackFilter" appearance="minimal" style="width: 150px;height: 32px;" class=""
+							chooseOption="true" chooseOptionLabel="기술스택 선택" ev:onviewchange="scwin.applyTechStackFilter">
+							<w2:choices>
+							</w2:choices>
+						</w2:selectbox>
+					</xf:group>
+
+					<xf:group class="button-group" style="display:flex; align-items:center; gap:10px;">
+						<xf:trigger class="btn-scout-all" style='background-color:#cccccc' type="button" id="scout_all_btn"
+							ev:onclick="scwin.scoutSelected" disabled="true">
+							<xf:label><![CDATA[일괄 매칭 제안]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 그리드 영역 -->
+			<xf:group style="">
+				<xf:group class="pglbox" id="" meta_snippetCategory="06_그리드" meta_snippetKeyComponent="true" meta_snippetName="6_03 페이지리스트">
+
+				</xf:group>
+				<w2:gridView checkAllType="false" dataList="data:dlt_scoutListVo" defaultCellHeight="20" focusFlow="linear" id="gridView1"
+					readOnly="true" sortable="true" useFilter="true" useFilterList="true" customFilterBox="true"
+					style="height:633px;width: 100%;overflow:hidden;box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);border:none;background:#ffffff;"
+					visibleRowNum="10" ev:oncellclick="scwin.gridView1_oncellclick">
+					<w2:caption id="caption2" style="" value="this is a grid caption."></w2:caption>
+					<w2:header id="header2" style="">
+						<w2:row id="row3" style="">
+							<w2:column displayMode="label" id="chk" inputType="checkbox" readOnly="false" style="height: 40px;" value="체크박스" width="70">
+							</w2:column>
+							<w2:column displayMode="label" id="column24" inputType="text" style="" value="ID" width="70"></w2:column>
+							<w2:column displayMode="label" id="column10" inputType="text" style="height:40px;" value="이름" width="70"></w2:column>
+							<w2:column displayMode="label" id="column23" inputType="text" style="" value="이메일" width="250"></w2:column>
+							<w2:column displayMode="label" id="column9" inputType="text" style="height:40px;" value="경력" width="80"></w2:column>
+							<w2:column displayMode="label" id="column8" inputType="text" style="height:40px;" value="포지션" width="150"></w2:column>
+							<w2:column displayMode="label" id="column5" inputType="text" style="height:40px;" value="이력서" width="150"></w2:column>
+							<w2:column displayMode="label" id="column6" inputType="text" style="height:40px;" value="mbti" width="80"></w2:column>
+							<w2:column displayMode="label" id="column7" inputType="text" style="height:40px;" value="기술스택" width="*" useFilter="true"></w2:column>
+						</w2:row>
+					</w2:header>
+					<w2:gBody id="gBody2" style="">
+						<w2:row id="row4" style="">
+							<w2:column displayMode="label" id="chk" inputType="checkbox" readOnly="false" style="height:50px;" value="" width="70">
+							</w2:column>
+							<w2:column displayMode="label" id="accountId" inputType="text" style="" value="" width="70"></w2:column>
+							<w2:column displayMode="label" id="name" inputType="text" style="" value="" width="100"></w2:column>
+							<w2:column displayMode="label" id="email" inputType="text" style="" value="" width="100"></w2:column>
+							<w2:column displayMode="label" id="career" inputType="text" style="" value="" width="80"></w2:column>
+							<w2:column displayMode="label" id="currentPosition" inputType="text" style="" value="" width="100"></w2:column>
+							<w2:column displayMode="HTML" id="resumeFileName" inputType="text" style="cursor:pointer; color:#007bff;" value=""
+								width="150" displayFormatter="scwin.displayResumeFileName"></w2:column>
+							<w2:column displayMode="label" id="typeCode" inputType="text" style="" value="" width="80"></w2:column>
+							<w2:column displayMode="label" id="techStack" inputType="text" style="" value="" width="*"></w2:column>
+						</w2:row>
+					</w2:gBody>
+				</w2:gridView>
+				<w2:pageList class="pgl" displayButtonType="display" displayFormat="#" id="pageList1" pageSize="10" pagingType="0" style="">
+				</w2:pageList>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate/>
+		<w2:MSA/>
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_mbtiResult">
+					<w2:keyInfo>
+						<w2:key id="mbtiType" name="MBTI 유형" dataType="text"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+		</xf:model>
+		<w2:layoutInfo/>
+		<w2:publicInfo method=""/>
+		<script lazy="false" type="text/javascript"><![CDATA[
+			scwin.onpageload = function () {
+				var parentOptions = $p.get; // UserDetailMain.xml에서 전달된 dataObject를 가져옵니다.
+				if (parentOptions && parentOptions.dataObject && parentOptions.dataObject.mbtiType) {
+					var mbtiType = parentOptions.dataObject.mbtiType;
+					dma_mbtiResult.set("mbtiType", mbtiType);
+					var imageUrl = "/InsWebApp/images/ws5/mbti/png/" + mbtiType + ".png";
+					result_image.setSrc(imageUrl);
+					result_mbti_type.setLabel(mbtiType);
+				}
+			};
+		]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group id="result_section_mbti" style="text-align: center; padding: 20px;">
+			<w2:textbox id="result_mbti_type" style="font-size: 28px; font-weight: bold; margin-top: 20px; color: #007bff;"></w2:textbox>
+			<xf:image id="result_image" src="" style="max-width: 400px; width: 100%; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 20px;"></xf:image>
+		</xf:group>
+	</body>
+</html>

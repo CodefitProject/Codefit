@@ -1,0 +1,1735 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="개인정보 수정">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate />
+        <w2:MSA />
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+            	<w2:dataMap baseNode="map" id="dma_userInfoVo">
+            		<w2:keyInfo>
+            			<w2:key id="accountId" name="계정 ID" dataType="number"></w2:key>
+            			<w2:key id="email" name="이메일" dataType="text"></w2:key>
+            			<w2:key id="name" name="사용자명" dataType="text"></w2:key>
+            			<w2:key id="career" name="경력수준" dataType="text"></w2:key>
+            			<w2:key id="preferredLocations" name="지역" dataType="text"></w2:key>
+            			<w2:key id="currentPosition" name="직무분야" dataType="text"></w2:key>
+            			<w2:key id="yearSalary" name="희망연봉" dataType="number"></w2:key>
+            			<w2:key id="bio" name="자기소개" dataType="text"></w2:key>
+            			<w2:key id="testChecked" name="테스트완료여부" dataType="boolean"></w2:key>
+            			<w2:key id="techStack" name="기술스택" dataType="text"></w2:key>
+                  <w2:key id="resume_file_name" name="이력서 파일명" dataType="text"></w2:key>
+            		</w2:keyInfo>
+            	</w2:dataMap>
+
+                <!-- 선택된 지역 리스트 -->
+                <w2:dataList baseNode="list" id="dlt_selectedLocations" repeatNode="map" saveRemovedData="true" style="">
+                    <w2:columnInfo>
+                        <w2:column dataType="text" id="locationName" name="지역명"></w2:column>
+                    </w2:columnInfo>
+                </w2:dataList>
+
+            	<!-- 경력 옵션 -->
+            	<w2:dataList id="dlt_careerOptions" baseNode="list" repeatNode="map" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column id="label" name="레이블" dataType="text"></w2:column>
+            			<w2:column id="value" name="값" dataType="text"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+
+            	<!-- 직무분야 옵션 -->
+            	<w2:dataList id="dlt_positionOptions" baseNode="list" repeatNode="map" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column id="label" name="레이블" dataType="text"></w2:column>
+            			<w2:column id="value" name="값" dataType="text"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+
+            	<!-- 지역 옵션 -->
+            	<w2:dataList id="dlt_locationOptions" baseNode="list" repeatNode="map" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column id="label" name="레이블" dataType="text"></w2:column>
+            			<w2:column id="value" name="값" dataType="text"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+
+            	<!-- 연봉 옵션 -->
+            	<w2:dataList id="dlt_salaryOptions" baseNode="list" repeatNode="map" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column id="label" name="레이블" dataType="text"></w2:column>
+            			<w2:column id="value" name="값" dataType="number"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+
+            	<w2:dataMap baseNode="map" id="dma_passwordChangeVo">
+            		<w2:keyInfo>
+            			<w2:key id="currentPassword" name="현재 비밀번호" dataType="text"></w2:key>
+            			<w2:key id="newPassword" name="새 비밀번호" dataType="text"></w2:key>
+            			<w2:key id="confirmPassword" name="새 비밀번호 확인" dataType="text"></w2:key>
+            		</w2:keyInfo>
+            	</w2:dataMap>
+
+            	<!-- 기술스택 옵션 -->
+            	<w2:dataList id="dlt_techStackOptions" baseNode="list" repeatNode="map" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column id="techStackId" name="기술스택 ID" dataType="text"></w2:column>
+            			<w2:column id="techStackName" name="기술스택 이름" dataType="text"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+            	<w2:dataList baseNode="list" repeatNode="map" id="dlt_selectTechStacks" saveRemovedData="true">
+            		<w2:columnInfo>
+            			<w2:column dataType="text" name="기술스택 ID" id="techStackId"></w2:column>
+            			<w2:column dataType="text" name="기술스택 이름" id="techStackName"></w2:column>
+            		</w2:columnInfo>
+            	</w2:dataList>
+            </w2:dataCollection>
+
+            <!-- 사용자 정보 조회 submission -->
+            <xf:submission id="sbm_userDetail" action="/InsWebApp/US0002UpdView.pwkjson" method="post" mediatype="application/json"
+                ref='data:json,{"id":"dma_userInfoVo", "key":"userInfoVo"}' target='data:json,{"id":"dma_userInfoVo", "key":"elData"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+                customHandler="" mode="asynchronous" processMsg="유저 정보 조회중" ev:submit="" ev:submitdone="scwin.sbm_userDetail_submitdone" ev:submiterror="scwin.sbm_userDetail_submiterror" abortTrigger="">
+            </xf:submission>
+            
+            <!-- 사용자 정보 수정 submission -->
+            <xf:submission id="sbm_updateUser" action="/InsWebApp/USUpdateUserInfo.pwkjson" method="post" mediatype="application/json"
+                ref='data:json,{"id":"dma_userInfoVo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+                customHandler="" mode="asynchronous" processMsg="유저 정보 수정중" ev:submit="" ev:submitdone="scwin.sbm_updateUser_submitdone" ev:submiterror="scwin.sbm_updateUser_submiterror" abortTrigger="">
+            </xf:submission>
+
+            <!-- 비밀번호 변경 submission -->
+            <xf:submission id="sbm_updatePassword" action="/InsWebApp/USUpdatePassword.pwkjson" method="post" mediatype="application/json"
+                ref='data:json,{"id":"dma_passwordChangeVo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+                customHandler="" mode="asynchronous" processMsg="비밀번호 변경중" ev:submit="" ev:submitdone="scwin.sbm_updatePassword_submitdone" ev:submiterror="scwin.sbm_updatePassword_submiterror" abortTrigger="">
+            </xf:submission>
+      
+            <!-- 이력서 업로드 submission 추가 -->
+            <xf:submission id="sbm_uploadResume" action="/InsWebApp/USUploadResume.pwkjson" method="post" mediatype="application/json" 
+                encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="이력서 업로드 중..." 
+                ev:submit="" ev:submitdone="scwin.sbm_uploadResume_submitdone" ev:submiterror="scwin.sbm_uploadResume_submiterror" abortTrigger="">
+            </xf:submission>
+            
+            <!-- 기술스택 목록 조회 submission -->
+            <xf:submission id="sbm_selectTechStackList" action="/InsWebApp/POS0002List.pwkjson" method="post" mediatype="application/json"
+                target='data:json,{"id":"dlt_techStackOptions", "key":"techStackVoList"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+                customHandler="" mode="asynchronous" processMsg="기술스택 조회중" ev:submitdone="scwin.sbm_selectTechStackList_submitdone" ev:submiterror="scwin.sbm_selectTechStackList_submiterror" abortTrigger="">
+            </xf:submission>
+            
+            <!-- 이력서 삭제 submission 추가 -->
+            <xf:submission id="sbm_deleteResume" action="/InsWebApp/USDeleteResume.pwkjson" method="post" mediatype="application/json"
+                ref='data:json,{"id":"dma_userInfoVo", "key":"accountId"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+                customHandler="" mode="asynchronous" processMsg="이력서 삭제 중..." 
+                ev:submit="" ev:submitdone="scwin.sbm_deleteResume_submitdone" ev:submiterror="scwin.sbm_deleteResume_submiterror" abortTrigger="">
+            </xf:submission>
+        </xf:model>
+        <w2:layoutInfo />
+        <w2:publicInfo method="" />
+        
+        <style type="text/css"><![CDATA[
+            /* 전체 컨테이너 */
+            .update-container {
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            
+            /* 헤더 영역 */
+            .update-header {
+                margin-bottom: 40px;
+                text-align: center;
+            }
+            
+            .update-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 10px;
+            }
+            
+            .update-subtitle {
+                font-size: 16px;
+                color: #666;
+            }
+            
+            /* 폼 영역 */
+            .update-form {
+                background: white;
+                border-radius: 12px;
+                padding: 40px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+            
+            /* 폼 그룹 */
+            .form-group {
+                margin-bottom: 30px;
+            }
+            
+            .form-label {
+                display: block;
+                font-size: 14px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 8px;
+            }
+            
+            .form-required {
+                color: #dc3545;
+            }
+            
+            /* 입력 필드 공통 스타일 */
+            .form-input {
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
+                transition: border-color 0.2s;
+            }
+            
+            .form-input:focus {
+                outline: none;
+                border-color: #007bff;
+            }
+            
+            /* 텍스트영역 */
+            .form-textarea {
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
+                resize: vertical;
+                min-height: 120px;
+            }
+            
+            /* 선택박스 */
+            .form-select {
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
+                background-color: white;
+                cursor: pointer;
+                /* 텍스트 수직 가운데 정렬을 위한 스타일 추가 */
+                line-height: 1.5;
+                display: flex;
+                align-items: center;
+                min-height: 34px;
+            }
+            
+            /* WebSquare select 컴포넌트의 내부 테이블 셀 정렬 */
+            .form-select table {
+                width: 100%;
+                height: 100%;
+            }
+            
+            .form-select table td {
+                vertical-align: middle;
+                padding: 0;
+                line-height: 1.5;
+            }
+            
+            /* WebSquare select의 document 요소 정렬 */
+            .form-select document {
+                display: block;
+                line-height: 1.5;
+                padding: 0;
+                margin: 0;
+                vertical-align: middle;
+            }
+            
+            /* 버튼 영역 */
+            .button-group {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                margin-top: 40px;
+            }
+            
+            .btn {
+                padding: 12px 40px;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            
+            .btn-primary {
+                background-color: #007bff;
+                color: white;
+            }
+            
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            
+            .btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
+            
+            .btn-secondary:hover {
+                background-color: #5a6268;
+            }
+            
+            /* 반응형 디자인 */
+            @media (max-width: 768px) {
+                .update-container {
+                    margin: 20px auto;
+                }
+                
+                .update-form {
+                    padding: 20px;
+                }
+                
+                .button-group {
+                    flex-direction: column;
+                }
+                
+                .btn {
+                    width: 100%;
+                }
+            }
+
+            /* 개발자 기술스택 태그 컨테이너 */
+            .dev-type-tag-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-top: 10px;
+            }
+
+            /* 개별 태그 래퍼 */
+            .dev-type-tag-wrapper {
+                display: flex;
+                align-items: center;
+                background-color: #e0f7fa; /* Light cyan background */
+                color: #00796b; /* Dark cyan text */
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 12px;
+                font-weight: 500;
+                white-space: nowrap;
+                border: 1px solid #b2ebf2;
+            }
+
+            /* 태그 텍스트 */
+            .dev-type-tag {
+                background-color: transparent;
+                color: inherit;
+                padding: 0;
+                border: none;
+                font-size: inherit;
+                font-weight: inherit;
+                white-space: nowrap;
+            }
+
+            /* 삭제 버튼 */
+            .remove-tag-btn {
+                background-color: transparent;
+                border: none;
+                color: #00796b;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: pointer;
+                margin-left: 5px;
+                padding: 0 3px;
+            }
+
+            .remove-tag-btn:hover {
+                color: #d32f2f;
+            }
+
+            /* 지역 선택 관련 스타일 */
+            .location-container {
+                width: 100%;
+                margin-top: 10px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                padding: 15px;
+                background-color: #f8f9fa;
+            }
+
+            .location-header {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                font-size: 14px;
+                color: #666;
+                font-weight: 600;
+            }
+
+            .location-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+
+            .location-option {
+                padding: 8px 6px;
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
+                background-color: #ffffff;
+                cursor: pointer;
+                text-align: center;
+                font-size: 14px;
+                transition: all 0.3s ease;
+                color: #333;
+                user-select: none;
+            }
+
+            .location-option:hover {
+                border-color: #007bff;
+                background-color: #f0f8ff;
+                transform: translateY(-1px);
+            }
+
+            .location-option.selected {
+                border-color: #007bff;
+                background-color: #007bff;
+                color: white;
+            }
+
+            .location-tag-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 40px;
+                margin-bottom: 15px; /* 선택된 태그와 지역 선택 버튼들 사이 여백 추가 */
+            }
+
+            .location-tag {
+                display: flex;
+                align-items: center;
+                background-color: #007bff;
+                color: white;
+                padding: 6px 10px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 500;
+                gap: 6px;
+            }
+
+            .location-tag-remove {
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                opacity: 0.7;
+                transition: opacity 0.3s ease;
+            }
+
+            .location-tag-remove:hover {
+                opacity: 1;
+            }
+        ]]></style>
+        
+        <script lazy="false" type="text/javascript"><![CDATA[
+// 선택된 지역 배열
+scwin.selectedLocations = [];
+
+scwin.onpageload = function () {
+    try {
+        // 옵션 데이터 초기화
+        scwin.initializeOptions();
+        
+        // 사용자 인증 정보 가져오기 (여러 방법 시도)
+        var userId = null;
+        
+        // 1. ProWorks 헤더에서 사용자 정보 가져오기 시도
+        try {
+            if (typeof WebSquare !== "undefined" && 
+                typeof WebSquare.WebSquareExtension !== "undefined" && 
+                typeof WebSquare.WebSquareExtension.getProworksUserHeader === "function") {
+                var userHeader = WebSquare.WebSquareExtension.getProworksUserHeader();
+                if (userHeader && userHeader.accountId) {
+                    userId = userHeader.accountId;
+                }
+            }
+        } catch (e) {
+            console.error("ProWorks 헤더 조회 오류:", e);
+        }
+        
+        // 2. WebSquare 헤더 컴포넌트에서 사용자 정보 가져오기 시도
+        if (!userId && $p.top() && $p.top().wfm_header) {
+            try {
+                if (typeof $p.top().wfm_header.getUserInfo === "function") {
+                    var headerUserInfo = $p.top().wfm_header.getUserInfo();
+                    console.log("헤더 컴포넌트 정보:", headerUserInfo);
+                    if (headerUserInfo && headerUserInfo.accountId) {
+                        userId = headerUserInfo.accountId;
+                        console.log("헤더 컴포넌트에서 가져온 사용자 ID:", userId);
+                    }
+                }
+            } catch (e) {
+                console.error("헤더 컴포넌트 조회 오류:", e);
+            }
+        }
+        
+        // 3. 쿠키에서 사용자 정보 가져오기 시도
+        if (!userId) {
+            try {
+        var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+                console.log("쿠키에서 가져온 사용자 정보:", userInfoStr);
+                if (userInfoStr) {
+                    try {
+                        var userInfo = JSON.parse(userInfoStr);
+                        if (userInfo && userInfo.accountId) {
+                            userId = userInfo.accountId;
+                            console.log("쿠키에서 가져온 사용자 ID:", userId);
+                        }
+                    } catch (parseErr) {
+                        console.error("쿠키 파싱 오류:", parseErr);
+                    }
+                }
+                
+                // 다른 쿠키 이름도 시도
+                if (!userId) {
+                    var altCookies = ["userId", "user_id", "id", "session_user"];
+                    for (var i = 0; i < altCookies.length; i++) {
+                        var cookieVal = WebSquare.cookie.getCookie(altCookies[i]);
+                        if (cookieVal) {
+                            console.log("대체 쿠키 발견:", altCookies[i], cookieVal);
+                            try {
+                                userId = parseInt(cookieVal, 10);
+                                if (!isNaN(userId)) {
+                                    console.log("대체 쿠키에서 가져온 사용자 ID:", userId);
+                                    break;
+                                }
+                            } catch (e) {
+                                console.error("대체 쿠키 파싱 오류:", e);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("쿠키 조회 오류:", e);
+        }
+        }
+        // 4. 세션 스토리지에서 사용자 정보 가져오기 시도
+        if (!userId && window.sessionStorage) {
+            try {
+                var sessionUserInfo = sessionStorage.getItem("userInfo");
+                console.log("세션 스토리지에서 가져온 사용자 정보:", sessionUserInfo);
+                if (sessionUserInfo) {
+                    try {
+                        var sessionUser = JSON.parse(sessionUserInfo);
+                        if (sessionUser && sessionUser.accountId) {
+                            userId = sessionUser.accountId;
+                            console.log("세션 스토리지에서 가져온 사용자 ID:", userId);
+                        }
+                    } catch (parseErr) {
+                        console.error("세션 스토리지 파싱 오류:", parseErr);
+                    }
+                }
+            } catch (e) {
+                console.error("세션 스토리지 조회 오류:", e);
+            }
+        }
+        
+        // 5. URL 파라미터에서 사용자 정보 가져오기 시도
+        if (!userId) {
+            try {
+                var urlParams = new URLSearchParams(window.location.search);
+                var paramUserId = urlParams.get("userId") || urlParams.get("user_id") || urlParams.get("id");
+                if (paramUserId) {
+                    userId = parseInt(paramUserId, 10);
+                    if (!isNaN(userId)) {
+                        console.log("URL 파라미터에서 가져온 사용자 ID:", userId);
+                    }
+                }
+            } catch (e) {
+                console.error("URL 파라미터 조회 오류:", e);
+            }
+        }
+        
+        // 6. 임시 테스트용 사용자 ID 설정 (개발 환경에서만 사용)
+        if (!userId && window.location.hostname === "localhost") {
+            // 테스트 계정 ID (실제 환경에서는 제거)
+            userId = 1; // 테스트용 ID
+            console.warn("로컬 개발 환경에서 테스트용 사용자 ID 설정:", userId);
+        }
+        
+        // 사용자 ID가 없는 경우 로그인 페이지로 이동
+        if (!userId) {
+            console.error("사용자 ID를 찾을 수 없습니다. 모든 인증 방법 실패");
+            $c.win.alert("로그인이 필요합니다.");
+            $p.url("/InsWebApp/ui/user/Login.xml");
+            return;
+        }
+        
+        // 사용자 ID 설정
+        dma_userInfoVo.set("accountId", userId);
+        
+        // 사용자 정보 조회 요청
+        $c.sbm.execute($p, sbm_userDetail);
+        
+        // 파일 업로드를 위한 폼 초기화
+        scwin.initResumeUploadForm();
+        
+        // 지역 선택 이벤트 초기화 (DOM이 완전히 로드된 후)
+        setTimeout(function() {
+            scwin.initializeLocationEvents();
+        }, 500);
+        
+        // 디버깅 정보 추가
+        console.log("페이지 로드 완료 - 사용자 ID:", userId);
+        
+        // 사용자 이력서 정보 조회 (추가 요청)
+        scwin.getResumeInfo(userId);
+
+        var userInfo = JSON.parse(userInfoStr);
+        console.log("사용자 쿠키 정보:", userInfo);
+
+        // 계정 ID가 없을 경우 오류 처리
+        if (!userInfo.accountId) {
+            $c.win.alert("사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.");
+            $p.url("/InsWebApp/ui/user/Login.xml");
+            return;
+        }
+
+        dma_userInfoVo.set("accountId", userInfo.accountId);
+
+        // 사용자 정보 조회 요청
+        $c.sbm.execute($p, sbm_userDetail);
+
+        // 기술스택 목록 조회 요청
+        $c.sbm.execute($p, sbm_selectTechStackList);
+    } catch (e) {
+        $c.win.alert("페이지 로드 중 오류가 발생했습니다.");
+    }
+};
+
+// 옵션 데이터 초기화
+scwin.initializeOptions = function () {
+    // 경력 옵션
+    var careerOptions = [
+        { label: "신입", value: "신입" },
+        { label: "1년 미만", value: "1년 미만" },
+        { label: "1-3년", value: "1-3년" },
+        { label: "3-5년", value: "3-5년" },
+        { label: "5-10년", value: "5-10년" },
+        { label: "10년 이상", value: "10년 이상" }
+    ];
+    dlt_careerOptions.setJSON(careerOptions);
+
+    // 직무분야 옵션
+    var positionOptions = [
+        { label: "프론트엔드 개발자", value: "프론트엔드 개발자" },
+        { label: "백엔드 개발자", value: "백엔드 개발자" },
+        { label: "풀스택 개발자", value: "풀스택 개발자" },
+        { label: "모바일 개발자", value: "모바일 개발자" },
+        { label: "데이터 엔지니어", value: "데이터 엔지니어" },
+        { label: "DevOps 엔지니어", value: "DevOps 엔지니어" },
+        { label: "AI/ML 엔지니어", value: "AI/ML 엔지니어" },
+        { label: "보안 엔지니어", value: "보안 엔지니어" }
+    ];
+    dlt_positionOptions.setJSON(positionOptions);
+
+    // 지역 옵션
+    var locationOptions = [
+        { label: "서울", value: "서울" },
+        { label: "경기", value: "경기" },
+        { label: "인천", value: "인천" },
+        { label: "부산", value: "부산" },
+        { label: "대구", value: "대구" },
+        { label: "대전", value: "대전" },
+        { label: "광주", value: "광주" },
+        { label: "울산", value: "울산" },
+        { label: "세종", value: "세종" },
+        { label: "강원", value: "강원" },
+        { label: "충북", value: "충북" },
+        { label: "충남", value: "충남" },
+        { label: "전북", value: "전북" },
+        { label: "전남", value: "전남" },
+        { label: "경북", value: "경북" },
+        { label: "경남", value: "경남" },
+        { label: "제주", value: "제주" }
+    ];
+    dlt_locationOptions.setJSON(locationOptions);
+
+    // 연봉 옵션
+    var salaryOptions = [
+        { label: "3,000만원 이하", value: 3000 },
+        { label: "3,000 ~ 3,300만원", value: 3300 },
+        { label: "3,300 ~ 3,600만원", value: 3600 },
+        { label: "3,600 ~ 4,000만원", value: 4000 },
+        { label: "4,000 ~ 4,500만원", value: 4500 },
+        { label: "4,500 ~ 5,000만원", value: 5000 },
+        { label: "5,000 ~ 6,000만원", value: 6000 },
+        { label: "6,000 ~ 7,000만원", value: 7000 },
+        { label: "7,000 ~ 8,000만원", value: 8000 },
+        { label: "8,000만원 이상", value: 8500 }
+    ];
+    dlt_salaryOptions.setJSON(salaryOptions);
+};
+
+// 사용자 정보 조회 완료
+scwin.sbm_userDetail_submitdone = function (e) {
+    try {
+        console.log("사용자 정보 로드 완료:", e);
+        
+        // 서버 응답 데이터 확인
+        var responseData = e.responseJSON;
+        if (responseData) {
+            console.log("서버 응답:", responseData);
+            
+            // elData가 있는 경우 (표준 ProWorks 응답 구조)
+            if (responseData.elData) {
+                dma_userInfoVo.setJSON(responseData.elData);
+                console.log("elData에서 데이터 로드:", responseData.elData);
+            } else {
+                // 직접 응답 데이터 사용 (대체 방식)
+                dma_userInfoVo.setJSON(responseData);
+                console.log("응답에서 직접 데이터 로드:", responseData);
+            }
+        } else {
+            console.error("서버 응답에 데이터가 없습니다.");
+        }
+        
+        console.log("데이터맵 최종 상태:", dma_userInfoVo.getJSON());
+        
+        // 필드별 상태 확인 및 디버깅
+        var userId = dma_userInfoVo.get("accountId");
+        var email = dma_userInfoVo.get("email");
+        var name = dma_userInfoVo.get("name");
+        var bio = dma_userInfoVo.get("bio");
+        var resumeFileName = dma_userInfoVo.get("resume_file_name");
+        
+        console.log("계정 ID:", userId);
+        console.log("이메일:", email);
+        console.log("사용자명:", name);
+        console.log("자기소개:", bio);
+        console.log("이력서 파일명:", resumeFileName);
+        
+        // 이메일과 자기소개 필드가 비어있는 경우 처리
+        if (!email) {
+            console.warn("이메일 정보가 없습니다.");
+        }
+        
+        if (!bio) {
+            console.warn("자기소개 정보가 없습니다.");
+        }
+        
+        // UI 업데이트 확인
+        if (ibx_email && email) {
+            ibx_email.setValue(email);
+            console.log("이메일 필드 설정됨:", email);
+        }
+        
+        if (txa_bio && bio) {
+            txa_bio.setValue(bio);
+            console.log("자기소개 필드 설정됨:", bio);
+        }
+        
+        // 이력서 파일명 설정 - 수정된 부분
+        if (resumeFileName && ibx_resumeFileName) {
+            console.log("이력서 파일명 원본:", resumeFileName);
+            
+            // 파일 경로에서 파일명만 추출하여 표시
+            var fileName = resumeFileName;
+            
+            // 경로에서 파일명만 추출 (마지막 '/' 이후의 문자열)
+            if (resumeFileName.indexOf('/') !== -1) {
+                fileName = resumeFileName.substring(resumeFileName.lastIndexOf('/') + 1);
+                console.log("경로에서 파일명 추출:", fileName);
+            }
+            
+            // 파일명에서 사용자 ID 부분 제거 (userId_timestamp.pdf 형식에서)
+            if (fileName.indexOf('_') !== -1) {
+                fileName = fileName.substring(fileName.indexOf('_') + 1);
+                console.log("사용자 ID 제거 후 파일명:", fileName);
+        }
+        
+            // 타임스탬프 부분 제거 (yyyyMMdd_HHmmss.pdf 형식에서)
+            if (fileName.indexOf('.pdf') !== -1) {
+                var displayName = "이력서_" + fileName.substring(0, fileName.indexOf('.pdf')).substring(0, 8) + ".pdf";
+                ibx_resumeFileName.setValue(displayName);
+                console.log("최종 표시 파일명:", displayName);
+                
+                // 파일명 클릭 시 PDF 조회 기능 활성화
+                scwin.enablePdfViewer(resumeFileName);
+            } else {
+                ibx_resumeFileName.setValue(fileName);
+                console.log("최종 표시 파일명 (PDF 아님):", fileName);
+            }
+        } else {
+            console.warn("이력서 파일명이 없거나 입력 필드를 찾을 수 없습니다:", {
+                resumeFileName: resumeFileName,
+                ibx_resumeFileName: ibx_resumeFileName ? "존재함" : "없음"
+            });
+            
+            // 입력 필드가 있지만 값이 없는 경우 플레이스홀더 설정
+            if (ibx_resumeFileName) {
+                ibx_resumeFileName.setValue("");
+        }
+        }
+        
+        // 추가 디버깅 정보
+        console.log("sbm_userDetail_submitdone 처리 완료");
+
+        // 초기 기술스택 문자열 저장
+        scwin.initialTechStackString = dma_userInfoVo.get("techStack");
+        console.log("초기 기술스택 문자열:", scwin.initialTechStackString);
+
+        // 선택된 기술스택 UI 채우기 시도
+        scwin.populateSelectedTechStacks();
+
+        // 데이터 로드 완료 후 필드가 비어있는 경우 처리
+        if (!dma_userInfoVo.get("currentPosition")) {
+            console.log("직무분야 정보가 없습니다.");
+        }
+
+        if (!dma_userInfoVo.get("preferredLocations")) {
+            console.log("선호 지역 정보가 없습니다.");
+        }
+
+        if (!dma_userInfoVo.get("career")) {
+            console.log("경력 정보가 없습니다.");
+        }
+
+        if (!dma_userInfoVo.get("yearSalary")) {
+            console.log("희망연봉 정보가 없습니다.");
+        }
+
+        if (!dma_userInfoVo.get("bio")) {
+            console.log("자기소개 정보가 없습니다.");
+        }
+
+        // 선호 지역 정보 초기화
+        var preferredLocations = dma_userInfoVo.get("preferredLocations");
+        if (preferredLocations) {
+            console.log("선호 지역:", preferredLocations);
+            scwin.selectedLocations = preferredLocations.split(",");
+            // 지역 UI 업데이트
+            setTimeout(function() {
+                scwin.updateLocationDisplay();
+                scwin.highlightSelectedLocations();
+            }, 300);
+        } else {
+            console.log("선호 지역 정보가 없습니다.");
+            scwin.selectedLocations = [];
+            scwin.updateLocationDisplay();
+        }
+
+    } catch (e) {
+        $c.win.alert("사용자 정보 로드 중 오류가 발생했습니다.");
+    }
+};
+
+// 사용자 정보 조회 오류
+scwin.sbm_userDetail_submiterror = function(e) {
+    $c.win.alert("사용자 정보를 불러오는데 실패했습니다. 다시 로그인해주세요.");
+    $p.url("/InsWebApp/ui/user/Login.xml");
+};
+
+// 저장 버튼 클릭
+scwin.btn_save_onclick = function (e) {
+    try {
+        // 필수 입력 항목 검증
+        var name = dma_userInfoVo.get("name");
+        if (!name || name.trim() === "") {
+            $c.win.alert("이름을 입력해주세요.");
+            ibx_name.focus();
+            return;
+        }
+
+        // 서버에 저장 요청
+        if (confirm("변경사항을 저장하시겠습니까?")) {
+            // dlt_selectTechStacks 에 있는 기술스택 ID들을 콤마로 구분된 문자열로 변환
+            var selectedTechStackIds = [];
+            for (var i = 0; i < dlt_selectTechStacks.getRowCount(); i++) {
+                selectedTechStackIds.push(dlt_selectTechStacks.getCellData(i, "techStackId"));
+            }
+            dma_userInfoVo.set("techStack", selectedTechStackIds.join(","));
+
+            console.log("전송될 기술스택 값 (dma_userInfoVo.techStack):", dma_userInfoVo.get("techStack"));
+
+            $c.sbm.execute($p, sbm_updateUser);
+        }
+    } catch (e) {
+        console.error("btn_save_onclick 오류:", e);
+        $c.win.alert("저장 중 오류가 발생했습니다.");
+    }
+};
+
+// 저장 완료
+scwin.sbm_updateUser_submitdone = function (e) {
+    try {
+        var res = e.responseJSON;
+        if (res && res.result === "success") {
+            $c.win.alert("개인정보가 성공적으로 수정되었습니다.");
+            // 이전 페이지로 이동
+            $p.url("/InsWebApp/ui/user/UserDetail.xml");
+        } else {
+            $c.win.alert(res.message || "저장에 실패했습니다.");
+        }
+    } catch (e) {
+        console.error("sbm_updateUser_submitdone 오류:", e);
+        $c.win.alert("저장 처리 중 오류가 발생했습니다.");
+    }
+};
+
+// 저장 오류
+scwin.sbm_updateUser_submiterror = function (e) {
+    $c.win.alert("개인정보 수정에 실패했습니다.");
+    console.error("저장 오류:", e);
+};
+
+// 취소 버튼 클릭
+scwin.btn_cancel_onclick = function (e) {
+    if (confirm("변경사항을 저장하지 않고 돌아가시겠습니까?")) {
+        $p.url("/InsWebApp/ui/user/UserDetail.xml");
+    }
+};
+
+// 비밀번호 변경 버튼 클릭
+scwin.btn_changePassword_onclick = function (e) {
+    var currentPassword = dma_passwordChangeVo.get("currentPassword");
+    var newPassword = dma_passwordChangeVo.get("newPassword");
+    var confirmPassword = dma_passwordChangeVo.get("confirmPassword");
+
+    if (!currentPassword) {
+        $c.win.alert("현재 비밀번호를 입력해주세요.");
+        return;
+    }
+    if (!newPassword) {
+        $c.win.alert("새 비밀번호를 입력해주세요.");
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        $c.win.alert("새 비밀번호가 일치하지 않습니다.");
+        return;
+    }
+
+    if (confirm("비밀번호를 변경하시겠습니까?")) {
+        $c.sbm.execute($p, sbm_updatePassword);
+    }
+};
+
+// 비밀번호 변경 완료
+scwin.sbm_updatePassword_submitdone = function (e) {
+    var res = e.responseJSON;
+    if (res && res.result === "success") {
+        $c.win.alert("비밀번호가 성공적으로 변경되었습니다.");
+        // 입력 필드 초기화
+        dma_passwordChangeVo.set("currentPassword", "");
+        dma_passwordChangeVo.set("newPassword", "");
+        dma_passwordChangeVo.set("confirmPassword", "");
+    } else {
+        $c.win.alert(res.message || "비밀번호 변경에 실패했습니다.");
+    }
+};
+
+// 비밀번호 변경 오류
+scwin.sbm_updatePassword_submiterror = function (e) {
+    $c.win.alert("비밀번호 변경 중 오류가 발생했습니다.");
+    console.error("비밀번호 변경 오류:", e);
+};
+
+// 이력서 업로드 폼 초기화
+scwin.initResumeUploadForm = function() {
+    // 파일 업로드를 위한 숨겨진 form과 input 생성
+    if (!scwin.fileUploadForm) {
+        var form = document.createElement("form");
+        form.id = "resumeUploadForm";
+        form.method = "post";
+        form.enctype = "multipart/form-data";
+        form.style.display = "none";
+        
+        var fileInput = document.createElement("input");
+        fileInput.id = "resumeFileInput";
+        fileInput.name = "resumeFile";
+        fileInput.type = "file";
+        fileInput.accept = ".pdf,application/pdf";
+        fileInput.style.display = "none";
+        
+        form.appendChild(fileInput);
+        document.body.appendChild(form);
+        
+        // 파일 선택 이벤트 리스너 등록
+        fileInput.addEventListener("change", function(e) {
+            scwin.handleResumeFileUpload(e);
+        });
+        
+        scwin.fileUploadForm = form;
+        scwin.fileUploadInput = fileInput;
+    }
+};
+
+// 이력서 업로드 버튼 클릭
+scwin.btn_uploadResume_onclick = function(e) {
+    if (scwin.fileUploadInput) {
+        scwin.fileUploadInput.click();
+    }
+};
+
+// 이력서 삭제 버튼 클릭
+scwin.btn_deleteResume_onclick = function(e) {
+    try {
+        // 이력서가 있는지 확인
+        var resumeFileName = dma_userInfoVo.get("resume_file_name");
+        
+        if (!resumeFileName) {
+            $c.win.alert("삭제할 이력서 파일이 없습니다.");
+            return;
+        }
+        
+        if (confirm("이력서 파일을 삭제하시겠습니까?\n삭제 시 실제 파일도 함께 삭제됩니다.")) {
+            // 서버에 이력서 삭제 요청 전송
+            console.log("이력서 삭제 요청 전송:", dma_userInfoVo.get("accountId"));
+            $c.sbm.execute($p, sbm_deleteResume);
+        }
+    } catch (e) {
+        console.error("이력서 삭제 요청 중 오류:", e);
+        $c.win.alert("이력서 삭제 처리 중 오류가 발생했습니다.");
+    }
+};
+
+// 이력서 파일 업로드 처리
+scwin.handleResumeFileUpload = function(e) {
+    try {
+        var file = e.target.files[0];
+        if (!file) return;
+        
+        // PDF 파일 검증을 위한 변수
+        var fileName = file.name || "";
+        var fileType = file.type || "";
+        var fileExt = fileName.split('.').pop().toLowerCase();
+        
+        console.log("파일 정보:", {
+            name: fileName,
+            type: fileType,
+            extension: fileExt,
+            size: file.size
+        });
+        
+        // PDF 파일 확인 (확장자와 MIME 타입 모두 체크)
+        var isPdfByExt = (fileExt === "pdf");
+        var isPdfByMime = (fileType.indexOf("pdf") !== -1);
+        
+        if (!isPdfByExt && !isPdfByMime) {
+            $c.win.alert("PDF 파일만 업로드 가능합니다.");
+            scwin.fileUploadInput.value = "";
+            return;
+        }
+        
+        // 파일 크기 제한 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            $c.win.alert("파일 크기는 5MB를 초과할 수 없습니다.");
+            scwin.fileUploadInput.value = "";
+            return;
+        }
+        
+        // FormData 생성
+        var formData = new FormData();
+        formData.append("resumeFile", file);
+        formData.append("userId", dma_userInfoVo.get("accountId"));
+        
+        // XMLHttpRequest를 사용한 파일 업로드
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/InsWebApp/USUploadResume.pwkjson", true);
+        
+        // 업로드 진행 상태 표시
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percentage = (e.loaded / e.total) * 100;
+                console.log("업로드 진행: " + percentage + "%");
+            }
+        };
+        
+        // 응답 처리
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.result === "success") {
+                        $c.win.alert("이력서가 성공적으로 업로드되었습니다.");
+                        
+                        // 서버에서 반환한 파일 경로를 저장 (DB에 저장된 경로)
+                        dma_userInfoVo.set("resume_file_name", response.fileName);
+                        
+                        // 사용자에게는 원본 파일명만 표시 (서버 경로 숨김)
+                        var displayFileName = response.originalFileName || file.name;
+                        
+                        // 파일명이 너무 길면 앞부분만 표시하고 ... 추가
+                        if (displayFileName.length > 30) {
+                            var ext = displayFileName.substring(displayFileName.lastIndexOf('.'));
+                            displayFileName = displayFileName.substring(0, 25) + "..." + ext;
+                        }
+                        
+                        // 파일명 표시 및 PDF 뷰어 활성화
+                        ibx_resumeFileName.setValue("이력서_" + displayFileName);
+                        scwin.enablePdfViewer(response.fileName);
+                        
+                        console.log("이력서 업로드 완료:", {
+                            savedPath: response.fileName,
+                            displayName: "이력서_" + displayFileName
+                        });
+                    } else {
+                        $c.win.alert(response.message || "이력서 업로드에 실패했습니다.");
+                    }
+                } catch (e) {
+                    console.error("응답 파싱 오류:", e);
+                    $c.win.alert("이력서 업로드 중 오류가 발생했습니다.");
+                }
+            } else {
+                $c.win.alert("이력서 업로드에 실패했습니다. (상태 코드: " + xhr.status + ")");
+            }
+            
+            // 파일 입력 초기화
+            scwin.fileUploadInput.value = "";
+        };
+        
+        // 오류 처리
+        xhr.onerror = function() {
+            console.error("이력서 업로드 중 네트워크 오류가 발생했습니다.");
+            $c.win.alert("이력서 업로드 중 오류가 발생했습니다.");
+            scwin.fileUploadInput.value = "";
+        };
+        
+        // 요청 전송
+        xhr.send(formData);
+        
+    } catch (e) {
+        console.error("handleResumeFileUpload 오류:", e);
+        $c.win.alert("이력서 업로드 중 오류가 발생했습니다.");
+    }
+};
+
+// 이력서 업로드 완료 핸들러
+scwin.sbm_uploadResume_submitdone = function(e) {
+    try {
+        var res = e.responseJSON;
+        if (res && res.result === "success") {
+            $c.win.alert("이력서가 성공적으로 업로드되었습니다.");
+            dma_userInfoVo.set("resume_file_name", res.fileName);
+        } else {
+            $c.win.alert(res.message || "이력서 업로드에 실패했습니다.");
+        }
+    } catch (e) {
+        console.error("sbm_uploadResume_submitdone 오류:", e);
+        $c.win.alert("이력서 업로드 처리 중 오류가 발생했습니다.");
+    }
+};
+
+// 이력서 업로드 오류 핸들러
+scwin.sbm_uploadResume_submiterror = function(e) {
+    $c.win.alert("이력서 업로드에 실패했습니다.");
+    console.error("이력서 업로드 오류:", e);
+};
+
+// 이력서 삭제 완료 핸들러
+scwin.sbm_deleteResume_submitdone = function(e) {
+    try {
+        var res = e.responseJSON;
+        if (res && res.result === "success") {
+            console.log("이력서 삭제 성공:", res);
+            $c.win.alert("이력서가 성공적으로 삭제되었습니다.");
+            
+            // 이력서 파일명 초기화
+            dma_userInfoVo.set("resume_file_name", "");
+            ibx_resumeFileName.setValue("");
+            
+            // 이벤트 리스너 초기화 (PDF 뷰어 비활성화)
+            var resumeFileNameInput = document.getElementById(ibx_resumeFileName.getID());
+            if (resumeFileNameInput) {
+                resumeFileNameInput.style.cursor = "default";
+                resumeFileNameInput.style.color = "";
+                resumeFileNameInput.style.textDecoration = "none";
+                resumeFileNameInput.title = "";
+                resumeFileNameInput._pdfViewerEnabled = false;
+                
+                // 기존 클릭 이벤트 리스너 제거
+                var newElement = resumeFileNameInput.cloneNode(true);
+                resumeFileNameInput.parentNode.replaceChild(newElement, resumeFileNameInput);
+            }
+        } else {
+            console.error("이력서 삭제 실패:", res);
+            $c.win.alert(res.message || "이력서 삭제에 실패했습니다.");
+        }
+    } catch (e) {
+        console.error("sbm_deleteResume_submitdone 오류:", e);
+        $c.win.alert("이력서 삭제 처리 중 오류가 발생했습니다.");
+    }
+};
+
+// 이력서 삭제 오류 핸들러
+scwin.sbm_deleteResume_submiterror = function(e) {
+    console.error("이력서 삭제 오류:", e);
+    $c.win.alert("이력서 삭제에 실패했습니다.");
+};
+
+// PDF 뷰어 활성화 함수 추가
+scwin.enablePdfViewer = function(resumeFilePath) {
+    // 이력서 파일명 입력 필드에 클릭 이벤트 추가
+    var resumeFileNameInput = document.getElementById(ibx_resumeFileName.getID());
+    if (resumeFileNameInput) {
+        // 기존 이벤트 리스너 제거 (중복 방지)
+        if (resumeFileNameInput._pdfViewerEnabled) {
+            return;
+        }
+        
+        // 스타일 변경 (클릭 가능함을 표시)
+        resumeFileNameInput.style.cursor = "pointer";
+        resumeFileNameInput.style.color = "#007bff";
+        resumeFileNameInput.style.textDecoration = "underline";
+        
+        // 툴팁 추가
+        resumeFileNameInput.title = "클릭하여 PDF 파일 보기";
+        
+        // 클릭 이벤트 추가
+        resumeFileNameInput.addEventListener("click", function() {
+            scwin.viewPdf(resumeFilePath);
+        });
+        
+        // 이벤트 리스너 등록 표시
+        resumeFileNameInput._pdfViewerEnabled = true;
+    }
+};
+
+// PDF 파일 조회 함수 추가
+scwin.viewPdf = function(resumeFilePath) {
+    try {
+        if (!resumeFilePath) {
+            console.error("PDF 파일 경로가 없습니다.");
+            return;
+        }
+        
+        console.log("PDF 파일 조회:", resumeFilePath);
+        
+        // PDF 조회 URL 생성
+        var viewUrl = "/InsWebApp/USViewResume.pwkjson?filePath=" + encodeURIComponent(resumeFilePath);
+        
+        // 새 창에서 PDF 열기
+        window.open(viewUrl, "_blank", "width=800,height=800");
+    } catch (e) {
+        console.error("PDF 파일 조회 중 오류:", e);
+        $c.win.alert("PDF 파일을 조회할 수 없습니다.");
+    }
+};
+
+// 이력서 정보 조회 함수 추가
+scwin.getResumeInfo = function(userId) {
+    try {
+        if (!userId) {
+            console.error("사용자 ID가 없습니다.");
+            return;
+        }
+        
+        console.log("이력서 정보 조회:", userId);
+        
+        // AJAX 요청으로 이력서 정보 조회
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/InsWebApp/USGetResumeInfo.pwkjson?userId=" + userId, true);
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log("이력서 정보 조회 응답:", response);
+                    
+                    if (response.result === "success") {
+                        if (response.hasResume) {
+                            // 이력서가 있는 경우
+                            console.log("이력서 파일 정보:", {
+                                resumeFileName: response.resumeFileName,
+                                displayName: response.displayName,
+                                viewUrl: response.viewUrl,
+                                fileExists: response.fileExists,
+                                fileSize: response.fileSize
+                            });
+                            
+                            // 이력서 파일명 표시
+                            ibx_resumeFileName.setValue(response.displayName);
+                            
+                            // PDF 뷰어 활성화
+                            scwin.enablePdfViewer(response.resumeFileName);
+                        } else {
+                            // 이력서가 없는 경우
+                            console.log("등록된 이력서가 없습니다.");
+                            ibx_resumeFileName.setValue("");
+                        }
+                    } else {
+                        console.error("이력서 정보 조회 실패:", response.message);
+                    }
+                } catch (e) {
+                    console.error("응답 파싱 오류:", e);
+                }
+            } else {
+                console.error("이력서 정보 조회 HTTP 오류:", xhr.status);
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error("이력서 정보 조회 네트워크 오류");
+        };
+        
+        xhr.send();
+    } catch (e) {
+        console.error("이력서 정보 조회 중 오류:", e);
+    }
+};
+// 기술스택 목록 조회 완료
+scwin.sbm_selectTechStackList_submitdone = function (e) {
+    console.log("기술스택 목록 로드 완료:", dlt_techStackOptions.getAllJSON());
+    // 선택된 기술스택 UI 채우기 시도
+    scwin.populateSelectedTechStacks();
+};
+
+// 기술스택 목록 조회 오류
+scwin.sbm_selectTechStackList_submiterror = function (e) {
+    $c.win.alert("기술스택 목록을 불러오는데 실패했습니다.");
+    console.error("기술스택 목록 조회 오류:", e);
+};
+
+scwin.ac_techStack_onselected = function (e) {
+
+    const selectedValue = ac_techStack.getValue();
+
+    if (!selectedValue) return;
+
+    // dlt_techStackOptions 에서 선택된 value 에 해당하는 행 찾기
+    const selectedIndex = dlt_techStackOptions.getMatchedIndex("techStackId", selectedValue);
+    if (selectedIndex < 0) return;
+
+    // 선택된 행의 id / name 추출
+    const techStackId = dlt_techStackOptions.getCellData(selectedIndex, "techStackId");
+    const techStackName = dlt_techStackOptions.getCellData(selectedIndex, "techStackName");
+
+    // (1) 이미 추가된 스택은 중복으로 넣지 않게 체크
+    const dupIndex = dlt_selectTechStacks.getMatchedIndex("techStackId", techStackId);
+    if (dupIndex > 0) {
+        console.log(`[중복] techStackId=${techStackId} 는 이미 DataList 에 존재합니다.`);
+        $c.win.alert("이미 추가된 기술 스택입니다.");
+        return;
+    }
+
+    // (2) DataList 에 행 추가
+    const newRowIndex = dlt_selectTechStacks.insertRow();
+    dlt_selectTechStacks.setCellData(newRowIndex, "techStackId", techStackId);
+    dlt_selectTechStacks.setCellData(newRowIndex, "techStackName", techStackName);
+
+    // (3) generator 에 반영
+    scwin.renderSelectedTechStacks();
+
+    // autoComplete 초기화
+    ac_techStack.setValue("");
+};
+
+// dlt_selectTechStacks 의 내용을 기반으로 generator 를 다시 그리는 함수
+scwin.renderSelectedTechStacks = function () {
+    gen_selectedTechStacks.removeAll(); // 기존 항목 모두 제거
+    var rowCount = dlt_selectTechStacks.getRowCount();
+    for (var i = 0; i < rowCount; i++) {
+        gen_selectedTechStacks.insertChild();
+        var techStackName = dlt_selectTechStacks.getCellData(i, "techStackName");
+        var txb_techStackName = gen_selectedTechStacks.getChild(i, "txb_techStackName");
+        txb_techStackName.setValue(techStackName);
+    }
+};
+
+// 페이지 로드 시 또는 사용자 정보 로드 후 기존 기술스택을 UI에 채우는 함수
+scwin.populateSelectedTechStacks = function () {
+    if (scwin.initialTechStackString && dlt_techStackOptions.getRowCount() > 0) {
+        var techStackIds = scwin.initialTechStackString.split(",").map(id => id.trim());
+
+        dlt_selectTechStacks.removeAll(); // 기존 데이터 초기화
+
+        techStackIds.forEach(function (id) {
+            var matchedIndex = dlt_techStackOptions.getMatchedIndex("techStackId", id);
+            if (matchedIndex > -1) {
+                var techStackName = dlt_techStackOptions.getCellData(matchedIndex, "techStackName");
+                var newRowIndex = dlt_selectTechStacks.insertRow();
+                dlt_selectTechStacks.setCellData(newRowIndex, "techStackId", id);
+                dlt_selectTechStacks.setCellData(newRowIndex, "techStackName", techStackName);
+            }
+        });
+        scwin.renderSelectedTechStacks(); // UI 업데이트
+    }
+};
+
+// 기술스택 삭제 함수
+scwin.removeTechStack = function (e) {
+    var index = this.getGeneratedIndex();  // 현재 반복 아이템의 index
+
+    if (index >= 0) {
+        dlt_selectTechStacks.removeRow(index);
+        scwin.renderSelectedTechStacks(); // UI 업데이트
+    }
+};
+
+// 지역 선택 토글 함수
+scwin.toggleLocation = function(locationName) {
+    console.log("지역 선택 토글:", locationName);
+    
+    var index = scwin.selectedLocations.indexOf(locationName);
+    
+    if (index > -1) {
+        // 이미 선택된 경우 선택 해제
+        scwin.selectedLocations.splice(index, 1);
+        // UI에서 선택 해제
+        var elements = document.querySelectorAll('.location-option');
+        if (elements && elements.length > 0) {
+            elements.forEach(function(el) {
+                if (el.textContent && el.textContent.trim() === locationName) {
+                    el.classList.remove('selected');
+                }
+            });
+        }
+    } else {
+        // 최대 5개까지만 선택 가능
+        if (scwin.selectedLocations.length >= 5) {
+            $c.win.alert("최대 5개까지만 선택 가능합니다.");
+            return;
+        }
+        
+        // 선택되지 않은 경우 선택 추가
+        scwin.selectedLocations.push(locationName);
+        // UI에서 선택 표시
+        var elements = document.querySelectorAll('.location-option');
+        if (elements && elements.length > 0) {
+            elements.forEach(function(el) {
+                if (el.textContent && el.textContent.trim() === locationName) {
+                    el.classList.add('selected');
+                }
+            });
+        }
+    }
+    
+    // 선택된 지역 UI와 hidden input 업데이트
+    scwin.updateLocationDisplay();
+};
+
+// 지역 제거 함수
+scwin.removeLocation = function(locationName) {
+    var index = scwin.selectedLocations.indexOf(locationName);
+    if (index > -1) {
+        scwin.selectedLocations.splice(index, 1);
+        
+        // UI에서 선택 해제
+        var elements = document.querySelectorAll('.location-option');
+        if (elements && elements.length > 0) {
+            elements.forEach(function(el) {
+                if (el.textContent && el.textContent.trim() === locationName) {
+                    el.classList.remove('selected');
+                }
+            });
+        }
+        
+        // 선택된 지역 UI와 hidden input 업데이트
+        scwin.updateLocationDisplay();
+    }
+};
+
+// 선택된 지역 표시 업데이트
+scwin.updateLocationDisplay = function() {
+    var container = document.getElementById("selectedLocationTags");
+    var countText = document.getElementById("locationCountText");
+    
+    if (!container || !countText) {
+        console.log("지역 선택 UI 요소를 찾을 수 없습니다.");
+        return;
+    }
+    
+    // 태그 컨테이너 초기화
+    container.innerHTML = '';
+    
+    // 선택된 지역들로 태그 생성
+    if (scwin.selectedLocations && scwin.selectedLocations.length > 0) {
+        scwin.selectedLocations.forEach(function(location) {
+            if (!location) return;
+            
+            var tag = document.createElement('div');
+            tag.className = 'location-tag';
+            tag.innerHTML = location + ' <span class="location-tag-remove" data-location="' + location + '">×</span>';
+            container.appendChild(tag);
+        });
+    }
+    
+    // 선택 개수 표시 업데이트
+    countText.textContent = scwin.selectedLocations.length + "개 선택됨 (최대 5개)";
+    
+    // hidden input 값 업데이트
+    $p.getComponentById("hdn_selectedLocations").setValue(scwin.selectedLocations.join(","));
+    dma_userInfoVo.set("preferredLocations", scwin.selectedLocations.join(","));
+};
+
+// 지역 선택 이벤트 초기화
+scwin.initializeLocationEvents = function() {
+    // 태그 삭제 버튼 이벤트 위임
+    var container = document.getElementById("selectedLocationTags");
+    if (container) {
+        container.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('location-tag-remove')) {
+                var locationName = event.target.getAttribute('data-location');
+                scwin.removeLocation(locationName);
+            }
+        });
+    }
+};
+
+// 선택된 지역 강조 표시
+scwin.highlightSelectedLocations = function() {
+    var options = document.querySelectorAll('.location-option');
+    if (options && options.length > 0) {
+        options.forEach(function(option) {
+            var locationName = option.textContent.trim();
+            if (scwin.selectedLocations.indexOf(locationName) > -1) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+};
+]]></script>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="../common/Header.xml" id="headerFrame" />
+        
+        <xf:group class="update-container">
+            <!-- 헤더 영역 -->
+            <xf:group class="update-header">
+                <w2:textbox class="update-title" label="개인정보 수정"></w2:textbox>
+                <w2:textbox class="update-subtitle" label="프로필 정보를 수정할 수 있습니다."></w2:textbox>
+            </xf:group>
+            
+            <!-- 폼 영역 -->
+            <xf:group class="update-form">
+            	<!-- 이메일 (읽기전용) -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="이메일"></w2:textbox>
+            		<xf:input id="ibx_email" ref="data:dma_userInfoVo.email" class="form-input" readOnly="true"
+            			style="background-color: #f5f5f5;">
+            		</xf:input>
+            	</xf:group>
+
+            	<!-- 이름 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="이름">
+            			<w2:span class="form-required" label=" *"></w2:span>
+            		</w2:textbox>
+            		<xf:input id="ibx_name" ref="data:dma_userInfoVo.name" class="form-input" placeholder="이름을 입력하세요"></xf:input>
+            	</xf:group>
+
+            	<!-- 경력 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="경력"></w2:textbox>
+            		<xf:select1 id="sel_career" ref="data:dma_userInfoVo.career" class="form-select" appearance="minimal"
+            			chooseOption="false">
+            			<xf:choices>
+            				<xf:itemset nodeset="data:dlt_careerOptions">
+            					<xf:label ref="label"></xf:label>
+            					<xf:value ref="value"></xf:value>
+            				</xf:itemset>
+            			</xf:choices>
+            		</xf:select1>
+            	</xf:group>
+
+            	<!-- 직무분야 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="직무분야"></w2:textbox>
+            		<xf:select1 id="sel_position" ref="data:dma_userInfoVo.currentPosition" class="form-select" appearance="minimal"
+            			chooseOption="false">
+            			<xf:choices>
+            				<xf:itemset nodeset="data:dlt_positionOptions">
+            					<xf:label ref="label"></xf:label>
+            					<xf:value ref="value"></xf:value>
+            				</xf:itemset>
+            			</xf:choices>
+            		</xf:select1>
+            	</xf:group>
+
+            	<!-- 선호 지역 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="선호 지역 (최대 5개)"></w2:textbox>
+            		<!-- 선택된 지역 태그들을 표시할 컨테이너 -->
+            		<xf:group class="location-container">
+            		    <div class="location-header">
+                            <span id="locationCountText">0개 선택됨</span>
+                        </div>
+                        <div class="location-tag-container" id="selectedLocationTags">
+                            <!-- 태그들이 여기에 동적으로 추가됩니다 -->
+                        </div>
+                        <div class="location-grid">
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('서울')">
+                                <xf:label>서울</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경기')">
+                                <xf:label>경기</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('인천')">
+                                <xf:label>인천</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('부산')">
+                                <xf:label>부산</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('대구')">
+                                <xf:label>대구</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('대전')">
+                                <xf:label>대전</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('광주')">
+                                <xf:label>광주</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('울산')">
+                                <xf:label>울산</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('세종')">
+                                <xf:label>세종</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('강원')">
+                                <xf:label>강원</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('충북')">
+                                <xf:label>충북</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('충남')">
+                                <xf:label>충남</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('전북')">
+                                <xf:label>전북</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('전남')">
+                                <xf:label>전남</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경북')">
+                                <xf:label>경북</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경남')">
+                                <xf:label>경남</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('제주')">
+                                <xf:label>제주</xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('원격근무')">
+                                <xf:label>원격근무</xf:label>
+                            </xf:trigger>
+                        </div>
+                    </xf:group>
+                    <!-- 선택된 지역들을 저장할 히든 인풋 -->
+                    <xf:input style="display:none;" id="hdn_selectedLocations" ref="data:dma_userInfoVo.preferredLocations"></xf:input>
+            	</xf:group>
+
+            	<!-- 희망연봉 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="희망연봉"></w2:textbox>
+            		<xf:select1 id="sel_salary" ref="data:dma_userInfoVo.yearSalary" class="form-select" appearance="minimal"
+            			chooseOption="false">
+            			<xf:choices>
+            				<xf:itemset nodeset="data:dlt_salaryOptions">
+            					<xf:label ref="label"></xf:label>
+            					<xf:value ref="value"></xf:value>
+            				</xf:itemset>
+            			</xf:choices>
+            		</xf:select1>
+            		<xf:group class="form-group" style="margin-top: 30px;">
+            			<w2:textbox class="form-label" label="기술스택"></w2:textbox>
+
+            			<w2:autoComplete id="ac_techStack" 
+            				editType="select" 
+            				style="width: 100%; height: 36px;" 
+            				submenuSize="auto" 
+            				search="start" 
+            				searchTarget="label"
+            				caseSensitive="false"
+            				allowEmptySubmission="false"
+            				placeholder="기술스택을 입력하거나 선택하세요"
+            				ref="data:dma_userInfoVo.techStack" 
+            				chooseOption="true" 
+            				chooseOptionLabel="기술스택을 선택하세요"
+            				ev:onchange="scwin.ac_techStack_onchange"
+            				ev:onselected="scwin.ac_techStack_onselected">
+            				<w2:choices>
+            					<w2:itemset nodeset="data:dlt_techStackOptions">
+            						<w2:label ref="techStackName"></w2:label>
+            						<w2:value ref="techStackId"></w2:value>
+            					</w2:itemset>
+            				</w2:choices>
+            			</w2:autoComplete>
+            			
+            			<!-- 선택된 기술스택을 표시할 generator -->
+            			<w2:generator id="gen_selectedTechStacks" class="dev-type-tag-container" style="margin-top: 10px;">
+            				<xf:group class="dev-type-tag-wrapper">
+            					<w2:textbox id="txb_techStackName" class="dev-type-tag" style="margin-right: 5px;"></w2:textbox>
+            					<xf:trigger type="button" class="remove-tag-btn" ev:onclick="scwin.removeTechStack">
+            						<xf:label><![CDATA[x]]></xf:label>
+            					</xf:trigger>
+            				</xf:group>
+            			</w2:generator>
+            		</xf:group>
+            	</xf:group>
+
+            	<!-- 자기소개 -->
+            	<xf:group class="form-group">
+            		<w2:textbox class="form-label" label="자기소개"></w2:textbox>
+            		<xf:textarea id="txa_bio" ref="data:dma_userInfoVo.bio" class="form-textarea" placeholder="간단한 자기소개를 작성해주세요"></xf:textarea>
+            	</xf:group>
+              
+                <!-- 이력서 업로드 -->
+                <xf:group class="form-group">
+                    <w2:textbox class="form-label" label="이력서 PDF"></w2:textbox>
+                    <xf:group class="resume-upload-container" style="display: flex; flex-direction: column; gap: 10px;">
+                        <xf:input id="ibx_resumeFileName" ref="data:dma_userInfoVo.resume_file_name" class="form-input" readOnly="true" style="background-color: #f5f5f5;" placeholder="업로드된 이력서 파일이 없습니다"></xf:input>
+                        <xf:group style="display: flex; gap: 10px;">
+                            <xf:trigger class="btn btn-secondary" id="btn_uploadResume" style="width: auto; padding: 8px 16px;" type="button" ev:onclick="scwin.btn_uploadResume_onclick">
+                                <xf:label><![CDATA[이력서 업로드]]></xf:label>
+                            </xf:trigger>
+                            <xf:trigger class="btn btn-secondary" id="btn_deleteResume" style="width: auto; padding: 8px 16px;" type="button" ev:onclick="scwin.btn_deleteResume_onclick">
+                                <xf:label><![CDATA[이력서 삭제]]></xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                        <w2:textbox style="color: #666; font-size: 12px;" label="* PDF 파일만 업로드 가능합니다. (최대 5MB)"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+
+            	<!-- 버튼 영역 -->
+            	<xf:group class="button-group">
+            		<xf:trigger class="btn btn-primary" type="button" ev:onclick="scwin.btn_save_onclick">
+            			<xf:label><![CDATA[저장]]></xf:label>
+            		</xf:trigger>
+            		<xf:trigger class="btn btn-secondary" type="button" ev:onclick="scwin.btn_cancel_onclick">
+            			<xf:label><![CDATA[취소]]></xf:label>
+            		</xf:trigger>
+            	</xf:group>
+            </xf:group>
+
+            <!-- 비밀번호 변경 폼 -->
+            <xf:group class="update-form" style="margin-top: 40px;">
+                <w2:textbox class="update-title" label="비밀번호 변경" style="font-size: 20px; text-align: left; margin-bottom: 20px;"></w2:textbox>
+                
+                <!-- 현재 비밀번호 -->
+                <xf:group class="form-group">
+                    <w2:textbox class="form-label" label="현재 비밀번호"></w2:textbox>
+                    <xf:secret id="sec_currentPassword" ref="data:dma_passwordChangeVo.currentPassword" class="form-input" placeholder="현재 비밀번호를 입력하세요"></xf:secret>
+                </xf:group>
+
+                <!-- 새 비밀번호 -->
+                <xf:group class="form-group">
+                    <w2:textbox class="form-label" label="새 비밀번호"></w2:textbox>
+                    <xf:secret id="sec_newPassword" ref="data:dma_passwordChangeVo.newPassword" class="form-input" placeholder="새 비밀번호를 입력하세요"></xf:secret>
+                </xf:group>
+
+                <!-- 새 비밀번호 확인 -->
+                <xf:group class="form-group">
+                    <w2:textbox class="form-label" label="새 비밀번호 확인"></w2:textbox>
+                    <xf:secret id="sec_confirmPassword" ref="data:dma_passwordChangeVo.confirmPassword" class="form-input" placeholder="새 비밀번호를 다시 입력하세요"></xf:secret>
+                </xf:group>
+
+                <!-- 버튼 영역 -->
+                <xf:group class="button-group">
+                    <xf:trigger class="btn btn-primary" type="button" ev:onclick="scwin.btn_changePassword_onclick">
+                        <xf:label><![CDATA[비밀번호 변경]]></xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html> 

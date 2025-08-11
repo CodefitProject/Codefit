@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="직무/분야 수정">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_jobInfo">
+                    <w2:keyInfo>
+                        <w2:key id="jobCategory" name="직무분야" dataType="text"></w2:key>
+                        <w2:key id="jobSubCategory" name="세부직무" dataType="text"></w2:key>
+                        <w2:key id="careerLevel" name="경력수준" dataType="text"></w2:key>
+                        <w2:key id="workType" name="근무형태" dataType="text"></w2:key>
+
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <style type="text/css"><![CDATA[
+            /* 기본 설정 */
+            * {
+                box-sizing: border-box;
+            }
+
+            .main-wrap {
+                width: 100%;
+                min-height: 100vh;
+                background-color: #f8f9fa;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            }
+
+            /* 헤더 */
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 30px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 30px;
+            }
+
+            .back-button {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 50%;
+                transition: background-color 0.2s ease;
+            }
+
+            .back-button:hover {
+                background-color: #f0f0f0;
+            }
+
+            .header-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+                margin: 0;
+            }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .btn-save {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-save:hover {
+                background-color: #0056b3;
+            }
+
+            .btn-save:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            /* 메인 컨테이너 */
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 40px 20px;
+            }
+
+            /* 진행도 표시기 */
+            .progress-container {
+                background-color: white;
+                border-radius: 12px;
+                padding: 30px;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+
+            .progress-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .progress-title {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 8px;
+            }
+
+            .progress-subtitle {
+                font-size: 16px;
+                color: #666;
+            }
+
+            .progress-bar {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .progress-step {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                font-weight: bold;
+                color: white;
+                margin: 0 5px;
+                position: relative;
+            }
+
+            .progress-step.active {
+                background-color: #007bff;
+            }
+
+            .progress-step.completed {
+                background-color: #28a745;
+            }
+
+            .progress-step.inactive {
+                background-color: #ddd;
+                color: #999;
+            }
+
+            .progress-step::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 100%;
+                transform: translateY(-50%);
+                width: 60px;
+                height: 2px;
+                background-color: #ddd;
+                z-index: -1;
+            }
+
+            .progress-step:last-child::after {
+                display: none;
+            }
+
+            .progress-step.completed::after {
+                background-color: #28a745;
+            }
+
+            .progress-labels {
+                display: flex;
+                justify-content: center;
+                gap: 60px;
+                margin-top: 10px;
+            }
+
+            .progress-label {
+                font-size: 12px;
+                color: #666;
+                text-align: center;
+                min-width: 80px;
+            }
+
+            .progress-label.active {
+                color: #007bff;
+                font-weight: 600;
+            }
+
+            /* 폼 섹션 */
+            .form-section {
+                background-color: white;
+                border-radius: 12px;
+                padding: 40px;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+
+            .section-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 8px;
+            }
+
+            .section-subtitle {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 30px;
+            }
+
+            .form-group {
+                margin-bottom: 30px;
+            }
+
+            .form-label {
+                display: block;
+                font-size: 16px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 12px;
+            }
+
+            .form-label.required::after {
+                content: "*";
+                color: #dc3545;
+                margin-left: 4px;
+            }
+
+            .form-description {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 15px;
+                line-height: 1.4;
+            }
+
+            /* 선택 옵션들 */
+            .option-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-bottom: 20px;
+            }
+
+            .option-card {
+                border: 2px solid #e9ecef;
+                border-radius: 12px;
+                padding: 20px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                background-color: white;
+                text-align: center;
+                position: relative;
+            }
+
+            .option-card:hover {
+                border-color: #007bff;
+                box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+            }
+
+            .option-card.selected {
+                border-color: #007bff;
+                background-color: #f8f9ff;
+                box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+            }
+
+            .option-card.selected::after {
+                content: "✓";
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                color: #007bff;
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .option-icon {
+                font-size: 32px;
+                margin-bottom: 12px;
+                display: block;
+            }
+
+            .option-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 6px;
+            }
+
+            .option-subtitle {
+                font-size: 14px;
+                color: #666;
+                line-height: 1.3;
+            }
+
+
+
+            /* 푸터 액션 */
+            .footer-actions {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 40px;
+                padding: 0 20px;
+            }
+
+            .btn-skip {
+                background: none;
+                border: 1px solid #6c757d;
+                color: #6c757d;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+            .btn-skip:hover {
+                background-color: #6c757d;
+                color: white;
+            }
+
+            .btn-next {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 40px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .btn-next:hover {
+                background-color: #0056b3;
+            }
+
+            .btn-next:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            /* 반응형 */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 20px 15px;
+                }
+
+                .header {
+                    padding: 0 15px;
+                }
+
+                .form-section, .progress-container {
+                    padding: 25px 20px;
+                }
+
+                .option-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .progress-labels {
+                    gap: 30px;
+                }
+
+                .footer-actions {
+                    flex-direction: column;
+                    gap: 15px;
+                    padding: 0 15px;
+                }
+
+                .btn-next {
+                    width: 100%;
+                }
+            }
+        ]]></style>
+        
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+    // 기본 데이터 초기화
+    scwin.initializeJobData();
+    
+    // 현재 선택된 값들을 UI에 반영
+    scwin.updateUI();
+};
+
+// 기본 데이터 초기화
+scwin.initializeJobData = function() {
+    dma_jobInfo.set("jobCategory", "");
+    dma_jobInfo.set("jobSubCategory", "");
+    dma_jobInfo.set("careerLevel", "");
+    dma_jobInfo.set("workType", "");
+};
+
+// UI 업데이트
+scwin.updateUI = function() {
+    // 선택된 옵션들을 UI에 반영
+    scwin.updateSelectedOptions();
+    scwin.updateNextButtonState();
+};
+
+// 뒤로가기
+scwin.goBack = function() {
+    if (confirm("변경사항이 저장되지 않을 수 있습니다. 계속하시겠습니까?")) {
+        $p.url("UserDetail.xml");
+    }
+};
+
+// 저장하기
+scwin.saveJobInfo = function() {
+    // 필수 선택 체크
+    var jobCategory = dma_jobInfo.get("jobCategory");
+    var careerLevel = dma_jobInfo.get("careerLevel");
+    
+    if (!jobCategory) {
+        $c.win.alert("직무 분야를 선택해주세요.");
+        return;
+    }
+    
+    if (!careerLevel) {
+        $c.win.alert("경력 수준을 선택해주세요.");
+        return;
+    }
+    
+    // 실제 환경에서는 서버에 저장
+    $c.win.alert("직무/분야 정보가 저장되었습니다.");
+    
+    // 사용자 상세 페이지로 돌아가기
+    $p.url("UserDetail.xml");
+};
+
+// 직무 분야 선택
+scwin.selectJobCategory = function(category) {
+    dma_jobInfo.set("jobCategory", category);
+    scwin.updateSelectedOptions();
+    scwin.updateNextButtonState();
+    
+    // 세부 직무 영역 표시
+    document.getElementById("subCategorySection").style.display = "block";
+    scwin.loadSubCategories(category);
+};
+
+// 세부 직무 로드
+scwin.loadSubCategories = function(category) {
+    var subCategories = [];
+    
+    switch(category) {
+        case "개발":
+            subCategories = [
+                {value: "backend", title: "백엔드", subtitle: "서버 개발, API 설계"},
+                {value: "frontend", title: "프론트엔드", subtitle: "웹 UI/UX 개발"},
+                {value: "fullstack", title: "풀스택", subtitle: "전체 개발"},
+                {value: "mobile", title: "모바일", subtitle: "앱 개발"},
+                {value: "devops", title: "DevOps", subtitle: "인프라, 배포"},
+                {value: "ai", title: "AI/ML", subtitle: "인공지능, 머신러닝"}
+            ];
+            break;
+        case "데이터":
+            subCategories = [
+                {value: "data_engineer", title: "데이터 엔지니어", subtitle: "데이터 파이프라인"},
+                {value: "data_analyst", title: "데이터 분석가", subtitle: "데이터 분석, 시각화"},
+                {value: "data_scientist", title: "데이터 사이언티스트", subtitle: "통계, 모델링"}
+            ];
+            break;
+        case "기획":
+            subCategories = [
+                {value: "pm", title: "프로덕트 매니저", subtitle: "제품 기획"},
+                {value: "service", title: "서비스 기획", subtitle: "서비스 설계"},
+                {value: "business", title: "사업 기획", subtitle: "비즈니스 전략"}
+            ];
+            break;
+        case "디자인":
+            subCategories = [
+                {value: "ui_ux", title: "UI/UX 디자이너", subtitle: "사용자 경험 설계"},
+                {value: "graphic", title: "그래픽 디자이너", subtitle: "시각 디자인"},
+                {value: "product", title: "프로덕트 디자이너", subtitle: "제품 디자인"}
+            ];
+            break;
+        default:
+            subCategories = [
+                {value: "other", title: "기타", subtitle: "기타 직무"}
+            ];
+    }
+    
+    // 세부 직무 옵션 생성
+    scwin.createSubCategoryOptions(subCategories);
+};
+
+// 세부 직무 옵션 생성
+scwin.createSubCategoryOptions = function(subCategories) {
+    var container = document.getElementById("subCategoryGrid");
+    container.innerHTML = "";
+    
+    subCategories.forEach(function(sub) {
+        var optionDiv = document.createElement("div");
+        optionDiv.className = "option-card";
+        optionDiv.setAttribute("data-value", sub.value);
+        optionDiv.onclick = function() { scwin.selectSubCategory(sub.value); };
+        
+        optionDiv.innerHTML = 
+            '<div class="option-title">' + sub.title + '</div>' +
+            '<div class="option-subtitle">' + sub.subtitle + '</div>';
+        
+        container.appendChild(optionDiv);
+    });
+};
+
+// 세부 직무 선택
+scwin.selectSubCategory = function(subCategory) {
+    dma_jobInfo.set("jobSubCategory", subCategory);
+    scwin.updateSelectedOptions();
+    scwin.updateNextButtonState();
+};
+
+// 경력 수준 선택
+scwin.selectCareerLevel = function(level) {
+    dma_jobInfo.set("careerLevel", level);
+    scwin.updateSelectedOptions();
+    scwin.updateNextButtonState();
+};
+
+// 근무 형태 선택
+scwin.selectWorkType = function(type) {
+    dma_jobInfo.set("workType", type);
+    scwin.updateSelectedOptions();
+    scwin.updateNextButtonState();
+};
+
+// 선택된 옵션들 UI 업데이트
+scwin.updateSelectedOptions = function() {
+    // 직무 분야
+    var jobCategory = dma_jobInfo.get("jobCategory");
+    document.querySelectorAll('[data-category]').forEach(function(el) {
+        el.classList.toggle('selected', el.getAttribute('data-category') === jobCategory);
+    });
+    
+    // 세부 직무
+    var jobSubCategory = dma_jobInfo.get("jobSubCategory");
+    document.querySelectorAll('[data-value]').forEach(function(el) {
+        el.classList.toggle('selected', el.getAttribute('data-value') === jobSubCategory);
+    });
+    
+    // 경력 수준
+    var careerLevel = dma_jobInfo.get("careerLevel");
+    document.querySelectorAll('[data-career]').forEach(function(el) {
+        el.classList.toggle('selected', el.getAttribute('data-career') === careerLevel);
+    });
+    
+    // 근무 형태
+    var workType = dma_jobInfo.get("workType");
+    document.querySelectorAll('[data-work]').forEach(function(el) {
+        el.classList.toggle('selected', el.getAttribute('data-work') === workType);
+    });
+};
+
+// 다음 버튼 상태 업데이트
+scwin.updateNextButtonState = function() {
+    var jobCategory = dma_jobInfo.get("jobCategory");
+    var careerLevel = dma_jobInfo.get("careerLevel");
+    
+    var nextBtn = document.getElementById("btnNext");
+    var saveBtn = document.getElementById("btnSave");
+    
+    var isValid = jobCategory && careerLevel;
+    
+    if (nextBtn) {
+        nextBtn.disabled = !isValid;
+    }
+    if (saveBtn) {
+        saveBtn.disabled = !isValid;
+    }
+};
+]]></script>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <xf:group class="main-wrap">
+            <!-- 헤더 -->
+            <header class="header">
+                <div class="header-left">
+                    <xf:trigger class="back-button" type="button" ev:onclick="scwin.goBack()">
+                        <xf:label><![CDATA[←]]></xf:label>
+                    </xf:trigger>
+                    <w2:textbox class="header-title" label="직무/분야 수정"></w2:textbox>
+                </div>
+                <div class="header-actions">
+                    <xf:trigger class="btn-save" type="button" id="btnSave" ev:onclick="scwin.saveJobInfo()">
+                        <xf:label><![CDATA[저장]]></xf:label>
+                    </xf:trigger>
+                </div>
+            </header>
+
+            <!-- 메인 컨테이너 -->
+            <div class="container">
+                <!-- 진행도 표시 -->
+
+                <!-- 직무 분야 선택 -->
+                <section class="form-section">
+                	<w2:textbox class="progress-title" label="개인정보 수정"></w2:textbox>
+                	<w2:textbox class="section-title" label="어떤 분야에서 일하고 싶으신가요?"></w2:textbox>
+                	<w2:textbox class="section-subtitle" label="관심 있는 직무 분야를 선택해주세요"></w2:textbox>
+
+                	<div class="option-grid">
+                		<div class="option-card" data-category="개발" onclick="scwin.selectJobCategory('개발')">
+                			<div class="option-icon">💻</div>
+                			<div class="option-title">개발</div>
+                			<div class="option-subtitle">백엔드, 프론트엔드, 풀스택 등</div>
+                		</div>
+
+                		<div class="option-card" data-category="데이터" onclick="scwin.selectJobCategory('데이터')">
+                			<div class="option-icon">📊</div>
+                			<div class="option-title">데이터</div>
+                			<div class="option-subtitle">데이터 분석, 엔지니어링</div>
+                		</div>
+
+                		<div class="option-card" data-category="기획" onclick="scwin.selectJobCategory('기획')">
+                			<div class="option-icon">📋</div>
+                			<div class="option-title">기획</div>
+                			<div class="option-subtitle">서비스, 프로덕트 기획</div>
+                		</div>
+
+                		<div class="option-card" data-category="디자인" onclick="scwin.selectJobCategory('디자인')">
+                			<div class="option-icon">🎨</div>
+                			<div class="option-title">디자인</div>
+                			<div class="option-subtitle">UI/UX, 그래픽 디자인</div>
+                		</div>
+
+                		<div class="option-card" data-category="마케팅" onclick="scwin.selectJobCategory('마케팅')">
+                			<div class="option-icon">📢</div>
+                			<div class="option-title">마케팅</div>
+                			<div class="option-subtitle">디지털, 퍼포먼스 마케팅</div>
+                		</div>
+
+                		<div class="option-card" data-category="기타" onclick="scwin.selectJobCategory('기타')">
+                			<div class="option-icon">📝</div>
+                			<div class="option-title">기타</div>
+                			<div class="option-subtitle">다른 분야</div>
+                		</div>
+                	</div>
+                </section>
+
+                <!-- 세부 직무 선택 (처음에는 숨김) -->
+                <section class="form-section" id="subCategorySection" style="display: none;">
+                    <w2:textbox class="section-title" label="세부 직무를 선택해주세요"></w2:textbox>
+                    <w2:textbox class="section-subtitle" label="구체적인 직무를 선택하면 더 정확한 매칭이 가능합니다"></w2:textbox>
+                    
+                    <div class="option-grid" id="subCategoryGrid">
+                        <!-- 동적으로 생성됩니다 -->
+                    </div>
+                </section>
+
+                <!-- 경력 수준 선택 -->
+                <section class="form-section">
+                    <w2:textbox class="section-title" label="경력 수준을 선택해주세요"></w2:textbox>
+                    <w2:textbox class="section-subtitle" label="현재 보유하고 있는 경력 수준을 알려주세요"></w2:textbox>
+                    
+                    <div class="option-grid">
+                        <div class="option-card" data-career="신입" onclick="scwin.selectCareerLevel('신입')">
+                            <div class="option-icon">🌱</div>
+                            <div class="option-title">신입</div>
+                            <div class="option-subtitle">경력 1년 미만</div>
+                        </div>
+                        
+                        <div class="option-card" data-career="주니어" onclick="scwin.selectCareerLevel('주니어')">
+                            <div class="option-icon">🌿</div>
+                            <div class="option-title">주니어</div>
+                            <div class="option-subtitle">1~3년 경력</div>
+                        </div>
+                        
+                        <div class="option-card" data-career="미들" onclick="scwin.selectCareerLevel('미들')">
+                            <div class="option-icon">🌳</div>
+                            <div class="option-title">미들</div>
+                            <div class="option-subtitle">3~7년 경력</div>
+                        </div>
+                        
+                        <div class="option-card" data-career="시니어" onclick="scwin.selectCareerLevel('시니어')">
+                            <div class="option-icon">🏔️</div>
+                            <div class="option-title">시니어</div>
+                            <div class="option-subtitle">7년 이상 경력</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 근무 형태 선택 -->
+
+                <!-- 푸터 액션 -->
+                <div class="footer-actions">
+                    <xf:trigger class="btn-skip" type="button" ev:onclick="scwin.goBack()">
+                        <xf:label><![CDATA[취소]]></xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" type="button" id="btnNext" ev:onclick="scwin.saveJobInfo()">
+                        <xf:label><![CDATA[저장하고 완료]]></xf:label>
+                    </xf:trigger>
+                </div>
+            </div>
+        </xf:group>
+    </body>
+</html>

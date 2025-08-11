@@ -1,0 +1,1091 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map" />
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[// 네트워크 관련 변수 및 함수 추가
+scwin.networkNodes = [];
+scwin.networkConnections = [];
+scwin.networkSvg = null;
+
+// 네트워크 초기화 함수
+scwin.initNetwork = function() {
+    // SVG 네트워크 오버레이 생성
+    var heroSection = document.querySelector('.hero-section');
+    scwin.networkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    scwin.networkSvg.setAttribute('class', 'network-overlay');
+    scwin.networkSvg.setAttribute('width', '99%');
+    scwin.networkSvg.setAttribute('height', '99%');
+    heroSection.appendChild(scwin.networkSvg);
+    
+    // 노드 위치 정보 수집
+    var floatingElements = document.querySelectorAll('.floating-element');
+    scwin.networkNodes = [];
+    
+    floatingElements.forEach(function(element, index) {
+        var rect = element.getBoundingClientRect();
+        var heroRect = heroSection.getBoundingClientRect();
+        
+        scwin.networkNodes.push({
+            element: element,
+            id: index,
+            x: (rect.left + rect.width/2 - heroRect.left) / heroRect.width * 100,
+            y: (rect.top + rect.height/2 - heroRect.top) / heroRect.height * 100,
+            size: parseInt(getComputedStyle(element).width),
+            connections: []
+        });
+    });
+    
+    // 연결 생성 (거리 기반)
+    scwin.createConnections();
+    scwin.renderNetwork();
+    scwin.startNetworkAnimation();
+};
+
+// 노드 간 연결 생성
+scwin.createConnections = function() {
+    scwin.networkConnections = [];
+    
+    for (var i = 0; i < scwin.networkNodes.length; i++) {
+        for (var j = i + 1; j < scwin.networkNodes.length; j++) {
+            var node1 = scwin.networkNodes[i];
+            var node2 = scwin.networkNodes[j];
+            
+            var distance = Math.sqrt(
+                Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2)
+            );
+            
+            // 거리가 30% 이하인 노드들만 연결
+            if (distance < 30) {
+                scwin.networkConnections.push({
+                    from: node1.id,
+                    to: node2.id,
+                    distance: distance,
+                    flow: Math.random()
+                });
+                
+                node1.connections.push(node2.id);
+                node2.connections.push(node1.id);
+            }
+        }
+    }
+};
+
+// 네트워크 렌더링
+scwin.renderNetwork = function() {
+    // 기존 연결선 제거
+    while (scwin.networkSvg.firstChild) {
+        scwin.networkSvg.removeChild(scwin.networkSvg.firstChild);
+    }
+    
+    // defs 추가 (그라디언트와 필터용)
+    var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    
+    // 글로우 필터
+    var filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    filter.setAttribute('id', 'glow');
+    var feGaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+    feGaussianBlur.setAttribute('stdDeviation', '3');
+    feGaussianBlur.setAttribute('result', 'coloredBlur');
+    filter.appendChild(feGaussianBlur);
+    
+    var feMerge = document.createElementNS('http://www.w3.org/2000/svg', 'feMerge');
+    var feMergeNode1 = document.createElementNS('http://www.w3.org/2000/svg', 'feMergeNode');
+    feMergeNode1.setAttribute('in', 'coloredBlur');
+    var feMergeNode2 = document.createElementNS('http://www.w3.org/2000/svg', 'feMergeNode');
+    feMergeNode2.setAttribute('in', 'SourceGraphic');
+    feMerge.appendChild(feMergeNode1);
+    feMerge.appendChild(feMergeNode2);
+    filter.appendChild(feMerge);
+    defs.appendChild(filter);
+    
+    // 플로우 그라디언트
+    var gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    gradient.setAttribute('id', 'flowGradient');
+    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', 'rgba(120, 219, 255, 0)');
+    var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '50%');
+    stop2.setAttribute('stop-color', 'rgba(120, 219, 255, 0.8)');
+    var stop3 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop3.setAttribute('offset', '100%');
+    stop3.setAttribute('stop-color', 'rgba(120, 219, 255, 0)');
+    gradient.appendChild(stop1);
+    gradient.appendChild(stop2);
+    gradient.appendChild(stop3);
+    defs.appendChild(gradient);
+    
+    scwin.networkSvg.appendChild(defs);
+    
+    // 연결선 그리기
+    scwin.networkConnections.forEach(function(connection, index) {
+        var fromNode = scwin.networkNodes[connection.from];
+        var toNode = scwin.networkNodes[connection.to];
+        
+        // 메인 연결선
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', fromNode.x + '%');
+        line.setAttribute('y1', fromNode.y + '%');
+        line.setAttribute('x2', toNode.x + '%');
+        line.setAttribute('y2', toNode.y + '%');
+        line.setAttribute('class', 'network-connection');
+        line.setAttribute('style', 'animation-delay: ' + (index * 0.3) + 's');
+        scwin.networkSvg.appendChild(line);
+        
+        // 플로우 라인
+        var flowLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        flowLine.setAttribute('x1', fromNode.x + '%');
+        flowLine.setAttribute('y1', fromNode.y + '%');
+        flowLine.setAttribute('x2', toNode.x + '%');
+        flowLine.setAttribute('y2', toNode.y + '%');
+        flowLine.setAttribute('class', 'network-flow');
+        flowLine.setAttribute('style', 'animation-delay: ' + (index * 0.5 + 1) + 's');
+        scwin.networkSvg.appendChild(flowLine);
+    });
+};
+
+// 네트워크 애니메이션 시작
+scwin.startNetworkAnimation = function() {
+    // 노드 펄스 애니메이션
+    scwin.networkNodes.forEach(function(node, index) {
+        node.element.style.animationDelay = (index * 0.2) + 's';
+    });
+    
+    // 주기적으로 연결 강도 변경
+    setInterval(function() {
+        var connections = document.querySelectorAll('.network-connection');
+        connections.forEach(function(connection) {
+            var opacity = 0.1 + Math.random() * 0.4;
+            connection.style.opacity = opacity;
+        });
+    }, 2000);
+};
+
+// 기존 onpageload 함수에 네트워크 초기화 추가
+scwin.onpageload = function () {
+    // 페이지 로드 시 애니메이션 효과
+    setTimeout(function () {
+        var elements = document.querySelectorAll('.animate-fade-in');
+        elements.forEach(function (el, index) {
+            setTimeout(function () {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }, 100);
+    
+    // 캐러셀 초기화
+    scwin.initCarousel();
+    
+    // 네트워크 초기화 (약간의 지연 후)
+    setTimeout(function() {
+        scwin.initNetwork();
+    }, 500);
+};
+
+scwin.btn_create_company_onclick = function (e) {
+    var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+    var userInfo = JSON.parse(userInfoStr);
+    if (userInfo != null) {
+        // 권한이 COMPANY 일 경우에만 dashboard로 리다이렉트
+        if (userInfo.role === "COMPANY") {
+            $p.url("../corporate/RecruitmentDashboard.xml");
+            return;
+        }
+    }
+    $p.url("../corporate/CreateCompany.xml");
+};
+
+// 캐러셀 관련 변수
+scwin.activeCard = 0;
+scwin.totalCards = 6;
+
+// 캐러셀 초기화
+scwin.initCarousel = function() {
+    var cards = document.querySelectorAll('.feature-card');
+    scwin.totalCards = cards.length;
+    scwin.loadShow();
+};
+
+// 캐러셀 표시 함수
+scwin.loadShow = function() {
+    var cards = document.querySelectorAll('.feature-card');
+    var stt = 0;
+    
+    // 모든 카드 초기화
+    cards.forEach(function(card) {
+        card.style.transform = '';
+        card.style.opacity = '';
+        card.style.display = 'none';
+        card.style.position = 'absolute';
+        card.style.width = '80%';
+        card.style.left = '10%';
+    });
+    
+    // 활성 카드 표시
+    cards[scwin.activeCard].style.display = 'block';
+    cards[scwin.activeCard].style.transform = 'translateX(0) scale(1)';
+    cards[scwin.activeCard].style.opacity = '1';
+    cards[scwin.activeCard].style.zIndex = '10';
+    
+    // 이전 카드 (왼쪽)
+    var prevIndex = (scwin.activeCard - 1 + scwin.totalCards) % scwin.totalCards;
+    cards[prevIndex].style.display = 'block';
+    cards[prevIndex].style.transform = 'translateX(-120%) scale(0.8)';
+    cards[prevIndex].style.opacity = '0';
+    cards[prevIndex].style.zIndex = '5';
+    
+    // 다음 카드 (오른쪽)
+    var nextIndex = (scwin.activeCard + 1) % scwin.totalCards;
+    cards[nextIndex].style.display = 'block';
+    cards[nextIndex].style.transform = 'translateX(120%) scale(0.8)';
+    cards[nextIndex].style.opacity = '0';
+    cards[nextIndex].style.zIndex = '5';
+    
+    // 인디케이터 업데이트
+    scwin.updateIndicators();
+};
+
+// 다음 카드로 이동
+scwin.btn_next_onclick = function(e) {
+    scwin.activeCard = (scwin.activeCard + 1) % scwin.totalCards;
+    scwin.loadShow();
+};
+
+// 이전 카드로 이동
+scwin.btn_prev_onclick = function(e) {
+    scwin.activeCard = (scwin.activeCard - 1 + scwin.totalCards) % scwin.totalCards;
+    scwin.loadShow();
+};
+
+// 인디케이터 업데이트
+scwin.updateIndicators = function() {
+    var indicators = document.querySelectorAll('.carousel-indicator');
+    indicators.forEach(function(indicator, index) {
+        if (index === scwin.activeCard) {
+            indicator.classList.add('active');
+        } else {
+            indicator.classList.remove('active');
+        }
+    });
+};
+
+// 인디케이터 클릭
+scwin.indicatorClick = function(index) {
+    scwin.activeCard = index;
+    scwin.loadShow();
+};
+]]></script>
+		<style type="text/css"><![CDATA[
+/* 전체 스타일 초기화 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+.sub_contents {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: white;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Hero 섹션 */
+.hero-section {
+    color: white;
+    padding: 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    height: 100vh; /* 전체 화면 높이 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0; /* 여백 제거 */
+    margin-left: calc(-50vw + 50%); /* 부모 컨테이너 제약 벗어나기 */
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(90deg, transparent 79px, rgba(255, 255, 255, 0.03) 81px, rgba(255, 255, 255, 0.03) 82px, transparent 84px),
+        linear-gradient(0deg, transparent 79px, rgba(255, 255, 255, 0.03) 81px, rgba(255, 255, 255, 0.03) 82px, transparent 84px);
+    background-size: 80px 80px;
+    opacity: 0.5;
+    z-index: 1;
+    animation: gridMove 20s linear infinite;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* 네트워크 오버레이 */
+.network-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* 네트워크 연결선 스타일 */
+.network-connection {
+    stroke: rgba(120, 219, 255, 0.3);
+    stroke-width: 1;
+    opacity: 0;
+    filter: drop-shadow(0 0 3px rgba(120, 219, 255, 0.5));
+    animation: connectionPulse 4s ease-in-out infinite;
+}
+
+.network-flow {
+    stroke: url(#flowGradient);
+    stroke-width: 2;
+    opacity: 0;
+    stroke-dasharray: 10, 20;
+    animation: dataFlow 3s ease-in-out infinite;
+}
+
+/* 플로팅 요소들을 네트워크 노드로 변경 */
+.hero-section .floating-element {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(120, 219, 255, 0.6), rgba(54, 111, 255, 0.3), rgba(168, 85, 247, 0.2));
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(120, 219, 255, 0.4);
+    z-index: 3;
+    box-shadow: 
+        0 0 20px rgba(120, 219, 255, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    animation: networkNodePulse 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.hero-section .floating-element::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.7;
+    animation: coreGlow 2s ease-in-out infinite alternate;
+}
+
+.hero-section .floating-element::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: conic-gradient(from 0deg, 
+        rgba(120, 219, 255, 0.4), 
+        rgba(168, 85, 247, 0.4), 
+        rgba(255, 119, 198, 0.4), 
+        rgba(120, 219, 255, 0.4));
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    animation: ringGlow 4s ease-in-out infinite;
+}
+
+.hero-section .floating-element:hover {
+    transform: scale(1.2);
+    box-shadow: 
+        0 0 40px rgba(120, 219, 255, 0.6),
+        inset 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.hero-section .floating-element:hover::after {
+    opacity: 0.8;
+}
+
+/* 개별 노드 스타일 - 크기와 색상 다양화 */
+.hero-section .floating-element:nth-child(1) {
+    width: 16px;
+    height: 16px;
+    top: 15%;
+    left: 8%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 193, 7, 0.6), rgba(255, 119, 198, 0.3));
+    border-color: rgba(255, 193, 7, 0.6);
+    animation-delay: 0s;
+}
+
+.hero-section .floating-element:nth-child(2) {
+    width: 12px;
+    height: 12px;
+    top: 65%;
+    right: 12%;
+    background: radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.6), rgba(120, 219, 255, 0.3));
+    border-color: rgba(34, 197, 94, 0.6);
+    animation-delay: 0.3s;
+}
+
+.hero-section .floating-element:nth-child(3) {
+    width: 20px;
+    height: 20px;
+    bottom: 25%;
+    left: 18%;
+    background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.6), rgba(54, 111, 255, 0.3));
+    border-color: rgba(168, 85, 247, 0.6);
+    animation-delay: 0.6s;
+}
+
+.hero-section .floating-element:nth-child(4) {
+    width: 14px;
+    height: 14px;
+    top: 35%;
+    right: 20%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 119, 198, 0.6), rgba(168, 85, 247, 0.3));
+    border-color: rgba(255, 119, 198, 0.6);
+    animation-delay: 0.9s;
+}
+
+.hero-section .floating-element:nth-child(5) {
+    width: 10px;
+    height: 10px;
+    top: 25%;
+    left: 75%;
+    background: radial-gradient(circle at 30% 30%, rgba(120, 219, 255, 0.6), rgba(54, 111, 255, 0.3));
+    border-color: rgba(120, 219, 255, 0.6);
+    animation-delay: 1.2s;
+}
+
+.hero-section .floating-element:nth-child(6) {
+    width: 18px;
+    height: 18px;
+    bottom: 40%;
+    right: 8%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 59, 48, 0.6), rgba(255, 119, 198, 0.3));
+    border-color: rgba(255, 59, 48, 0.6);
+    animation-delay: 1.5s;
+}
+
+.hero-section .floating-element:nth-child(7) {
+    width: 15px;
+    height: 15px;
+    top: 55%;
+    left: 35%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 193, 7, 0.6), rgba(255, 119, 198, 0.3));
+    border-color: rgba(255, 193, 7, 0.6);
+    animation-delay: 1.8s;
+}
+
+.hero-section .floating-element:nth-child(8) {
+    width: 17px;
+    height: 17px;
+    top: 80%;
+    left: 60%;
+    background: radial-gradient(circle at 30% 30%, rgba(139, 69, 19, 0.6), rgba(255, 193, 7, 0.3));
+    border-color: rgba(139, 69, 19, 0.6);
+    animation-delay: 2.1s;
+}
+
+.hero-section .floating-element:nth-child(9) {
+    width: 13px;
+    height: 13px;
+    top: 10%;
+    left: 45%;
+    background: radial-gradient(circle at 30% 30%, rgba(147, 51, 234, 0.6), rgba(168, 85, 247, 0.3));
+    border-color: rgba(147, 51, 234, 0.6);
+    animation-delay: 2.4s;
+}
+
+.hero-section .floating-element:nth-child(10) {
+    width: 19px;
+    height: 19px;
+    bottom: 60%;
+    left: 5%;
+    background: radial-gradient(circle at 30% 30%, rgba(120, 219, 255, 0.6), rgba(54, 111, 255, 0.3));
+    border-color: rgba(120, 219, 255, 0.6);
+    animation-delay: 2.7s;
+}
+
+.hero-section .floating-element:nth-child(11) {
+    width: 11px;
+    height: 11px;
+    top: 70%;
+    left: 25%;
+    background: radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.6), rgba(34, 197, 94, 0.3));
+    border-color: rgba(16, 185, 129, 0.6);
+    animation-delay: 3s;
+}
+
+.hero-section .floating-element:nth-child(12) {
+    width: 22px;
+    height: 22px;
+    top: 45%;
+    right: 5%;
+    background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.6), rgba(255, 119, 198, 0.3));
+    border-color: rgba(236, 72, 153, 0.6);
+    animation-delay: 3.3s;
+}
+
+/* 작은 파티클들 - 네트워크 데이터 포인트로 변경 */
+.hero-section .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(120, 219, 255, 0.8);
+    border-radius: 50%;
+    z-index: 3;
+    box-shadow: 0 0 6px rgba(120, 219, 255, 0.8);
+    animation: dataParticle 4s ease-in-out infinite;
+}
+
+.hero-section .particle:nth-child(13) { top: 20%; left: 15%; animation-delay: 0s; }
+.hero-section .particle:nth-child(14) { top: 30%; left: 85%; animation-delay: 0.5s; }
+.hero-section .particle:nth-child(15) { top: 60%; left: 10%; animation-delay: 1s; }
+.hero-section .particle:nth-child(16) { top: 80%; left: 90%; animation-delay: 1.5s; }
+.hero-section .particle:nth-child(17) { top: 40%; left: 70%; animation-delay: 2s; }
+.hero-section .particle:nth-child(18) { top: 15%; left: 55%; animation-delay: 2.5s; }
+.hero-section .particle:nth-child(19) { top: 75%; left: 30%; animation-delay: 0.3s; }
+.hero-section .particle:nth-child(20) { top: 50%; left: 95%; animation-delay: 0.8s; }
+.hero-section .particle:nth-child(21) { top: 90%; left: 15%; animation-delay: 1.3s; }
+.hero-section .particle:nth-child(22) { top: 25%; left: 40%; animation-delay: 1.8s; }
+.hero-section .particle:nth-child(23) { top: 65%; left: 80%; animation-delay: 2.3s; }
+.hero-section .particle:nth-child(24) { top: 35%; left: 5%; animation-delay: 0.7s; }
+
+/* 코드 브래킷 요소들 - 네트워크 시그널로 변경 */
+.hero-section .code-element {
+    position: absolute;
+    color: rgba(120, 219, 255, 0.6);
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 4;
+    text-shadow: 0 0 10px rgba(120, 219, 255, 0.8);
+    animation: signalPulse 3s ease-in-out infinite;
+}
+
+.hero-section .code-element:nth-child(25) {
+    top: 18%;
+    left: 22%;
+    animation-delay: 0s;
+}
+
+.hero-section .code-element:nth-child(26) {
+    top: 75%;
+    right: 25%;
+    animation-delay: 1s;
+}
+
+.hero-section .code-element:nth-child(27) {
+    top: 40%;
+    left: 12%;
+    animation-delay: 2s;
+}
+
+.hero-section .code-element:nth-child(28) {
+    bottom: 30%;
+    right: 15%;
+    animation-delay: 3s;
+}
+
+.hero-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease;
+    text-shadow: 0 0 30px rgba(120, 119, 198, 0.5);
+}
+
+.hero-subtitle {
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 40px;
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease 0.2s;
+    text-shadow: 0 0 20px rgba(120, 219, 255, 0.3);
+}
+
+/* CTA 버튼 */
+.cta-button {
+    display: inline-block;
+    background: linear-gradient(45deg, #36f, #a855f7);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease 0.4s;
+    box-shadow: 0 8px 32px rgba(54, 111, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.cta-button:hover::before {
+    left: 100%;
+}
+
+.cta-button:hover {
+    background: linear-gradient(45deg, #2051ff, #9333ea);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(54, 111, 255, 0.4);
+}
+
+/* Features 섹션 - 캐러셀 스타일 */
+.features-section {
+    padding: 80px 0 120px 0;
+    background: #f8f9fa;
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.section-description {
+    font-size: 18px;
+    color: #666;
+}
+
+/* 캐러셀 컨테이너 */
+.carousel-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    height: 650px;
+    padding: 0 60px;
+    overflow: hidden;
+}
+
+.features-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* 캐러셀 카드 스타일 */
+.feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 50px 40px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: absolute;
+    width: 80%;
+    left: 10%;
+    top: 30%;
+    transform: translateY(-50%);
+    display: none;
+    min-height: 350px;
+    max-height: 450px;
+}
+
+.feature-card:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    background: #e1e7ff;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.feature-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #333;
+}
+
+.feature-description {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* 캐러셀 버튼 */
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #333;
+}
+
+.carousel-button:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-prev {
+    left: 0;
+}
+
+.carousel-next {
+    right: 0;
+}
+
+/* 캐러셀 인디케이터 */
+.carousel-indicators {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+}
+
+.carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-indicator.active {
+    width: 24px;
+    border-radius: 4px;
+    background: #36f;
+}
+
+/* 네트워크 애니메이션 정의 */
+@keyframes networkNodePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+@keyframes connectionPulse {
+    0%, 100% {
+        opacity: 0.1;
+        stroke-width: 1;
+    }
+    50% {
+        opacity: 0.5;
+        stroke-width: 2;
+    }
+}
+
+@keyframes dataFlow {
+    0% {
+        opacity: 0;
+        stroke-dashoffset: 30;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        stroke-dashoffset: -30;
+    }
+}
+
+@keyframes coreGlow {
+    0% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+@keyframes ringGlow {
+    0%, 100% {
+        opacity: 0;
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: rotate(180deg) scale(1.05);
+    }
+}
+
+@keyframes dataParticle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+        box-shadow: 0 0 6px rgba(120, 219, 255, 0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+        box-shadow: 0 0 12px rgba(120, 219, 255, 1);
+    }
+}
+
+@keyframes signalPulse {
+    0%, 100% {
+        opacity: 0.4;
+        text-shadow: 0 0 10px rgba(120, 219, 255, 0.4);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 20px rgba(120, 219, 255, 1);
+    }
+}
+
+@keyframes gridMove {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(80px, 80px);
+    }
+}
+
+/* 애니메이션 클래스 */
+.animate-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .hero-section {
+        height: 100vh;
+        margin-left: calc(-50vw + 50%);
+    }
+    
+    .hero-title {
+        font-size: 32px;
+    }
+    
+    .hero-subtitle {
+        font-size: 18px;
+    }
+    
+    .section-title {
+        font-size: 28px;
+    }
+    
+    .carousel-container {
+        padding: 0 40px;
+        height: 700px;
+    }
+    
+    .feature-card {
+        padding: 40px 30px;
+        width: 90%;
+        left: 5%;
+        top: 25%;
+        min-height: 380px;
+        max-height: 500px;
+    }
+    
+    .feature-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    
+    .feature-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    
+    .feature-description {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    
+    .carousel-button {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .carousel-indicators {
+        bottom: -60px;
+    }
+    
+    .network-connection {
+        stroke-width: 0.5;
+    }
+    
+    .network-flow {
+        stroke-width: 1;
+    }
+    
+    .hero-section .floating-element {
+        border-width: 1px;
+    }
+    
+    .hero-section .floating-element:nth-child(1) { width: 14px; height: 14px; }
+    .hero-section .floating-element:nth-child(2) { width: 10px; height: 10px; }
+    .hero-section .floating-element:nth-child(3) { width: 16px; height: 16px; }
+    .hero-section .floating-element:nth-child(4) { width: 12px; height: 12px; }
+    .hero-section .floating-element:nth-child(5) { width: 8px; height: 8px; }
+    .hero-section .floating-element:nth-child(6) { width: 15px; height: 15px; }
+    .hero-section .floating-element:nth-child(7) { width: 13px; height: 13px; }
+    .hero-section .floating-element:nth-child(8) { width: 14px; height: 14px; }
+    .hero-section .floating-element:nth-child(9) { width: 11px; height: 11px; }
+    .hero-section .floating-element:nth-child(10) { width: 16px; height: 16px; }
+    .hero-section .floating-element:nth-child(11) { width: 9px; height: 9px; }
+    .hero-section .floating-element:nth-child(12) { width: 18px; height: 18px; }
+}
+        ]]></style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="sub_contents" id="">
+			<!-- Hero 섹션 -->
+			<section class="hero-section" id="" style="background: black">
+				<xf:group class="hero-content">
+					<h1 class="hero-title animate-fade-in">
+						<w2:textbox id="" label="최고의 개발 인재를&lt;br&gt;가장 스마트하게 만나는 방법" escape="false" style="margin-bottom: 60px;"></w2:textbox>
+					</h1>
+					<xf:trigger class="cta-button animate-fade-in" id="btn_create_company" type="button"
+						ev:onclick="scwin.btn_create_company_onclick">
+						<xf:label><![CDATA[지금 시작하기]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<!-- 메인 플로팅 요소들 (기하학적 도형) -->
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+				<div class="floating-element"></div>
+
+				<!-- 반짝이는 파티클들 -->
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+				<div class="particle"></div>
+
+				<!-- 코드 브래킷 요소들 -->
+				<div class="code-element">{</div>
+				<div class="code-element">}</div>
+				<div class="code-element">&lt;</div>
+				<div class="code-element">&gt;</div>
+			</section>
+
+			<!-- Features 섹션 - 캐러셀 -->
+		</xf:group>
+	</body>
+</html>

@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="희망하는 근무지역을 알려주세요">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_location">
+                    <w2:keyInfo>
+                        <w2:key id="user_id" name="user_id" dataType="text"></w2:key>
+                        <w2:key id="locations" name="locations" dataType="text"></w2:key>
+                        <w2:key id="selectedLocations" name="selectedLocations" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+            
+            <!-- Submission for saving location data to server -->
+            <xf:submission 
+                id="sbm_saveLocation" 
+                ref="data:json,dma_location" 
+                target="data:json,dma_location" 
+                action="/InsWebApp/USUpdateLocation.pwkjson" 
+                method="post" 
+                mediatype="application/json"
+                instance="" 
+                replace="" 
+                errorHandler="" 
+                customHandler=""
+                mode="asynchronous" 
+                processMsg="지역 정보 저장 중..." 
+                ev:submit="" 
+                ev:submitdone="scwin.sbm_saveLocation_submitdone" 
+                ev:submiterror="scwin.sbm_saveLocation_submiterror" 
+                abortTrigger="">
+            </xf:submission>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <script type="text/javascript"><![CDATA[
+var selectedLocationsList = [];
+
+scwin.onpageload = function () {
+    console.log("근무지역 선택 페이지 로드됨");
+    scwin.updateSelectedLocationsDisplay();
+
+    // 이벤트 위임으로 x 버튼 클릭 처리
+    setTimeout(function () {
+        var container = document.querySelector('.selected-locations-container');
+        if (!container) {
+            container = document.getElementById('selectedLocationsContainer');
+        }
+        if (container) {
+            container.addEventListener('click', function (event) {
+                if (event.target && event.target.classList.contains('location-tag-remove')) {
+                    var locationTag = event.target.closest('.location-tag');
+                    if (locationTag) {
+                        var locationText = locationTag.textContent.replace(' ×', '').trim();
+                        scwin.removeLocation(locationText);
+                    }
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        }
+    }, 300);
+};
+
+scwin.toggleLocation = function (locationName) {
+    console.log("선택된 지역:", locationName);
+    var index = selectedLocationsList.indexOf(locationName);
+
+    if (index > -1) {
+        selectedLocationsList.splice(index, 1);
+        var elements = document.querySelectorAll('.location-option');
+        if (elements && elements.length > 0) {
+            elements.forEach(function (el) {
+                if (el && el.textContent && el.classList && el.textContent.trim() === locationName) {
+                    el.classList.remove('selected');
+                }
+            });
+        }
+    } else {
+        // 최대 5개까지만 선택 가능하도록 제한
+        if (selectedLocationsList.length >= 5) {
+            $c.win.alert("최대 5개까지만 선택 가능합니다.");
+            return;
+        }
+
+        selectedLocationsList.push(locationName);
+        var elements = document.querySelectorAll('.location-option');
+        if (elements && elements.length > 0) {
+            elements.forEach(function (el) {
+                if (el && el.textContent && el.classList && el.textContent.trim() === locationName) {
+                    el.classList.add('selected');
+                }
+            });
+        }
+    }
+
+    console.log("현재 선택된 지역들:", selectedLocationsList);
+    scwin.updateSelectedLocationsDisplay();
+};
+
+scwin.updateSelectedLocationsDisplay = function () {
+    var container = document.querySelector('.selected-locations-container');
+    var countDisplay = document.querySelector('.selection-count');
+
+    if (!container) {
+        container = document.getElementById('selectedLocationsContainer');
+    }
+    if (!countDisplay) {
+        countDisplay = document.getElementById('selectionCount');
+    }
+
+    if (!container || !countDisplay) {
+        console.log("DOM 요소를 찾을 수 없습니다. 재시도합니다.");
+        setTimeout(function () {
+            scwin.updateSelectedLocationsDisplay();
+        }, 300);
+        return;
+    }
+
+    container.innerHTML = '';
+
+    if (selectedLocationsList.length === 0) {
+        container.innerHTML = '<div class="empty-message">희망하는 근무지역을 알려주세요.</div>';
+    } else {
+        selectedLocationsList.forEach(function (location) {
+            var tag = document.createElement('div');
+            tag.className = 'location-tag';
+            tag.innerHTML = location + ' <span class="location-tag-remove">×</span>';
+            container.appendChild(tag);
+        });
+    }
+
+    countDisplay.textContent = selectedLocationsList.length + ' 개 지역 선택됨 (최대 5개)';
+    dma_location.set("selectedLocations", selectedLocationsList.join(','));
+};
+
+scwin.removeLocation = function (locationName) {
+    scwin.toggleLocation(locationName);
+};
+
+// Function to proceed to next page with server save
+scwin.goToNextPage = function () {
+    // 선택된 지역이 있는지 확인
+    if (selectedLocationsList.length === 0) {
+        $c.win.alert("최소 1개 이상의 지역을 선택해주세요.");
+        return;
+    }
+
+    // 선택된 지역들을 콤마로 구분된 문자열로 변환
+    var locationsString = selectedLocationsList.join(',');
+
+    // 데이터맵에 데이터 설정 (user_id는 백엔드에서 세션으로 처리)
+    dma_location.set("locations", locationsString);
+
+    console.log("지역 데이터 전송:", {
+        locations: locationsString
+    });
+
+    // 서버에 데이터 저장
+    $c.sbm.execute(sbm_saveLocation);
+};
+
+// Success callback for location save
+scwin.sbm_saveLocation_submitdone = function (e) {
+    console.log("Location save response:", e);
+
+    var responseData = dma_location.getJSON();
+    console.log("응답 데이터:", responseData);
+
+    if (responseData && (responseData.result === "success" || responseData.status === "success")) {
+        // 다음 페이지로 이동
+        $p.url("SalarySelect.xml");
+    } else {
+        // 응답 구조와 상관없이 다음 페이지로 이동
+        $p.url("SalarySelect.xml");
+    }
+};
+
+// Error callback for location save
+scwin.sbm_saveLocation_submiterror = function (e) {
+    $c.win.alert("지역 정보 저장 중 오류가 발생했습니다.");
+};
+
+// 기존 nextPage 함수를 새로운 함수로 교체
+scwin.nextPage = function () {
+    scwin.goToNextPage();
+};
+
+// 이전 버튼 - $p.url 방식
+scwin.btn_back_onclick = function () {
+    $p.url("SignupComplete.xml");
+};
+
+// 다음 버튼 - 서버 저장과 함께 페이지 이동
+scwin.btn_next_onclick = function () {
+    scwin.goToNextPage();
+};
+]]></script>
+        
+        <style type="text/css"><![CDATA[
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #007bff 0%, #007bff 25%, #e0e0e0 25%, #e0e0e0 100%);
+                width: 100%;
+            }
+            
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 40px 20px;
+                text-align: center;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            
+            .icon-container {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #f44336, #ff5722);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(244, 67, 54, 0.3);
+            }
+            
+            .icon {
+                font-size: 40px;
+                color: white;
+            }
+            
+            .main-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 40px;
+                line-height: 1.4;
+            }
+            
+            .selected-locations-section {
+                width: 100%;
+                max-width: 700px;
+                margin-bottom: 30px;
+                min-height: 80px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px;
+                background-color: #f8f9fa;
+                text-align: left;
+            }
+            
+            .selection-count {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 15px;
+                font-weight: 600;
+            }
+            
+            .selected-locations-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 40px;
+                align-items: center;
+            }
+            
+            .empty-message {
+                color: #999;
+                font-style: italic;
+                font-size: 16px;
+            }
+            
+            .location-tag {
+                background-color: #007bff;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+            }
+            
+            .location-tag-remove {
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                opacity: 0.7;
+                transition: opacity 0.3s ease;
+            }
+            
+            .location-tag-remove:hover {
+                opacity: 1;
+            }
+            
+            .locations-grid {
+                width: 100%;
+                max-width: 700px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 12px;
+                margin-bottom: 40px;
+            }
+            
+            .location-option {
+                padding: 16px 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                background-color: #ffffff;
+                cursor: pointer;
+                text-align: center;
+                font-size: 15px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                color: #333;
+            }
+            
+            .location-option:hover {
+                border-color: #007bff;
+                background-color: #f0f8ff;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+            }
+            
+            .location-option.selected {
+                border-color: #007bff;
+                background-color: #007bff;
+                color: white;
+                box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+            }
+            
+            .buttons-section {
+                width: 100%;
+                max-width: 400px;
+                display: flex;
+                gap: 16px;
+                margin-top: 20px;
+            }
+            
+            .btn-back {
+                flex: 1;
+                background-color: #f5f5f5;
+                color: #666;
+                border: 2px solid #e0e0e0;
+                padding: 16px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-back:hover {
+                background-color: #eeeeee;
+                border-color: #ccc;
+            }
+            
+            .btn-next {
+                flex: 2;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 16px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+            
+            .btn-next:hover {
+                background-color: #0056b3;
+            }
+        ]]></style>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="../common/SignupHeader.xml" id="signupHeaderFrame" />
+        <xf:group class="main-container">
+            
+            <xf:group class="content-area">
+                <xf:group class="icon-container">
+                    <w2:textbox class="icon" label="📍" tagname="div"></w2:textbox>
+                </xf:group>
+                
+                <w2:textbox class="main-title" label="희망하는 근무지역을 알려주세요" tagname="h1"></w2:textbox>
+                
+                <xf:group class="selected-locations-section">
+                    <w2:textbox class="selection-count" id="selectionCount" label="0 개 지역 선택됨" tagname="div"></w2:textbox>
+                    <xf:group class="selected-locations-container" id="selectedLocationsContainer">
+                        <w2:textbox class="empty-message" label="희망하는 근무지역을 알려주세요." tagname="div"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <xf:group class="locations-grid">
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('서울')">
+                        <xf:label>서울</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경기')">
+                        <xf:label>경기</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('인천')">
+                        <xf:label>인천</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('부산')">
+                        <xf:label>부산</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('대구')">
+                        <xf:label>대구</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('대전')">
+                        <xf:label>대전</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('광주')">
+                        <xf:label>광주</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('울산')">
+                        <xf:label>울산</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('강원')">
+                        <xf:label>강원</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('충북')">
+                        <xf:label>충북</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('충남')">
+                        <xf:label>충남</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('전북')">
+                        <xf:label>전북</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('전남')">
+                        <xf:label>전남</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경북')">
+                        <xf:label>경북</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('경남')">
+                        <xf:label>경남</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('제주')">
+                        <xf:label>제주</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="location-option" ev:onclick="scwin.toggleLocation('원격근무')">
+                        <xf:label>원격근무</xf:label>
+                    </xf:trigger>
+                </xf:group>
+                
+                <xf:group class="buttons-section">
+                    <xf:trigger class="btn-back" ev:onclick="scwin.btn_back_onclick">
+                        <xf:label>이전</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" ev:onclick="scwin.btn_next_onclick">
+                        <xf:label>다음</xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html> 

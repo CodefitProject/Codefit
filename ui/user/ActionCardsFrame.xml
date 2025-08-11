@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head meta_screenName="액션 카드 프레임">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_userInfoVo">
+					<w2:keyInfo>
+						<w2:key id="isMbtiChecked" name="MBTI검사완료여부" dataType="number"></w2:key>
+						<w2:key id="isCodeChecked" name="코드분석완료여부" dataType="number"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<style type="text/css"><![CDATA[
+        /* 액션 카드 */
+        .action-cards {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: clamp(8px, 1.5vw, 16px);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .action-card {
+            flex: 1 1 0;
+            min-width: 0;
+            border-radius: 12px;
+            padding: clamp(16px, 3vw, 24px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .action-card.incomplete {
+            border: 2px solid #fc8181;
+        }
+
+        .action-card.completed {
+            border: 2px solid #28a745;
+            background: linear-gradient(135deg, #f8fff8, #e8f5e8);
+        }
+
+        .action-card-icon {
+            width: clamp(80px, 12vw, 100px);
+            height: clamp(80px, 12vw, 100px);
+            border-radius: 12px;
+            margin: 0 auto clamp(8px, 1.5vw, 12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .action-card-title {
+            font-size: clamp(13px, 2vw, 15px);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: clamp(4px, 0.8vw, 6px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-card-subtitle {
+            font-size: clamp(10px, 1.4vw, 12px);
+            color: #666;
+            margin-bottom: clamp(8px, 1.5vw, 12px);
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-card-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: clamp(8px, 1.2vw, 10px) clamp(12px, 2vw, 16px);
+            border-radius: 18px;
+            font-size: clamp(11px, 1.4vw, 13px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            max-width: clamp(80px, 12vw, 100px);
+            white-space: nowrap;
+        }
+
+        .action-card-button:hover {
+            background-color: #0056b3;
+        }
+
+        .action-card.incomplete .action-card-button {
+            background-color: #dc3545;
+        }
+
+        .action-card.incomplete .action-card-button:hover {
+            background-color: #c82333;
+        }
+
+        .incomplete-badge, .completed-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .incomplete-badge {
+            background-color: #dc3545;
+        }
+
+        .completed-badge {
+            background-color: #28a745;
+        }
+
+        .hidden-button {
+            visibility: hidden;
+        }
+        ]]></style>
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    // 부모 페이지의 데이터 참조
+    var parentUserInfoVo = $p.parent().dma_userInfoVo;
+    if (parentUserInfoVo) {
+        dma_userInfoVo.setJSON(parentUserInfoVo.getJSON());
+        scwin.updateCardStatus();
+    }
+};
+
+scwin.updateCardStatus = function () {
+    try {
+        let isMbtiDone = dma_userInfoVo.get("isMbtiChecked") == 1;
+        let isCodeDone = dma_userInfoVo.get("isCodeChecked") == 1;
+
+        // MBTI 카드 상태 업데이트
+        if (mbti_card) {
+            if (isMbtiDone) {
+                mbti_card.removeClass("incomplete");
+                mbti_card.addClass("completed");
+                mbti_badge.setLabel("완료");
+                mbti_badge.removeClass("incomplete-badge");
+                mbti_badge.addClass("completed-badge");
+                mbti_button.addClass("hidden-button");
+            } else {
+                mbti_card.removeClass("completed");
+                mbti_card.addClass("incomplete");
+                mbti_badge.setLabel("미완료");
+                mbti_badge.removeClass("completed-badge");
+                mbti_badge.addClass("incomplete-badge");
+                mbti_button.removeClass("hidden-button");
+            }
+        }
+
+        // 코드분석 카드 상태 업데이트
+        if (code_card) {
+            if (isCodeDone) {
+                code_card.removeClass("incomplete");
+                code_card.addClass("completed");
+                code_badge.setLabel("완료");
+                code_badge.removeClass("incomplete-badge");
+                code_badge.addClass("completed-badge");
+                code_button.addClass("hidden-button");
+            } else {
+                code_card.removeClass("completed");
+                code_card.addClass("incomplete");
+                code_badge.setLabel("미완료");
+                code_badge.removeClass("completed-badge");
+                code_badge.addClass("incomplete-badge");
+                code_button.removeClass("hidden-button");
+            }
+        }
+    } catch (err) {
+        console.error("ActionCardsFrame.xml - updateCardStatus 오류:", err);
+    }
+};
+
+scwin.mbti_button_onclick = function (e) {
+    try {
+        if ($p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("../survey/SurveyMbti.xml");
+        } else {
+            $p.url("../survey/SurveyMbti.xml");
+        }
+    } catch (e) {
+        console.error("MBTI 페이지 이동 중 오류:", e);
+        $p.url("../survey/SurveyMbti.xml");
+    }
+};
+
+scwin.code_button_onclick = function (e) {
+    try {
+        if ($p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("CodeAnalysisMain.xml");
+        } else {
+            $p.url("CodeAnalysisMain.xml");
+        }
+    } catch (e) {
+        console.error("코드분석 페이지 이동 중 오류:", e);
+        $p.url("CodeAnalysisMain.xml");
+    }
+};
+]]></script>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="action-cards">
+			<!-- MBTI 성격 검사 카드 -->
+			<xf:group id="mbti_card" class="action-card incomplete">
+				<w2:textbox id="mbti_badge" class="incomplete-badge" label="미완료"></w2:textbox>
+				<xf:group class="action-card-icon">
+					<xf:image src="/InsWebApp/images/ws5/main/mbti_check.png" style="width:100%;height:100%;" id="mbti_image"></xf:image>
+				</xf:group>
+				<w2:textbox class="action-card-title" label="성향 검사"></w2:textbox>
+				<w2:textbox class="action-card-subtitle" label="ex : 8가지 성향을 4개의 성향을 알아 낼 수 있습니다"></w2:textbox>
+				<xf:trigger id="mbti_button" class="action-card-button" type="button" ev:onclick="scwin.mbti_button_onclick">
+					<xf:label><![CDATA[시작하기]]></xf:label>
+				</xf:trigger>
+			</xf:group>
+
+			<!-- 코드분석 카드 -->
+			<xf:group id="code_card" class="action-card incomplete">
+				<w2:textbox id="code_badge" class="incomplete-badge" label="미완료"></w2:textbox>
+				<xf:group class="action-card-icon">
+					<xf:image src="/InsWebApp/images/ws5/main/code_check.png" style="width:100%;height:100%;" id=""></xf:image>
+				</xf:group>
+				<w2:textbox class="action-card-title" label="코드분석"></w2:textbox>
+				<w2:textbox class="action-card-subtitle" label="ex : 8가지 성향을 4개의 성향을 알아 낼 수 있습니다"></w2:textbox>
+				<xf:trigger id="code_button" class="action-card-button" type="button" ev:onclick="scwin.code_button_onclick">
+					<xf:label><![CDATA[분석하기]]></xf:label>
+				</xf:trigger>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

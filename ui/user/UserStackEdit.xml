@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="보유 기술스택을 선택해주세요">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_techStack">
+                    <w2:keyInfo>
+                        <w2:key id="selectedStacks" name="선택된기술스택" dataType="text"></w2:key>
+                        <w2:key id="searchText" name="검색텍스트" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <style type="text/css"><![CDATA[
+            /* 전체 컨테이너 스타일 */
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* 헤더 스타일 */
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #00c851 0%, #00c851 75%, #e0e0e0 75%, #e0e0e0 100%);
+                width: 100%;
+            }
+            
+            /* 메인 콘텐츠 영역 */
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 40px 20px;
+                text-align: center;
+            }
+            
+            /* 아이콘 스타일 */
+            .icon-container {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #ff9800, #f57c00);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
+            }
+            
+            .icon {
+                font-size: 40px;
+                color: white;
+            }
+            
+            /* 제목 스타일 */
+            .main-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 15px;
+                line-height: 1.4;
+            }
+            
+            .sub-title {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 30px;
+                line-height: 1.5;
+            }
+            
+            /* 검색 영역 */
+            .search-section {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 30px;
+            }
+            
+            .search-container {
+                position: relative;
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+                padding: 16px 50px 16px 20px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                font-size: 16px;
+                transition: border-color 0.3s ease;
+                box-sizing: border-box;
+            }
+            
+            .search-input:focus {
+                outline: none;
+                border-color: #ff9800;
+                box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+            }
+            
+            .search-icon {
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 18px;
+                color: #999;
+            }
+            
+            /* 선택된 기술스택 표시 영역 */
+            .selected-stacks-section {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 30px;
+                min-height: 60px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 16px;
+                background-color: #f8f9fa;
+            }
+            
+            .selected-stacks-title {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 12px;
+                text-align: left;
+            }
+            
+            .selected-stacks-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 32px;
+            }
+            
+            .stack-tag {
+                background-color: #ff9800;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+            
+            .stack-tag:hover {
+                background-color: #f57c00;
+            }
+            
+            .stack-tag-remove {
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            
+            .empty-message {
+                color: #999;
+                font-style: italic;
+                font-size: 14px;
+            }
+            
+            /* 기술스택 카테고리 */
+            .tech-categories {
+                width: 100%;
+                max-width: 800px;
+                margin-bottom: 40px;
+            }
+            
+            .category-section {
+                margin-bottom: 30px;
+                text-align: left;
+            }
+            
+            .category-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 16px;
+                padding-left: 4px;
+            }
+            
+            .tech-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+            
+            .tech-item {
+                background-color: #ffffff;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 12px 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                font-size: 14px;
+                color: #333;
+                position: relative;
+            }
+            
+            .tech-item:hover {
+                border-color: #ff9800;
+                background-color: #fff3e0;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
+            }
+            
+            .tech-item.selected {
+                border-color: #ff9800;
+                background-color: #ff9800;
+                color: white;
+                box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
+            }
+            
+            .tech-item.selected::after {
+                content: "✓";
+                position: absolute;
+                top: 6px;
+                right: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .tech-item.hidden {
+                display: none;
+            }
+            
+            /* 안내 메시지 */
+            .info-message {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-size: 14px;
+                color: #2196F3;
+                margin-bottom: 40px;
+                padding: 12px 20px;
+                background-color: #e3f2fd;
+                border-radius: 8px;
+                max-width: 600px;
+            }
+            
+            .info-icon {
+                font-size: 16px;
+            }
+            
+            /* 버튼 영역 */
+            .button-area {
+                display: flex;
+                gap: 16px;
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .btn-back {
+                flex: 1;
+                background-color: #ffffff;
+                color: #666;
+                border: 2px solid #e0e0e0;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-back:hover {
+                border-color: #bbb;
+                background-color: #f5f5f5;
+            }
+            
+            .btn-next {
+                flex: 2;
+                background-color: #e0e0e0;
+                color: #999;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: not-allowed;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-next.active {
+                background-color: #00c851;
+                color: white;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+            }
+            
+            .btn-next.active:hover {
+                background-color: #00a844;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(0, 200, 81, 0.4);
+            }
+            
+            /* 반응형 디자인 */
+            @media (max-width: 768px) {
+                .content-area {
+                    padding: 20px 16px;
+                }
+                
+                .main-title {
+                    font-size: 24px;
+                    margin-bottom: 12px;
+                }
+                
+                .sub-title {
+                    font-size: 14px;
+                    margin-bottom: 24px;
+                }
+                
+                .tech-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                    gap: 8px;
+                }
+                
+                .tech-item {
+                    padding: 10px 12px;
+                    font-size: 13px;
+                }
+                
+                .button-area {
+                    flex-direction: column;
+                }
+                
+                .btn-back, .btn-next {
+                    padding: 14px 24px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .icon-container {
+                    width: 60px;
+                    height: 60px;
+                    margin-bottom: 20px;
+                }
+                
+                .icon {
+                    font-size: 30px;
+                }
+                
+                .main-title {
+                    font-size: 20px;
+                    margin-bottom: 10px;
+                }
+                
+                .tech-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                }
+                
+                .search-input {
+                    padding: 14px 40px 14px 16px;
+                    font-size: 14px;
+                }
+            }
+        ]]></style>
+        
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+    // 초기화
+    dma_techStack.set("selectedStacks", "");
+    dma_techStack.set("searchText", "");
+    scwin.selectedStacksArray = []; // 선택된 기술스택 배열
+    scwin.updateNextButton();
+    scwin.updateSelectedStacksDisplay();
+};
+
+// 기술스택 선택/해제
+scwin.selectTechStack = function(stackName) {
+    var clickedElement = event.target.closest('.tech-item');
+    
+    if (clickedElement.classList.contains('selected')) {
+        // 이미 선택된 경우 - 해제
+        clickedElement.classList.remove('selected');
+        scwin.removeFromSelectedStacks(stackName);
+    } else {
+        // 선택되지 않은 경우 - 추가
+        clickedElement.classList.add('selected');
+        scwin.addToSelectedStacks(stackName);
+    }
+    
+    scwin.updateSelectedStacksDisplay();
+    scwin.updateNextButton();
+};
+
+// 선택된 기술스택에 추가
+scwin.addToSelectedStacks = function(stackName) {
+    if (scwin.selectedStacksArray.indexOf(stackName) === -1) {
+        scwin.selectedStacksArray.push(stackName);
+        dma_techStack.set("selectedStacks", scwin.selectedStacksArray.join(','));
+    }
+};
+
+// 선택된 기술스택에서 제거
+scwin.removeFromSelectedStacks = function(stackName) {
+    var index = scwin.selectedStacksArray.indexOf(stackName);
+    if (index > -1) {
+        scwin.selectedStacksArray.splice(index, 1);
+        dma_techStack.set("selectedStacks", scwin.selectedStacksArray.join(','));
+    }
+};
+
+// 태그 클릭으로 제거
+scwin.removeStackTag = function(stackName) {
+    scwin.removeFromSelectedStacks(stackName);
+    
+    // UI에서 선택 해제
+    var techItems = document.querySelectorAll('.tech-item');
+    techItems.forEach(function(item) {
+        if (item.textContent.trim() === stackName) {
+            item.classList.remove('selected');
+        }
+    });
+    
+    scwin.updateSelectedStacksDisplay();
+    scwin.updateNextButton();
+};
+
+// 선택된 기술스택 표시 업데이트
+scwin.updateSelectedStacksDisplay = function() {
+    var container = document.querySelector('.selected-stacks-container');
+    
+    if (scwin.selectedStacksArray.length === 0) {
+        container.innerHTML = '<div class="empty-message">선택된 기술스택이 없습니다</div>';
+    } else {
+        var html = '';
+        scwin.selectedStacksArray.forEach(function(stack) {
+            html += '<div class="stack-tag" onclick="scwin.removeStackTag(\'' + stack + '\')">' +
+                   '<span>' + stack + '</span>' +
+                   '<span class="stack-tag-remove">×</span>' +
+                   '</div>';
+        });
+        container.innerHTML = html;
+    }
+};
+
+// 검색 기능
+scwin.onSearchInput = function() {
+    var searchInput = document.querySelector('.search-input');
+    var searchText = searchInput.value.toLowerCase();
+    var techItems = document.querySelectorAll('.tech-item');
+    
+    techItems.forEach(function(item) {
+        var techName = item.textContent.trim().toLowerCase();
+        if (techName.includes(searchText)) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+};
+
+// 다음 버튼 상태 업데이트
+scwin.updateNextButton = function() {
+    var nextBtn = document.querySelector('.btn-next');
+    
+    if (scwin.selectedStacksArray.length > 0) {
+        nextBtn.classList.add('active');
+        nextBtn.disabled = false;
+    } else {
+        nextBtn.classList.remove('active');
+        nextBtn.disabled = true;
+    }
+};
+
+// 이전 버튼 클릭
+scwin.goBack = function() {
+    if (confirm("이전 페이지로 돌아가시겠습니까? 선택하신 기술스택이 사라질 수 있습니다.")) {
+        $p.url("UserDetail.xml");
+    }
+};
+
+// 다음 버튼 클릭 (완료)
+scwin.goNext = function() {
+    if (scwin.selectedStacksArray.length === 0) {
+        $c.win.alert("기술스택을 하나 이상 선택해주세요.");
+        return;
+    }
+    
+    // 사용자 정보 업데이트
+    console.log("선택된 기술스택:", scwin.selectedStacksArray);
+    $c.win.alert("기술스택이 성공적으로 업데이트되었습니다!\\n선택된 기술: " + scwin.selectedStacksArray.join(', '));
+    
+    // 마이페이지로 돌아가기
+    $p.url("UserDetail.xml");
+};
+]]></script>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <xf:group class="main-container">
+            <!-- 헤더 -->
+            <xf:group class="header">
+                <w2:textbox class="header-logo" label="JOBDA"></w2:textbox>
+                <xf:group class="header-progress"></xf:group>
+            </xf:group>
+            
+            <!-- 메인 콘텐츠 -->
+            <xf:group class="content-area">
+                <!-- 아이콘 -->
+                <xf:group class="icon-container">
+                    <w2:textbox class="icon" label="🛠️"></w2:textbox>
+                </xf:group>
+                
+                <!-- 제목 -->
+                <w2:textbox class="main-title" label="보유 기술스택을 선택해주세요."></w2:textbox>
+                <w2:textbox class="sub-title" label="본인이 보유하고 있는 기술스택을 모두 선택해주세요.&#10;더 정확한 매칭을 위해 정확히 선택해주시면 좋습니다."></w2:textbox>
+                
+                <!-- 검색 영역 -->
+                <xf:group class="search-section">
+                    <xf:group class="search-container">
+                        <xf:input class="search-input" 
+                                  placeholder="기술스택을 검색해보세요 (예: React, Java, Python)"
+                                  ev:oninput="scwin.onSearchInput()">
+                        </xf:input>
+                        <w2:textbox class="search-icon" label="🔍"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <!-- 선택된 기술스택 표시 -->
+                <xf:group class="selected-stacks-section">
+                    <w2:textbox class="selected-stacks-title" label="선택된 기술스택 (클릭하면 제거됩니다)"></w2:textbox>
+                    <xf:group class="selected-stacks-container">
+                        <w2:textbox class="empty-message" label="선택된 기술스택이 없습니다"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <!-- 기술스택 카테고리 -->
+                <xf:group class="tech-categories">
+                    <!-- 프론트엔드 -->
+                    <xf:group class="category-section">
+                        <w2:textbox class="category-title" label="🎨 프론트엔드"></w2:textbox>
+                        <xf:group class="tech-grid">
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('React')">
+                                <w2:textbox label="React"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Vue.js')">
+                                <w2:textbox label="Vue.js"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Angular')">
+                                <w2:textbox label="Angular"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Next.js')">
+                                <w2:textbox label="Next.js"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('TypeScript')">
+                                <w2:textbox label="TypeScript"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('JavaScript')">
+                                <w2:textbox label="JavaScript"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('HTML/CSS')">
+                                <w2:textbox label="HTML/CSS"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Sass/SCSS')">
+                                <w2:textbox label="Sass/SCSS"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Tailwind CSS')">
+                                <w2:textbox label="Tailwind CSS"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Svelte')">
+                                <w2:textbox label="Svelte"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                    
+                    <!-- 백엔드 -->
+                    <xf:group class="category-section">
+                        <w2:textbox class="category-title" label="⚙️ 백엔드"></w2:textbox>
+                        <xf:group class="tech-grid">
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Java')">
+                                <w2:textbox label="Java"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Python')">
+                                <w2:textbox label="Python"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Node.js')">
+                                <w2:textbox label="Node.js"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Spring Boot')">
+                                <w2:textbox label="Spring Boot"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Django')">
+                                <w2:textbox label="Django"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('FastAPI')">
+                                <w2:textbox label="FastAPI"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Express.js')">
+                                <w2:textbox label="Express.js"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('NestJS')">
+                                <w2:textbox label="NestJS"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('C#')">
+                                <w2:textbox label="C#"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Go')">
+                                <w2:textbox label="Go"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Rust')">
+                                <w2:textbox label="Rust"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('PHP')">
+                                <w2:textbox label="PHP"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                    
+                    <!-- 데이터베이스 -->
+                    <xf:group class="category-section">
+                        <w2:textbox class="category-title" label="🗄️ 데이터베이스"></w2:textbox>
+                        <xf:group class="tech-grid">
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('MySQL')">
+                                <w2:textbox label="MySQL"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('PostgreSQL')">
+                                <w2:textbox label="PostgreSQL"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('MongoDB')">
+                                <w2:textbox label="MongoDB"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Redis')">
+                                <w2:textbox label="Redis"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Oracle')">
+                                <w2:textbox label="Oracle"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('SQLite')">
+                                <w2:textbox label="SQLite"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Elasticsearch')">
+                                <w2:textbox label="Elasticsearch"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('MariaDB')">
+                                <w2:textbox label="MariaDB"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                    
+                    <!-- 클라우드/DevOps -->
+                    <xf:group class="category-section">
+                        <w2:textbox class="category-title" label="☁️ 클라우드/DevOps"></w2:textbox>
+                        <xf:group class="tech-grid">
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('AWS')">
+                                <w2:textbox label="AWS"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Docker')">
+                                <w2:textbox label="Docker"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Kubernetes')">
+                                <w2:textbox label="Kubernetes"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('GitHub Actions')">
+                                <w2:textbox label="GitHub Actions"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Jenkins')">
+                                <w2:textbox label="Jenkins"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Azure')">
+                                <w2:textbox label="Azure"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('GCP')">
+                                <w2:textbox label="GCP"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Terraform')">
+                                <w2:textbox label="Terraform"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                    
+                    <!-- 모바일 -->
+                    <xf:group class="category-section">
+                        <w2:textbox class="category-title" label="📱 모바일"></w2:textbox>
+                        <xf:group class="tech-grid">
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('React Native')">
+                                <w2:textbox label="React Native"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Flutter')">
+                                <w2:textbox label="Flutter"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Swift')">
+                                <w2:textbox label="Swift"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Kotlin')">
+                                <w2:textbox label="Kotlin"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Java (Android)')">
+                                <w2:textbox label="Java (Android)"></w2:textbox>
+                            </xf:group>
+                            <xf:group class="tech-item" ev:onclick="scwin.selectTechStack('Xamarin')">
+                                <w2:textbox label="Xamarin"></w2:textbox>
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+                
+                <!-- 안내 메시지 -->
+                <xf:group class="info-message">
+                    <w2:textbox class="info-icon" label="💡"></w2:textbox>
+                    <w2:textbox label="정확한 기술스택 선택으로 더 적합한 채용공고를 추천받으세요."></w2:textbox>
+                </xf:group>
+                
+                <!-- 버튼 영역 -->
+                <xf:group class="button-area">
+                    <xf:trigger class="btn-back" type="button" ev:onclick="scwin.goBack">
+                        <xf:label><![CDATA[이전]]></xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" type="button" ev:onclick="scwin.goNext">
+                        <xf:label><![CDATA[완료]]></xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html>

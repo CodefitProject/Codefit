@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap id="dma_main" baseNode="map">
+					<w2:keyInfo>
+						<w2:key id="searchText" name="searchText" dataType="text" />
+						<w2:key id="totalUsers" name="totalUsers" dataType="text" />
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script type="text/javascript"><![CDATA[scwin.updateHeaderUI = function () {
+    // 쿠키에서 사용자 정보 읽어오기
+    var userInfo = scwin.getUserInfoByCookie();
+
+    if (userInfo == null) {
+        // 비로그인 상태
+        txb_login.hide();
+        btnLogin.show();
+        btnLogout.hide(); // 로그아웃 버튼 숨김
+    } else {
+        // 로그인 상태
+        btnLogin.hide();
+        btnLogout.show();
+
+        // 일반 유저헤더
+        if (userInfo.role == "USER") {
+            txb_login.show();
+            txb_login.setValue(userInfo.name + " 님");
+        }
+        else if (userInfo.role == "COMPANY") {
+            // 코드분석, 성향검사 숨김처리
+            anchor1.hide();
+            anchor2.hide();
+            anchor3.hide();
+        }
+
+    }
+};
+
+
+scwin.getUserInfoByCookie = function () {
+    var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+    var userInfo = null;
+
+    if (userInfoCookie) {
+        try {
+            userInfo = JSON.parse(userInfoCookie);
+        } catch (e) {
+            console.error("사용자 정보 파싱 오류:", e);
+            userInfo = null;
+        }
+    }
+    return userInfo;
+}
+
+// 페이지 로드 시 초기 헤더 상태 설정
+scwin.onpageload = function () {
+    scwin.updateHeaderUI();
+};
+
+// 로그아웃
+scwin.logout_onclick = function () {
+    // 로그아웃 요청
+    $c.win.logout();
+
+    // 쿠키 삭제
+    WebSquare.cookie.delCookie("userInfo");
+
+    scwin.updateHeaderUI();
+    $c.win.reload();
+};
+
+// 로그인 관련 팝업 호출 함수
+scwin.btnLogin_onclick = function () {
+    // 로그인 팝업에 전달할 데이터
+    var loginPopupData = {
+        "type": "json",
+        "name": "login_param",
+        "data": {
+            "loginType": "main",
+            "returnUrl": window.location.href
+        }
+    };
+    $c.win.openPopup("../user/Login.xml", {
+        id: "login_popup",
+        type: "pageFramePopup",
+        width: "430px",
+        height: "450px",
+        modal: true,
+        popupName: "로그인/회원가입",
+        closeAction: "scwin.login_popup_closeAction",
+        dataObject: loginPopupData
+    });
+};
+
+scwin.codefit_Logo_onclick = function () {
+    var userInfo = scwin.getUserInfoByCookie();
+    if (userInfo && userInfo.role === "COMPANY") {
+        $p.url("/InsWebApp/ui/corporate/RecruitmentDashboard.xml");
+    } else {
+        $p.url("/InsWebApp/ui/common/MainPage.xml");
+    }
+};
+
+scwin.menu1_onclick = function () {
+    // 사용자 인증 체크
+    var userInfo = scwin.getUserInfoByCookie();
+    
+    // 로그인하지 않은 사용자 처리
+    if (!userInfo || !userInfo.accountId) {
+        console.warn("로그인되지 않은 사용자의 코드분석 접근 시도");
+        $c.win.alert("로그인이 필요한 서비스입니다.");
+        return;
+    }
+    
+    // 기업 사용자 접근 차단
+    if (userInfo.role === "COMPANY") {
+        console.warn("기업 사용자의 코드분석 접근 차단:", userInfo.accountId);
+        $c.win.alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.");
+        return;
+    }
+    
+    // 개인 사용자는 정상 접근
+    console.log("코드분석 접근 허용:", userInfo.accountId, "역할:", userInfo.role);
+    $p.url("/InsWebApp/ui/user/CodeAnalysisMain.xml");
+};
+
+scwin.menu2_onclick = function () {
+    var userInfo = scwin.getUserInfoByCookie();
+    if (!userInfo) {
+        $c.win.alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
+    } else {
+        $p.url("/InsWebApp/ui/survey/SurveyMbti.xml");
+    }
+};
+
+scwin.menu3_onclick = function () {
+    $p.url("/InsWebApp/ui/post/PostList.xml");
+};
+
+scwin.btnEnterprise_onclick = function () {
+    var userInfo = scwin.getUserInfoByCookie();
+    if (userInfo === null) {
+        $p.url("/InsWebApp/ui/common/CompanyMain.xml");
+    } else if (userInfo.role === "USER") {
+        $p.url("/InsWebApp/ui/common/CompanyMain.xml");
+    } else if (userInfo.role === "COMPANY") {
+        $p.url("/InsWebApp/ui/corporate/RecruitmentDashboard.xml");
+    }
+};
+
+// 내 정보 페이지로 이동
+scwin.goToUserDetail = function () {
+};
+
+// 기업 등록 페이지로 이동
+scwin.goToCompanyRegister = function () {
+    $p.url("/InsWebApp/ui/company/create_company.xml");
+};
+
+// 개인정보 수정페이지
+scwin.txb_login_onclick = function () {
+    $p.url("/InsWebApp/ui/user/UserDetail.xml");
+};
+]]></script>
+		<style type="text/css"><![CDATA[
+            /* 기본 설정 */
+            * {
+                box-sizing: border-box;
+            }
+
+            .main-wrap {
+                width: 100%;
+                background-color: #ffffff;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            }
+
+            /* 헤더 */
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                position: relative;
+                padding: 0 min(30px, 4vw);
+            }
+
+            .header-container {
+                max-width: 1100px;
+                width: 100%;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: 100%;
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+
+            /* 사이드 메뉴 */
+            .side-menu {
+                position: fixed;
+                top: 70px;
+                left: -300px;
+                width: 280px;
+                height: calc(100vh - 70px);
+                background-color: white;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                transition: left 0.3s ease;
+                z-index: 1000;
+                overflow-y: auto;
+                padding: 20px;
+            }
+
+            .nav-menu {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .nav-menu xf:image {
+                vertical-align: middle;
+                max-height: 34px;
+            }
+
+            .nav-link {
+                font-size: 14px;
+                color: #333;
+                text-decoration: none;
+                cursor: pointer;
+                margin-right: 20px;
+                vertical-align: middle;
+            }
+
+            
+            .header-right {
+                display:flex;
+                float: right;
+                padding-top: 18px;
+                align-items: center;
+            }
+
+            .btn-login {
+                background-color: #fff;
+                border: 1px solid #ddd;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                margin-right: 8px;
+                height: 32px;
+                vertical-align: middle;
+            }
+
+            .btn-enterprise {
+                background-color: #333;
+                color: #fff;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                height: 32px;
+                vertical-align: middle;
+            }
+
+            .clearfix::after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+
+            .login-area {
+                width: 100%;
+                background-color: #fff;
+                padding: min(40px, 5vw);
+                border-radius: 10px;
+                border: 1px solid #e0e0e0;
+            }
+
+            .login-title {
+                font-size: clamp(14px, 2vw, 16px);
+                text-align: center;
+                margin-bottom: 20px;
+                color: #333;
+                line-height: 1.4;
+            }
+
+            .btn-main-login {
+                width: 100%;
+                padding: 15px;
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                font-size: clamp(14px, 2vw, 16px);
+                margin-bottom: 20px;
+                cursor: pointer;
+            }
+
+            /* 모바일 반응형 */
+            @media (max-width: 768px) {
+                .nav-menu xf:image {
+                    width: 100px !important;
+                    height: 28px !important;
+                }
+                
+                .nav-link {
+                    display: none;
+                }
+                
+                .search-input {
+                    width: 100px;
+                    font-size: 12px;
+                    height: 20px;
+                }
+                
+                .btn-login, .btn-enterprise {
+                    padding: 5px 8px;
+                    font-size: 11px;
+                    height: 28px;
+                }
+            }
+        ]]></style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="main-wrap">
+
+			<!-- 헤더 영역 -->
+			<xf:group class="header" tagname="header">
+				<xf:group class="header-container">
+					<xf:group class="header-left" style="">
+						<xf:group class="nav-menu" style="">
+							<xf:image src="/InsWebApp/images/ws5/codefit_logo.png" style="width:150px;height:50px; cursor: pointer;" id="codeFITLogo"
+								class="logo" ev:onclick="scwin.codefit_Logo_onclick">
+							</xf:image>
+							<w2:anchor class="nav-link" id="anchor1" ev:onclick="scwin.menu1_onclick" outerDiv="false"
+								style="margin-left: 20px;font-size: 16px;">
+								<xf:label><![CDATA[코드분석]]></xf:label>
+							</w2:anchor>
+							<w2:anchor class="nav-link" id="anchor2" ev:onclick="scwin.menu2_onclick" outerDiv="false" style="font-size: 16px;">
+								<xf:label><![CDATA[성향분석]]></xf:label>
+							</w2:anchor>
+							<w2:anchor class="nav-link" id="anchor3" ev:onclick="scwin.menu3_onclick" outerDiv="false" style="font-size: 16px;">
+								<xf:label><![CDATA[기업 둘러보기]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+					</xf:group>
+					<xf:group class="header-right" style="margin-top: -15px;margin-right: 30px;">
+						<xf:trigger class="btn-login" id="btnLogin" ev:onclick="scwin.btnLogin_onclick" type="button">
+							<xf:label><![CDATA[로그인/회원가입]]></xf:label>
+						</xf:trigger>
+						<w2:textbox id="txb_login" label=""
+							style="width:auto;height:32px;text-align:left;margin-right: 10px;font-size: 16px;cursor:pointer;color:#666666;text-decoration:underline;border:none;background:transparent;line-height:32px;"
+							ev:onclick="scwin.txb_login_onclick" title="클릭하여 로그아웃"></w2:textbox>
+						<xf:trigger class="btn-login" id="btnLogout" ev:onclick="scwin.logout_onclick" type="button" style="display:none;">
+							<xf:label><![CDATA[로그아웃]]></xf:label>
+						</xf:trigger>
+
+						<xf:trigger class="btn-enterprise" id="btnEnterprise" ev:onclick="scwin.btnEnterprise_onclick" type="button">
+							<xf:label><![CDATA[기업 서비스]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 사이드 메뉴 오버레이 -->
+			<div class="side-menu-overlay" id="sideMenuOverlay" ev:onclick="scwin.closeSideMenu()"></div>
+
+			<!-- 사이드 메뉴 -->
+			<nav class="side-menu" id="sideMenu">
+				<w2:textbox class="side-menu-title" label="메뉴"></w2:textbox>
+
+				<div class="side-menu-section">
+					<w2:textbox class="side-menu-section-title" label="매칭 서비스"></w2:textbox>
+					<w2:anchor class="side-menu-item" ev:onclick="scwin.menu2_onclick">
+						<xf:label><![CDATA[MBTI 검사]]></xf:label>
+					</w2:anchor>
+					<w2:anchor class="side-menu-item" ev:onclick="scwin.menu3_onclick">
+						<xf:label><![CDATA[기업 둘러보기]]></xf:label>
+					</w2:anchor>
+				</div>
+
+			</nav>
+
+		</xf:group>
+
+	</body>
+</html>

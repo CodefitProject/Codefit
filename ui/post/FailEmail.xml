@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_sendEmailInfoListVo" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="이메일" id="email"></w2:column>
+						<w2:column dataType="text" name="이름" id="name"></w2:column>
+						<w2:column dataType="text" name="유저 ID" id="accountId"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="dma_sendEmailVo">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="합불여부" id="isPassed"></w2:key>
+						<w2:key dataType="text" name="메일 내용" id="emailContent"></w2:key>
+						<w2:key dataType="text" name="이메일 정보 리스트" id="sendEmailInfoListVo"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_sendFailEmail" action="/InsWebApp/POS0001Send.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,[{"id":"dma_sendEmailVo","key":"sendEmailVo"}]' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="메일 전송중" ev:submit="" ev:submitdone="" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<style type="text/css"><![CDATA[
+            /* 전체 컨테이너 스타일 */
+.main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                padding: 0 20px 40px 20px;
+                width: 100%;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            
+            /* 헤더 스타일 */
+            .page-header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            
+            /* 템플릿 섹션 */
+            .template-section {
+                background-color: #ffffff;
+                border-radius: 16px;
+                padding: 30px 24px;
+                margin-bottom: 32px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                border: 1px solid #f1f3f4;
+                position: relative;
+                top: 0;
+                z-index: 10;
+            }
+            
+            .section-title {
+                font-size: 18px;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 20px;
+                padding: 12px 16px;
+                background-color: #fce8e6;
+                border: 1px solid #f44336;
+                border-radius: 8px;
+                text-align: center;
+                letter-spacing: -0.3px;
+            }
+            
+            /* 폼 그룹 스타일 */
+            .form-group {
+                margin-bottom: 24px;
+            }
+            
+            .form-label {
+                display: block;
+                font-size: 16px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 12px;
+                letter-spacing: -0.3px;
+            }
+            
+            /* 텍스트 영역 스타일 */
+            .form-textarea {
+                width: 100%;
+                min-height: 280px;
+                padding: 16px;
+                border: 2px solid #e5e7eb;
+                border-radius: 12px;
+                font-size: 14px;
+                color: #333;
+                background-color: #ffffff;
+                font-family: inherit;
+                resize: vertical;
+                transition: all 0.2s ease;
+                box-sizing: border-box;
+                line-height: 1.6;
+            }
+            
+            .form-textarea:focus {
+                outline: none;
+                border-color: #f44336;
+                box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+            }
+            
+            /* 체크박스 그룹 */
+            .checkbox-group {
+                margin: 20px 0;
+                text-align: right;
+            }
+            
+            .checkbox-item {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                font-size: 14px;
+                color: #333;
+                font-weight: 500;
+            }
+            
+            .checkbox-item input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                margin-left: 8px;
+                accent-color: #f44336;
+            }
+            
+            /* 버튼 스타일 */
+            .button-container {
+                display: flex;
+                gap: 12px;
+                margin-top: 40px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .btn-secondary {
+                height: 44px;
+                padding: 0 20px;
+                border: 2px solid #e5e7eb;
+                border-radius: 8px;
+                background-color: #ffffff;
+                color: #6b7280;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .btn-secondary:hover {
+                border-color: #d1d5db;
+                color: #374151;
+            }
+            
+            .btn-primary {
+                height: 44px;
+                padding: 0 20px;
+                border: none;
+                border-radius: 8px;
+                background-color: #4CAF50;
+                color: #333;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .btn-primary:hover {
+                background-color: #45a049;
+            }
+            
+            .btn-close {
+                height: 44px;
+                padding: 0 16px;
+                border: none;
+                border-radius: 8px;
+                background-color: #6c757d;
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .btn-close:hover {
+                background-color: #5a6268;
+            }
+            
+            /* 반응형 디자인 */
+            @media (max-width: 480px) {
+                .main-container {
+                    padding: 20px 16px;
+                }
+                
+                .template-section {
+                    padding: 24px 20px;
+                }
+                
+                .button-container {
+                    flex-direction: column;
+                }
+            }
+        ]]></style>
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    // 기본 템플릿 설정
+    scwin.setDefaultTemplates();
+
+    // 전달받은 데이터 확인 및 설정
+    var selectedUsers = $c.data.getParameter("selectedUsers");
+
+    if (selectedUsers && selectedUsers.length > 0) {
+        // DataList에 전달받은 사용자 데이터 설정
+        dlt_sendEmailInfoListVo.setJSON(selectedUsers);
+
+    } else {
+        $c.win.alert("전달받은 사용자 데이터가 없습니다.");
+    }
+};
+
+// 이메일 템플릿 설정
+scwin.setDefaultTemplates = function () {
+    var failTemplate =
+        "서류심사 결과를 안내드립니다.\n\n" +
+        "아쉽게도 이번 서류심사에서는 인연이 닿지 않았습니다.\n" +
+        "향후 다른 기회가 있을 때 다시 도전해 주시기 바랍니다.\n\n" +
+        "좋은 하루 되세요.\n" +
+        "인사팀 드림";
+
+    txtFailTemplate.setValue(failTemplate);
+};
+
+// 템플릿 초기화
+scwin.resetTemplates = function () {
+    scwin.setDefaultTemplates();
+    calPassDate.setValue("");
+    calFailDate.setValue("");
+};
+
+scwin.btn_close_onclick = function (e) {
+    $p.closePopup();
+};
+
+scwin.close_btn_onclick = function (e) {
+    // 이메일 내용 유효성 검사
+    var emailContent = txtFailTemplate.getValue();
+    if (!emailContent || emailContent.trim() === "") {
+        $c.win.alert("이메일 내용을 입력해주세요.");
+        return;
+    }
+
+    // DataList 데이터 확인
+    if (dlt_sendEmailInfoListVo.getRowCount() === 0) {
+        $c.win.alert("발송할 대상자가 없습니다.");
+        return;
+    }
+
+    // 이메일 내용을 DataMap에 설정
+    dma_sendEmailVo.set("emailContent", emailContent);
+
+    // 합격 여부를 'N'로 설정
+    dma_sendEmailVo.set("isPassed", "N");
+
+    // DataList 데이터를 DataMap에 설정
+    dma_sendEmailVo.set("sendEmailInfoListVo", dlt_sendEmailInfoListVo.getAllJSON());
+    
+    // 확인 창 표시
+    var promise = $c.win.confirm("선택된 " + dlt_sendEmailInfoListVo.getRowCount() + "명에게 합격 메일을 발송하시겠습니까?");
+    promise.then(function (result) {
+        if (result) {
+            $c.sbm.execute(sbm_sendFailEmail);
+        }
+    });
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="main-container">
+			<!-- 불합격자 메일 템플릿 섹션 -->
+			<xf:group class="template-section">
+				<w2:textbox class="section-title" label="불합격자 메일 템플릿"></w2:textbox>
+
+				<xf:group class="form-group">
+					<xf:textarea class="form-textarea" id="txtFailTemplate"></xf:textarea>
+				</xf:group>
+
+				<xf:group class="checkbox-group">
+					<xf:select appearance="full" selectedindex="-1" style="float: right;">
+						<xf:choices>
+							<xf:item>
+								<xf:label><![CDATA[이메일 발송]]></xf:label>
+								<xf:value><![CDATA[1]]></xf:value>
+							</xf:item>
+						</xf:choices>
+					</xf:select>
+				</xf:group>
+			</xf:group>
+
+			<!-- 버튼 영역 -->
+			<xf:group class="button-container">
+				<w2:button class="btn-secondary" label="템플릿 초기화" ev:onclick="scwin.resetTemplates"></w2:button>
+				<w2:button class="btn-primary" label="확인" ev:onclick="scwin.close_btn_onclick" id="btn_sendEmail"></w2:button>
+				<w2:button class="btn-close" label="닫기" ev:onclick="scwin.btn_close_onclick"></w2:button>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

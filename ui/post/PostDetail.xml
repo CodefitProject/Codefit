@@ -1,0 +1,2033 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head meta_screenName="채용공고 상세">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<!-- 공고 상세 조회용 파라미터 -->
+				<w2:dataMap baseNode="map" id="dmp_postParam" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="jobPostingId" name="공고_ID"></w2:key>
+					</w2:keyInfo>
+					<w2:data use="false"></w2:data>
+				</w2:dataMap>
+
+				<!-- 공고 상세 정보 -->
+				<w2:dataMap baseNode="map" id="dmp_postDetail" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="jobPostingId" name="job_posting_id"></w2:key>
+						<w2:key dataType="text" id="companyId" name="company_id"></w2:key>
+						<w2:key dataType="text" id="title" name="title"></w2:key>
+						<w2:key dataType="text" id="description" name="description"></w2:key>
+						<w2:key dataType="text" id="requirements" name="requirements"></w2:key>
+						<w2:key dataType="text" id="preferred" name="preferred"></w2:key>
+						<w2:key dataType="text" id="benefits" name="benefits"></w2:key>
+						<w2:key dataType="text" id="experienceLevel" name="experience_level"></w2:key>
+						<w2:key dataType="text" id="salaryRange" name="salary_range"></w2:key>
+						<w2:key dataType="text" id="location" name="location"></w2:key>
+						<w2:key dataType="text" id="workType" name="work_type"></w2:key>
+						<w2:key dataType="text" id="expiresAt" name="expires_at"></w2:key>
+						<w2:key dataType="text" id="postedAt" name="posted_at"></w2:key>
+						<w2:key dataType="text" id="status" name="status"></w2:key>
+						<w2:key dataType="text" id="companyName" name="company_name"></w2:key>
+						<w2:key dataType="text" id="industry" name="industry"></w2:key>
+						<w2:key dataType="text" id="empCount" name="emp_count"></w2:key>
+						<w2:key dataType="text" id="selectedTechStackNames" name="selected_tech_stack_names"></w2:key>
+						<w2:key dataType="text" id="preferredDeveloperTypes" name="preferred_developer_types"></w2:key>
+						<w2:key dataType="text" id="jobImageFileName" name="job_image_file_name"></w2:key>
+						<w2:key dataType="text" id="isApplied" name="is_applied"></w2:key>
+					</w2:keyInfo>
+					<w2:data use="false"></w2:data>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dmp_jobApplicationVo">
+					<w2:keyInfo>
+						<w2:key dataType="number" name="공고 ID" id="jobPostingId"></w2:key>
+						<w2:key dataType="number" name="지원자 ID" id="accountId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+
+				<!-- 공고 수정용 데이터 -->
+				<w2:dataMap baseNode="map" id="dmp_postEdit" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="jobPostingId" name="job_posting_id"></w2:key>
+						<w2:key dataType="text" id="title" name="title"></w2:key>
+						<w2:key dataType="text" id="description" name="description"></w2:key>
+						<w2:key dataType="text" id="experienceLevel" name="experience_level"></w2:key>
+						<w2:key dataType="text" id="salaryRange" name="salary_range"></w2:key>
+						<w2:key dataType="text" id="location" name="location"></w2:key>
+						<w2:key dataType="text" id="workType" name="work_type"></w2:key>
+						<w2:key dataType="text" id="selectedTechStackNames" name="selected_tech_stack_names"></w2:key>
+						<w2:key dataType="text" id="preferredDeveloperTypes" name="preferred_developer_types"></w2:key>
+						<w2:key dataType="text" id="jobImageFileName" name="job_image_file_name"></w2:key>
+						<w2:key dataType="text" id="isApplied" name="is_applied"></w2:key>
+					</w2:keyInfo>
+					<w2:data use="false"></w2:data>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+
+			<!-- 공고 상세 조회 Submission -->
+			<xf:submission id="sbm_selectPostDetail" ref='data:json,{"id":"dmp_postParam","key":"postVo"}'
+				target='data:json,{"id":"dmp_postDetail","key":"elData"}' action="/InsWebApp/POS0001Detail.pwkjson" method="post"
+				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
+				processMsg="공고 상세정보를 조회중입니다." ev:submit="" ev:submitdone="scwin.sbm_selectPostDetail_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+
+			<!-- 공고 삭제 Submission -->
+			<xf:submission id="sbm_deletePost" ref='data:json,{"id":"dmp_postParam","key":"postVo"}' target=""
+				action="/InsWebApp/POS0001Del.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="공고를 삭제중입니다." ev:submit=""
+				ev:submitdone="scwin.sbm_deletePost_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_insertJobApplication" action="/InsWebApp/POS0001JAPL.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dmp_jobApplicationVo","key":"jobApplicationVo"}' target="" encoding="UTF-8"
+				instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="이력서 지원중.." ev:submit=""
+				ev:submitdone="scwin.sbm_insertJobApplication_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+
+			<!-- 공고 수정 Submission -->
+			<xf:submission id="sbm_updatePost" ref='data:json,{"id":"dmp_postEdit","key":"postVo"}'
+				target='data:json,{"id":"dmp_postDetail","key":"elData"}' action="/InsWebApp/POS0001Upd.pwkjson" method="post"
+				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
+				processMsg="공고를 수정중입니다." ev:submit="" ev:submitdone="scwin.sbm_updatePost_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<style type="text/css"><![CDATA[
+            /* 기본 설정 */
+            * {
+                box-sizing: border-box;
+            }
+
+            /* 메인페이지와 동일한 기본 스타일 */
+            .main-wrap {
+                width: 100%;
+                background-color: #ffffff;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            }
+
+            /* 공고 상세 페이지 - 완전 반응형 컨테이너 */
+            .container {
+                max-width: 1060px;
+                width: 100%;
+                margin: 0 auto;
+                background-color: white;
+                min-height: 100vh;
+                padding: 0 min(30px, 4vw);
+            }
+
+            .main-content {
+                padding: 0;
+                width: 100%;
+            }
+
+            /* 뒤로가기 버튼 */
+            .back-section {
+                padding: 20px 0 10px 0;
+            }
+
+            .btn-back {
+                background: none;
+                border: 1px solid #e1e5e9;
+                color: #767676;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s ease;
+            }
+
+            .btn-back:hover {
+                background-color: #f8f9fa;
+                border-color: #c8d0d7;
+            }
+
+            /* 회사 이미지 섹션 - 반응형 그리드 */
+            .company-images {
+                margin: min(30px, 4vw) 0;
+            }
+
+            .image-gallery {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr;
+                gap: 8px;
+                height: clamp(250px, 40vw, 300px);
+                width: 100%;
+            }
+
+            .main-image {
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: clamp(18px, 3vw, 24px);
+                font-weight: bold;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .main-image::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                }
+
+                .main-image w2\\:textbox {
+                    position: relative;
+                    z-index: 2;
+                    text-align: center;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+            .main-image img { 
+                position: relative;
+                z-index: 2;
+                max-width: 100%;
+                height: auto;
+            }
+
+            /* 공고 정보 섹션 */
+            .job-header {
+                padding: min(40px, 5vw) 0;
+                border-bottom: 1px solid #e1e5e9;
+            }
+
+            .job-meta {
+                font-size: clamp(12px, 2vw, 14px);
+                color: #767676;
+                margin-bottom: 8px;
+                line-height: 1.4;
+            }
+
+            .job-title {
+                font-size: clamp(20px, 4vw, 28px);
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 20px;
+                line-height: 1.3;
+                word-break: keep-all;
+            }
+
+            .job-actions {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .btn-apply {
+                background-color: #36f;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-apply:hover {
+                background-color: #2a5bd6;
+            }
+
+            .btn-apply.btn-applied {
+                background-color: #6c757d !important;
+                cursor: not-allowed !important;
+                opacity: 0.7 !important;
+            }
+
+            .btn-apply.btn-applied:hover {
+                background-color: #6c757d !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            /* 기업 사용자용 버튼 스타일 */
+            .btn-edit {
+                background-color: #28a745;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-edit:hover {
+                background-color: #218838;
+            }
+
+            .btn-delete {
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-delete:hover {
+                background-color: #c82333;
+            }
+
+            /* 지원자 보기 버튼 스타일 */
+            .btn-applicant_details {
+                background-color: #17a2b8;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-applicant_details:hover {
+                background-color: #138496;
+            }
+
+            /* 매칭 제안하기 버튼 스타일 */
+            .btn-scout {
+                background-color: #fd7e14;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: background-color 0.2s ease;
+            }
+
+            .btn-scout:hover {
+                background-color: #e8680a;
+            }
+
+            /* 공고 내용 섹션 */
+            .job-content {
+                padding: min(40px, 5vw) 0;
+            }
+
+            .section-title {
+                font-size: clamp(18px, 3vw, 20px);
+                font-weight: 600;
+                color: #333;
+                margin-top: 60px;
+                margin-bottom: 16px;
+                padding-bottom: 8px;
+                display: inline-block;
+                position: relative;
+            }
+
+            /* MBTI 정보 버튼 스타일 */
+            .mbti-info-button {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background-color: #666;
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 20px;
+                margin-left: 8px;
+                cursor: pointer;
+                border: none;
+                transition: all 0.2s ease;
+                vertical-align: middle;
+            }
+
+            .mbti-info-button:hover {
+                background-color: #36f;
+                transform: scale(1.1);
+            }
+
+            .mbti-info-button:active {
+                transform: scale(0.95);
+            }
+
+            .section-content {
+            }
+
+            .empty-content {
+                color: #999;
+                text-align: center;
+                padding: 40px 20px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                border: 2px dashed #ddd;
+            }
+
+            /* 태그 - 반응형 */
+            .tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 0; /* section-title과의 간격 중복을 피하기 위해 마진 제거 */
+            }
+
+            /* 기술스택과 선호 성향 섹션 구분 */
+            .tech-tags, .dev-type-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 0; /* section-title과의 간격 중복을 피하기 위해 마진 제거 */
+                width: 100%;
+                clear: both;
+            }
+
+            .tag {
+                background-color: #f2f4f6;
+                color: #333;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: clamp(12px, 1.8vw, 14px);
+                font-weight: 500;
+                white-space: nowrap;
+                border: 1px solid transparent;
+                transition: all 0.2s ease;
+            }
+
+            .tag:hover {
+                background-color: #e8ecef;
+                border-color: #36f;
+            }
+
+            .tag.tech-tag {
+                background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+                color: #1976d2;
+                border: 1px solid #bbdefb;
+            }
+
+            .tag.dev-type-tag {
+                background-color: #e0f7fa; /* Light cyan background */
+                color: #00796b; /* Dark cyan text */
+                border: 1px solid #b2ebf2;
+            }
+
+            /* 기타 정보 태그들 */
+            .info-tags {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+                margin: 0; /* section-title과의 간격 중복을 피하기 위해 마진 제거 */
+            }
+
+            .info-tag-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 16px;
+            }
+
+            .info-tag-item:hover {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                border-color: #36f;
+            }
+
+            .info-tag-label {
+                font-weight: 600;
+                color: #36f;
+                /* min-width 속성 제거 */
+                white-space: nowrap; /* 라벨이 길어져도 줄바꿈되지 않도록 */
+            }
+
+            .info-tag-label::after {
+                content: ":"; /* 콜론 추가 */
+                margin-left: 4px; /* 콜론 뒤 간격 */
+                margin-right: 8px; /* 값 앞 간격 */
+                color: #333; /* 콜론 색상 */
+            }
+
+            .info-tag-value {
+                color: #333;
+                font-weight: 500;
+            }
+
+            /* 로딩 상태 */
+            .loading-content {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 40px;
+                color: #999;
+                font-style: italic;
+            }
+
+            .loading-spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #36f;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-right: 10px;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            /* 에러 상태 */
+            .error-content {
+                text-align: center;
+                padding: 40px 20px;
+                color: #d32f2f;
+                background-color: #ffebee;
+                border: 1px solid #ffcdd2;
+                border-radius: 8px;
+            }
+
+            /* 태블릿 반응형 */
+            @media (max-width: 1024px) {
+                .header {
+                    padding: 0 20px;
+                }
+
+                .nav-link {
+                    margin-right: 15px;
+                    font-size: 13px;
+                }
+
+                .search-input {
+                    width: 120px;
+                }
+
+                .container {
+                    padding: 0 20px;
+                }
+
+                .image-gallery {
+                    grid-template-columns: 1fr 1fr;
+                    height: auto;
+                    gap: 12px;
+                }
+
+                .main-image {
+                    grid-column: 1 / -1;
+                    height: 200px;
+                }
+
+                .info-tags {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            /* 모바일 반응형 */
+            @media (max-width: 768px) {
+                .header {
+                    height: 60px;
+                    padding: 0 15px;
+                }
+
+                .header-left, .header-right {
+                    padding-top: 13px;
+                }
+
+                .nav-menu xf:image {
+                    width: 100px !important;
+                    height: 28px !important;
+                }
+
+                .nav-link {
+                    display: none;
+                }
+
+                .search-input {
+                    width: 100px;
+                    font-size: 12px;
+                    height: 20px;
+                }
+
+                .btn-login, .btn-enterprise {
+                    padding: 5px 8px;
+                    font-size: 11px;
+                    height: 28px;
+                }
+
+                .container {
+                    padding: 0 15px;
+                }
+
+                .image-gallery {
+                    grid-template-columns: 1fr;
+                    height: auto;
+                    gap: 10px;
+                }
+
+                .main-image {
+                    height: clamp(150px, 25vw, 180px);
+                }
+
+                .job-actions {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 10px;
+                }
+
+                .btn-apply {
+                    width: 100%;
+                    justify-content: center;
+                    padding: 15px;
+                }
+
+                .info-tags {
+                    grid-template-columns: 1fr;
+                }
+
+                .tags {
+                    gap: 6px;
+                }
+
+                .tag {
+                    padding: 6px 12px;
+                }
+            }
+
+            /* 작은 모바일 */
+            @media (max-width: 480px) {
+                .container {
+                    padding: 0 10px;
+                }
+
+                .image-gallery {
+                    gap: 8px;
+                }
+
+                .main-image {
+                    height: 140px;
+                }
+
+                .job-content {
+                    padding: 30px 0;
+                }
+
+                .content-section {
+                    margin-bottom: 30px;
+                }
+
+                .info-tag-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+
+                .info-tag-label {
+                    min-width: auto;
+                }
+            }
+
+            /* ================== 편집 모드 스타일 ================== */
+            
+            /* 편집 모드 표시 */
+            .edit-mode-indicator {
+                background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+                border: 2px dashed #36f;
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 20px;
+                text-align: center;
+                color: #1976d2;
+                font-weight: 600;
+                font-size: 14px;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+
+            /* 편집 가능한 입력 필드 공통 스타일 (PostCreate와 동일하게) */
+            .edit-input, .edit-textarea, .edit-select, .form-select {
+                width: 100%;
+                padding: 12px 16px;
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                font-size: 16px;
+                color: #2d3748;
+                background-color: #ffffff;
+                transition: border-color 0.2s ease;
+                box-sizing: border-box;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            }
+
+            .edit-input:focus, .edit-textarea:focus, .edit-select:focus, .form-select:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+
+            /* 제목 편집 필드 */
+            .edit-title-input {
+                font-size: clamp(18px, 4vw, 24px);
+                font-weight: 600;
+                margin-bottom: 20px;
+                background: linear-gradient(135deg, #fff, #f8f9fa);
+            }
+
+            /* 내용 편집 텍스트에리어 */
+            .edit-content-textarea {
+                min-height: 120px;
+                resize: vertical;
+                background-color: #f8f9fa;
+                border-left: 4px solid #36f;
+            }
+
+            /* 선택 상자 (PostCreate와 동일하게) */
+            .edit-select, .form-select {
+                cursor: pointer;
+                appearance: none;
+            }
+
+            /* PostCreate와 동일한 폼 레이아웃 스타일 */
+            .form-group {
+                margin-bottom: 24px;
+            }
+
+            .form-group.half {
+                flex: 0 0 calc(50% - 10px);
+            }
+
+            .form-row {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                display: block;
+                font-size: 16px;
+                font-weight: 600;
+                color: #2d3748;
+                margin-bottom: 8px;
+            }
+
+            .form-label.required::after {
+                content: " *";
+                color: #e53e3e;
+            }
+
+            /* PostCreate와 동일한 반응형 CSS */
+            @media (max-width: 768px) {
+                .form-row {
+                    flex-direction: column;
+                    gap: 0;
+                }
+            }
+
+            /* 저장/취소 버튼 */
+            .btn-save {
+                background-color: #28a745;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-save:hover:not(:disabled) {
+                background-color: #218838;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            }
+
+            .btn-save:disabled {
+                background-color: #6c757d;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            .btn-cancel {
+                background-color: #6c757d;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: clamp(14px, 2vw, 16px);
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 80px;
+                white-space: nowrap;
+                transition: all 0.2s ease;
+            }
+
+            .btn-cancel:hover {
+                background-color: #545b62;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+            }
+
+            /* 편집 모드에서 숨겨지는 요소들 */
+            .edit-mode .hide-on-edit {
+                display: none !important;
+            }
+
+            /* 편집 모드에서만 보이는 요소들 */
+            .edit-only {
+                display: none;
+            }
+
+            .edit-mode .edit-only {
+                display: block;
+            }
+
+            .edit-mode .edit-only.inline {
+                display: inline-block;
+            }
+
+            .edit-mode .edit-only.flex {
+                display: flex;
+            }
+
+            /* 필수 필드 표시 */
+            .required-field::after {
+                content: ' *';
+                color: #dc3545;
+                font-weight: bold;
+            }
+
+            /* 검증 오류 스타일 */
+            .validation-error {
+                border-color: #dc3545 !important;
+                background-color: #fff5f5 !important;
+            }
+
+            .error-message {
+                color: #dc3545;
+                font-size: 12px;
+                margin-top: 4px;
+                font-weight: 500;
+            }
+
+            /* 로딩 상태 */
+            .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                z-index: 10;
+            }
+
+            .btn-loading {
+                opacity: 0.6;
+                pointer-events: none;
+            }
+
+            /* 모바일에서 편집 모드 최적화 */
+            @media (max-width: 768px) {
+                .edit-mode-indicator {
+                    font-size: 13px;
+                    padding: 10px;
+                }
+
+                .edit-input, .edit-textarea, .edit-select {
+                    font-size: 16px; /* iOS 줌 방지 */
+                }
+
+                .edit-title-input {
+                    font-size: 18px;
+                }
+
+                .job-actions {
+                    position: sticky;
+                    bottom: 0;
+                    background: white;
+                    padding: 15px 0;
+                    border-top: 1px solid #e1e5e9;
+                    margin: 0 -15px;
+                    padding-left: 15px;
+                    padding-right: 15px;
+                    z-index: 5;
+                }
+            }
+        ]]></style>
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+
+// ==================== 편집 모드 관련 전역 변수 ====================
+scwin.isEditMode = false;  // 편집 모드 상태
+scwin.originalData = null; // 원본 데이터 백업
+
+/**
+ * 지원 상태에 따른 지원하기 버튼 상태 업데이트
+ */
+scwin.updateApplyButtonState = function () {
+    var isApplied = dmp_postDetail.get("isApplied");
+    var appliedStatus = (isApplied === true || isApplied === "true" || isApplied === "Y");
+    
+    if (appliedStatus) {
+        // 이미 지원한 경우 - 버튼 비활성화 및 텍스트 변경
+        var applyLabel = btnApply.getChildren()[0];
+        if (applyLabel && applyLabel.setLabel) {
+            applyLabel.setLabel("✅ 지원완료");
+        }
+        
+        btnApply.setDisabled(true);
+        btnApply.addClass("btn-applied");
+        
+        var btnElement = document.getElementById("btnApply");
+        if (btnElement) {
+            btnElement.style.backgroundColor = "#6c757d";
+            btnElement.style.cursor = "not-allowed";
+            btnElement.style.opacity = "0.7";
+        }
+        
+    } else {
+        // 아직 지원하지 않은 경우 - 버튼 활성화
+        var applyLabel = btnApply.getChildren()[0];
+        if (applyLabel && applyLabel.setLabel) {
+            applyLabel.setLabel("지원하기");
+        }
+        
+        btnApply.setDisabled(false);
+        btnApply.removeClass("btn-applied");
+        
+        var btnElement = document.getElementById("btnApply");
+        if (btnElement) {
+            btnElement.style.backgroundColor = "#36f";
+            btnElement.style.cursor = "pointer";
+            btnElement.style.opacity = "1";
+        }
+    }
+};
+
+scwin.onpageload = function () {
+    var jobPostingId = null;
+
+    // 1. dataObject에서 파라미터 추출 시도
+    try {
+        if ($p.getParameter && $p.getParameter("dataObject")) {
+            var dataObject = $p.getParameter("dataObject");
+            if (dataObject && dataObject.jobPostingId) {
+                jobPostingId = dataObject.jobPostingId;
+            }
+        }
+    } catch (e) {
+        console.error("dataObject 추출 실패:", e);
+    }
+
+    // 2. 직접 쿼리스트링 파싱 시도
+    if (!jobPostingId) {
+        try {
+            var urlParams = new URLSearchParams(window.location.search);
+            jobPostingId = urlParams.get('jobPostingId');
+        } catch (e) {
+            console.error("URLSearchParams 파싱 실패:", e);
+        }
+    }
+
+    // 3. window.location.href에서 직접 파싱 시도
+    if (!jobPostingId) {
+        try {
+            var href = window.location.href;
+            var match = href.match(/[?&]jobPostingId=([^&]*)/);
+            if (match && match[1]) {
+                jobPostingId = decodeURIComponent(match[1]);
+            }
+        } catch (e) {
+            console.error("location.href 파싱 실패:", e);
+        }
+    }
+
+    if (jobPostingId && jobPostingId.trim() !== "") {
+        dmp_postParam.set("jobPostingId", jobPostingId);
+        $c.sbm.execute($p, sbm_selectPostDetail);
+    } else {
+        console.warn("jobPostingId 파라미터가 없습니다.");
+        $c.win.alert("잘못된 접근입니다. 공고 목록으로 이동합니다.");
+        scwin.goBackToList();
+    }
+};
+
+
+
+/**
+ * 공고 상세 조회 완료 콜백
+ */
+scwin.sbm_selectPostDetail_submitdone = function (e) {
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+
+    // 에러 체크
+    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+        console.error("공고 상세 조회 에러:", elHeader);
+        var errorMsg = "공고를 불러올 수 없습니다.";
+        if (elHeader && elHeader.resMsg) {
+            errorMsg += "\n" + elHeader.resMsg;
+        }
+        $c.win.alert(errorMsg);
+        setTimeout(function () {
+            scwin.goBackToList();
+        }, 1000);
+        return false;
+    }
+
+    // 데이터 존재 여부 체크
+    if (!elData) {
+        console.error("조회된 데이터가 없습니다.");
+        $c.win.alert("해당 공고 정보를 찾을 수 없습니다.\n공고가 삭제되었거나 존재하지 않을 수 있습니다.");
+        setTimeout(function () {
+            scwin.goBackToList();
+        }, 1000);
+        return false;
+    }
+
+    // 비활성화된 공고 체크
+    if (elData.status === 'inactive' || elData.status === 'deleted') {
+        console.warn("비활성화된 공고입니다.");
+        $c.win.alert("이 공고는 현재 모집이 중단되었습니다.");
+        setTimeout(function () {
+            scwin.goBackToList();
+        }, 1000);
+        return false;
+    }
+
+    try {
+        dmp_postDetail.setJSON(elData);
+        scwin.updateUI();
+        scwin.checkUserPermissionAndUpdateUI();
+        scwin.updateApplyButtonState();
+    } catch (error) {
+        console.error("데이터 바인딩 중 오류:", error);
+        $c.win.alert("데이터를 화면에 표시하는 중 오류가 발생했습니다.");
+    }
+};
+
+
+
+/**
+ * UI 업데이트 (실제 데이터로)
+ */
+scwin.updateUI = function () {
+    scwin.updateJobMeta();
+    scwin.updateTechStackTags();
+    scwin.updateDeveloperTypeTags();
+    scwin.updateInfoTags();
+    scwin.updateMainImageWithRetry(0);
+};
+
+
+
+/**
+ * 메인 이미지 업데이트 (재시도 로직 포함)
+ */
+scwin.updateMainImageWithRetry = function (retryCount) {
+    var jobImageFileName = dmp_postDetail.get("jobImageFileName");
+    var companyName = dmp_postDetail.get("companyName") || "정보없음";
+
+    var mainImageContainer = document.getElementById("main-image-container") ||
+        document.querySelector(".main-image") ||
+        document.querySelector('[id="main-image-container"]');
+
+    if (!mainImageContainer) {
+        if (retryCount < 4) {
+            setTimeout(function () {
+                scwin.updateMainImageWithRetry(retryCount + 1);
+            }, 1000);
+            return;
+        } else {
+            console.error("최대 재시도 횟수 초과. 이미지 업데이트 실패");
+            return;
+        }
+    }
+
+    if (jobImageFileName && jobImageFileName.trim() !== "" && jobImageFileName !== "null") {
+        var jobImageBase = '/InsWebApp/images/company/';
+        var defaultJobImage = '/InsWebApp/images/ws5/default_company.png';
+        var hasJobImage = jobImageFileName && jobImageFileName.trim() !== '';
+        var imgSrc = hasJobImage ? jobImageBase + encodeURIComponent(jobImageFileName) : defaultJobImage;
+
+        mainImageContainer.innerHTML =
+            '<img id="job-main-image" src="' + imgSrc + '" alt="공고 이미지" ' +
+            'style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" ' +
+            'onerror="this.src=\'' + defaultJobImage + '\';" />';
+
+    } else {
+        mainImageContainer.innerHTML =
+            '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">' +
+            companyName + '</div>';
+    }
+};
+
+
+
+
+
+
+
+/**
+ * 메타 정보 업데이트
+ */
+scwin.updateJobMeta = function () {
+    var companyName = dmp_postDetail.get("companyName") || "정보없음";
+    var experienceLevel = scwin.getExperienceLevelText(dmp_postDetail.get("experienceLevel"));
+    var location = dmp_postDetail.get("location") || "정보없음";
+    var workType = scwin.getWorkTypeText(dmp_postDetail.get("workType"));
+
+    var metaText = companyName + " • " + experienceLevel + " • " + location + " • " + workType;
+
+    // 메타 정보 업데이트
+    var metaElement = document.querySelector('.job-meta');
+    if (metaElement) {
+        metaElement.textContent = metaText;
+    }
+};
+
+
+
+/**
+ * 기술스택 태그 동적 생성
+ */
+scwin.updateTechStackTags = function () {
+    var techStackJson = dmp_postDetail.get("selectedTechStackNames");
+    var tagsContainer = document.querySelector('.tech-tags');
+
+    if (tagsContainer && techStackJson) {
+        try {
+            var techStacks = JSON.parse(techStackJson);
+            var tagsHtml = '';
+
+            for (var i = 0; i < techStacks.length; i++) {
+                tagsHtml += '<span class="tag tech-tag">' + techStacks[i] + '</span>';
+            }
+
+            tagsContainer.innerHTML = tagsHtml;
+        } catch (e) {
+            console.error("기술스택 JSON 파싱 오류:", e);
+            tagsContainer.innerHTML = '<span class="tag">기술스택 정보 없음</span>';
+        }
+    } else if (tagsContainer) {
+        tagsContainer.innerHTML = '<span class="tag">기술스택 정보 없음</span>';
+    }
+};
+
+
+
+/**
+ * 개발자 선호 유형 태그 동적 생성
+ */
+scwin.updateDeveloperTypeTags = function () {
+    var developerTypesJson = dmp_postDetail.get("preferredDeveloperTypes");
+    var devTypeTagsContainer = document.querySelector('.dev-type-tags');
+
+    if (devTypeTagsContainer && developerTypesJson) {
+        try {
+            var developerTypes = JSON.parse(developerTypesJson);
+            var tagsHtml = '';
+
+            for (var i = 0; i < developerTypes.length; i++) {
+                // mf_ 접두사 제거
+                var cleanType = developerTypes[i].replace(/^mf_/, '');
+                tagsHtml += '<span class="tag dev-type-tag">' + cleanType + '</span>';
+            }
+
+            devTypeTagsContainer.innerHTML = tagsHtml;
+        } catch (e) {
+            console.error("개발자 유형 JSON 파싱 오류:", e);
+            devTypeTagsContainer.innerHTML = '<span class="tag">선호 성향 정보 없음</span>';
+        }
+    } else if (devTypeTagsContainer) {
+        devTypeTagsContainer.innerHTML = '<span class="tag">선호 성향 정보 없음</span>';
+    }
+};
+
+
+
+/**
+ * 기타 정보 태그 업데이트
+ */
+scwin.updateInfoTags = function () {
+    var experienceLevel = scwin.getExperienceLevelText(dmp_postDetail.get("experienceLevel"));
+    var location = dmp_postDetail.get("location") || "미정";
+    var workType = scwin.getWorkTypeText(dmp_postDetail.get("workType"));
+    var salaryRange = scwin.getSalaryRangeText(dmp_postDetail.get("salaryRange"));
+
+    // 기타 정보 컨테이너 찾기
+    var infoContainer = document.querySelector('.info-tags');
+    if (infoContainer) {
+        var infoHtml = '';
+        infoHtml += '<div class="info-tag-item"><span class="info-tag-label">경력</span><span class="info-tag-value">' + experienceLevel + '</span></div>';
+        infoHtml += '<div class="info-tag-item"><span class="info-tag-label">지역</span><span class="info-tag-value">' + location + '</span></div>';
+        infoHtml += '<div class="info-tag-item"><span class="info-tag-label">근무형태</span><span class="info-tag-value">' + workType + '</span></div>';
+        infoHtml += '<div class="info-tag-item"><span class="info-tag-label">급여</span><span class="info-tag-value">' + salaryRange + '</span></div>';
+
+        infoContainer.innerHTML = infoHtml;
+    }
+};
+
+
+
+/**
+ * 목록으로 돌아가기
+ */
+scwin.goBackToList = function () {
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("PostList.xml");
+        } else {
+            $p.url("PostList.xml");
+        }
+    } catch (e) {
+        console.error("페이지 이동 중 오류:", e);
+        $p.url("PostList.xml");
+    }
+};
+
+// 뒤로가기 버튼 클릭
+scwin.btnBack_onclick = function (e) {
+    scwin.goBackToList();
+};
+
+// 지원하기 버튼 클릭
+scwin.btnApply_onclick = function (e) {
+    var title = dmp_postDetail.get("title");
+
+    $c.win.confirm(title + " 공고에 지원하시겠습니까?", function (ret) {
+        if (ret && ret.clickValue) {
+            var userInfoCookie = WebSquare.cookie.getCookie("userInfo");
+            if (userInfoCookie) {
+                var jobPostingId = dmp_postDetail.get("jobPostingId");
+                var userInfo = JSON.parse(userInfoCookie);
+                var accountId = userInfo.accountId;
+        
+                dmp_jobApplicationVo.set("jobPostingId", jobPostingId);
+                dmp_jobApplicationVo.set("accountId", accountId);
+                $c.sbm.execute($p, sbm_insertJobApplication);
+            }
+            else {
+                $c.win.alert("일반 회원으로 로그인 후 이용해주세요.");
+            }
+        }
+    });
+};
+
+
+
+/**
+ * 공고 삭제 완료 콜백
+ */
+scwin.sbm_deletePost_submitdone = function (e) {
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+
+    // 에러 체크
+    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+        console.error("공고 삭제 에러:", elHeader);
+        var errorMsg = "공고를 삭제할 수 없습니다.";
+        if (elHeader && elHeader.resMsg) {
+            errorMsg += "\n" + elHeader.resMsg;
+        }
+        $c.win.alert(errorMsg);
+        return false;
+    }
+
+    $c.win.alert("공고가 성공적으로 삭제되었습니다.");
+    setTimeout(function () {
+        scwin.goBackToList();
+    }, 500);
+};
+
+// =========================
+// 유틸리티 함수들
+// =========================
+
+
+
+/**
+ * 경력수준 한글 변환
+ */
+scwin.getExperienceLevelText = function (experienceLevel) {
+    switch (experienceLevel) {
+        case 'any': return '경력무관';
+        case 'junior': return '신입·1-3년';
+        case 'senior': return '시니어·3년+';
+        default: return experienceLevel || '정보없음';
+    }
+};
+
+
+
+/**
+ * 근무형태 한글 변환
+ */
+scwin.getWorkTypeText = function (workType) {
+    switch (workType) {
+        case 'remote': return '원격근무';
+        case 'onsite': return '출근근무';
+        case 'hybrid': return '하이브리드';
+        default: return workType || '정보없음';
+    }
+};
+
+
+
+/**
+ * 급여범위 한글 변환
+ */
+scwin.getSalaryRangeText = function (salaryRange) {
+    switch (salaryRange) {
+        case 'under25': return '~2,500만원';
+        case '25to35': return '2,500~3,500만원';
+        case '35to50': return '3,500~5,000만원';
+        case 'over50': return '5,000만원+';
+        default: return salaryRange || '협의';
+    }
+};
+
+
+
+/**
+ * 쿠키에서 사용자 정보 추출
+ */
+scwin.getUserInfoFromCookie = function () {
+    try {
+        var userInfoCookieStr = WebSquare.cookie.getCookie("userInfo");
+        if (userInfoCookieStr && userInfoCookieStr.trim() !== "") {
+            var userInfo = JSON.parse(userInfoCookieStr);
+            return userInfo;
+        }
+    } catch (error) {
+        console.error("사용자 정보 쿠키 파싱 오류:", error);
+    }
+    return null;
+};
+
+
+
+/**
+ * 현재 사용자가 공고 작성자인지 확인
+ */
+scwin.checkUserPermissionAndUpdateUI = function () {
+    var userInfo = scwin.getUserInfoFromCookie();
+    if (!userInfo) {
+        scwin.showGeneralUserUI();
+        return;
+    }
+
+    if (userInfo.role !== "COMPANY") {
+        scwin.showGeneralUserUI();
+        return;
+    }
+
+    var postCompanyId = dmp_postDetail.get("companyId");
+    var userCompanyId = userInfo.companyId;
+
+    if (String(userCompanyId) === String(postCompanyId)) {
+        scwin.showCompanyOwnerUI();
+    } else {
+        scwin.showGeneralUserUI();
+    }
+
+
+};
+
+
+
+/**
+ * 일반 사용자 UI 표시 (지원하기, 북마크)
+ */
+scwin.showGeneralUserUI = function () {
+
+    // 일반 사용자 버튼 표시
+    btnApply.show();
+
+    // 기업 관리 버튼 숨김
+    btnEdit.hide();
+    btnDelete.hide();
+    btnApplicantDetails.hide();
+    btnScout.hide();
+};
+
+
+
+/**
+ * 기업 소유자 UI 표시 (수정하기, 삭제하기)
+ */
+scwin.showCompanyOwnerUI = function () {
+
+    // 일반 사용자 버튼 숨김
+    btnApply.hide();
+
+    // 기업 관리 버튼 표시
+    btnEdit.show();
+    btnDelete.show();
+    btnApplicantDetails.show();
+    btnScout.show();
+};
+
+// 수정하기 버튼 클릭 - 편집 모드로 전환
+scwin.btnEdit_onclick = function (e) {
+    var title = dmp_postDetail.get("title");
+
+    if (confirm(title + " 공고를 수정하시겠습니까?")) {
+        scwin.enterEditMode();
+    }
+};
+
+// 삭제하기 버튼 클릭
+scwin.btnDelete_onclick = function (e) {
+    var jobPostingId = dmp_postDetail.get("jobPostingId");
+    var title = dmp_postDetail.get("title");
+
+    if (confirm(title + " 공고를 정말 삭제하시겠습니까?\n삭제된 공고는 복구할 수 없습니다.")) {
+
+        // TODO: 삭제 Submission 실행
+        try {
+            // 삭제 파라미터 설정
+            // dmp_postParam에 jobPostingId 설정 (이미 있음)
+
+            // 삭제 submission 실행 (submission을 추가해야 함)
+            $c.sbm.execute($p, sbm_deletePost);
+
+        } catch (error) {
+            console.error("공고 삭제 오류:", error);
+            $c.win.alert("공고 삭제 중 오류가 발생했습니다.");
+        }
+    }
+};
+
+scwin.sbm_insertJobApplication_submitdone = function (e) {
+
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+
+    // 에러 체크
+    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+        console.error("공고 지원 에러:", elHeader);
+        var errorMsg = "지원서 제출에 실패했습니다.";
+        if (elHeader && elHeader.resMsg) {
+            errorMsg += "\n" + elHeader.resMsg;
+        }
+        $c.win.alert(errorMsg);
+        return false;
+    }
+
+    $c.win.alert("지원서가 성공적으로 제출되었습니다!");
+    dmp_postDetail.set("isApplied", true);
+    scwin.updateApplyButtonState();
+};
+
+
+
+/**
+ * 공고 수정 완료 콜백
+ */
+scwin.sbm_updatePost_submitdone = function (e) {
+
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+
+    // 로딩 상태 해제
+    scwin.setLoadingState(false);
+
+    // 에러 체크
+    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+        console.error("공고 수정 에러:", elHeader);
+        var errorMsg = "공고를 수정할 수 없습니다.";
+        if (elHeader && elHeader.resMsg) {
+            errorMsg += "\n" + elHeader.resMsg;
+        }
+        $c.win.alert(errorMsg);
+        return false;
+    }
+
+    if (elData) {
+        dmp_postDetail.setJSON(elData);
+        scwin.updateUI();
+    }
+
+    // 편집 모드 종료
+    scwin.exitEditMode();
+
+    $c.win.alert("공고가 성공적으로 수정되었습니다.");
+};
+
+scwin.btnApplicantDetails_onclick = function (e) {
+    var jobPostingId = dmp_postDetail.get("jobPostingId");
+    var detailUrl = "ApplicantManagement.xml?jobPostingId=" + encodeURIComponent(jobPostingId);
+    $p.url(detailUrl);
+};
+
+scwin.btnScout_onclick = function (e) {
+    var jobPostingId = dmp_postDetail.get("jobPostingId");
+    var detailUrl = "Scout.xml?jobPostingId=" + encodeURIComponent(jobPostingId);
+    $p.url(detailUrl);
+
+};
+
+// ==================== 편집 모드 관련 함수들 ====================
+
+
+
+/**
+ * 편집 모드 진입
+ */
+scwin.enterEditMode = function () {
+    console.log("=== 편집 모드 진입 시작 ===");
+
+    // 현재 데이터 백업
+    scwin.originalData = dmp_postDetail.getJSON();
+    console.log("원본 데이터 백업 완료:", scwin.originalData);
+
+    // 편집용 DataMap에 데이터 복사
+    scwin.copyDataForEdit();
+
+    // 편집 모드 활성화
+    scwin.isEditMode = true;
+
+    // UI 모드 전환
+    scwin.toggleEditMode(true);
+
+    console.log("✅ 편집 모드 진입 완료");
+};
+
+
+
+/**
+ * 편집 모드 종료
+ */
+scwin.exitEditMode = function () {
+    console.log("=== 편집 모드 종료 시작 ===");
+
+    // 편집 모드 비활성화
+    scwin.isEditMode = false;
+
+    // UI 모드 전환
+    scwin.toggleEditMode(false);
+
+    // 백업 데이터 삭제
+    scwin.originalData = null;
+
+    // 편집 데이터 초기화
+    dmp_postEdit.clear();
+
+    console.log("✅ 편집 모드 종료 완료");
+};
+
+
+
+/**
+ * 편집용 데이터 복사
+ */
+scwin.copyDataForEdit = function () {
+    console.log("편집용 데이터 복사 시작");
+
+    try {
+        // 편집 가능한 필드들만 복사
+        dmp_postEdit.set("jobPostingId", dmp_postDetail.get("jobPostingId"));
+        dmp_postEdit.set("title", dmp_postDetail.get("title"));
+        dmp_postEdit.set("description", dmp_postDetail.get("description"));
+        dmp_postEdit.set("experienceLevel", dmp_postDetail.get("experienceLevel"));
+        dmp_postEdit.set("salaryRange", dmp_postDetail.get("salaryRange"));
+        dmp_postEdit.set("location", dmp_postDetail.get("location"));
+        dmp_postEdit.set("workType", dmp_postDetail.get("workType"));
+        dmp_postEdit.set("selectedTechStackNames", dmp_postDetail.get("selectedTechStackNames") || "[]");
+        dmp_postEdit.set("preferredDeveloperTypes", dmp_postDetail.get("preferredDeveloperTypes") || "[]");
+        dmp_postEdit.set("jobImageFileName", dmp_postDetail.get("jobImageFileName") || "");
+
+        console.log("편집용 데이터 복사 완료");
+        console.log("편집 데이터:", dmp_postEdit.getJSON());
+
+    } catch (error) {
+        console.error("편집용 데이터 복사 오류:", error);
+        $c.win.alert("편집 모드로 전환하는 중 오류가 발생했습니다.");
+    }
+};
+
+
+
+/**
+ * 편집 모드 UI 전환
+ */
+scwin.toggleEditMode = function (isEdit) {
+    console.log("UI 편집 모드 전환:", isEdit ? "편집 모드" : "읽기 모드");
+
+    var container = document.querySelector('.container');
+    if (container) {
+        if (isEdit) {
+            container.classList.add('edit-mode');
+            console.log("edit-mode 클래스 추가됨");
+        } else {
+            container.classList.remove('edit-mode');
+            console.log("edit-mode 클래스 제거됨");
+        }
+    } else {
+        console.warn("컨테이너를 찾을 수 없음");
+    }
+
+    console.log("편집 모드 UI 전환 완료");
+};
+
+
+
+/**
+ * 클라이언트 사이드 유효성 검사
+ */
+scwin.validateEditData = function () {
+    console.log("=== 입력 데이터 검증 시작 ===");
+
+    var hasError = false;
+    var errorMessages = [];
+
+    // 필수 필드 검증
+    var title = dmp_postEdit.get("title");
+    if (!title || title.trim() === "") {
+        hasError = true;
+        errorMessages.push("공고 제목은 필수 입력사항입니다.");
+        scwin.showFieldError("titleError", "공고 제목은 필수 입력사항입니다.");
+    } else {
+        scwin.hideFieldError("titleError");
+    }
+
+    var description = dmp_postEdit.get("description");
+    if (!description || description.trim() === "") {
+        hasError = true;
+        errorMessages.push("상세 설명은 필수 입력사항입니다.");
+        scwin.showFieldError("descriptionError", "상세 설명은 필수 입력사항입니다.");
+    } else {
+        scwin.hideFieldError("descriptionError");
+    }
+
+    // 길이 제한 검증
+    if (title && title.length > 200) {
+        hasError = true;
+        errorMessages.push("공고 제목은 200자 이내로 입력해주세요.");
+        scwin.showFieldError("titleError", "공고 제목은 200자 이내로 입력해주세요.");
+    }
+
+    if (description && description.length > 2000) {
+        hasError = true;
+        errorMessages.push("상세 설명은 2000자 이내로 입력해주세요.");
+        scwin.showFieldError("descriptionError", "상세 설명은 2000자 이내로 입력해주세요.");
+    }
+
+    console.log("검증 결과:", hasError ? "실패" : "성공");
+    if (hasError) {
+        console.log("검증 오류 목록:", errorMessages);
+        $c.win.alert("입력하신 정보를 확인해주세요:\n" + errorMessages.join("\n"));
+    }
+
+    return !hasError;
+};
+
+
+
+/**
+ * 필드 오류 표시
+ */
+scwin.showFieldError = function (errorId, message) {
+    var errorElement = document.getElementById(errorId);
+    if (errorElement) {
+        errorElement.style.display = 'block';
+        var textbox = errorElement.querySelector('w2\\:textbox');
+        if (textbox) {
+            textbox.setAttribute('label', message);
+        }
+    }
+};
+
+
+
+/**
+ * 필드 오류 숨김
+ */
+scwin.hideFieldError = function (errorId) {
+    var errorElement = document.getElementById(errorId);
+    if (errorElement) {
+        errorElement.style.display = 'none';
+    }
+};
+
+/**
+ * MBTI 예시 페이지로 이동하는 함수
+ */
+scwin.goToMbtiExample = function () {
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("MbtiExample.xml");
+        } else {
+            $p.url("../common/MbtiExample.xml");
+        }
+    } catch (e) {
+        console.error("페이지 이동 중 오류:", e);
+        $p.url("MbtiExample.xml");
+    }
+};
+
+
+
+/**
+ * 로딩 상태 설정
+ */
+scwin.setLoadingState = function (isLoading) {
+    var saveBtn = btnSave;
+    var cancelBtn = btnCancel;
+
+    if (isLoading) {
+        saveBtn.addClass('btn-loading');
+        saveBtn.setDisabled(true);
+        cancelBtn.setDisabled(true);
+    } else {
+        saveBtn.removeClass('btn-loading');
+        saveBtn.setDisabled(false);
+        cancelBtn.setDisabled(false);
+    }
+};
+
+
+
+/**
+ * 저장 버튼 클릭
+ */
+scwin.btnSave_onclick = function (e) {
+    if (!scwin.validateEditData()) {
+        return;
+    }
+
+    var title = dmp_postEdit.get("title");
+    if (confirm(title + " 공고를 저장하시겠습니까?")) {
+        scwin.setLoadingState(true);
+        try {
+            $c.sbm.execute($p, sbm_updatePost);
+        } catch (error) {
+            console.error("저장 중 오류:", error);
+            $c.win.alert("저장 중 오류가 발생했습니다.");
+            scwin.setLoadingState(false);
+        }
+    }
+};
+
+
+
+/**
+ * 취소 버튼 클릭
+ */
+scwin.btnCancel_onclick = function (e) {
+    if (confirm("편집을 취소하시겠습니까?\n변경사항이 저장되지 않습니다.")) {
+        scwin.exitEditMode();
+    }
+};
+]]></script>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<w2:wframe src="../common/Header.xml" id="headerFrame" />
+		<xf:group class="main-wrap">
+
+			<!-- 메인 컨텐츠 -->
+			<main class="container">
+				<!-- 편집 모드 표시기 (편집 모드에서만 표시) -->
+				<xf:group class="edit-mode-indicator edit-only" id="editModeIndicator">
+					<w2:textbox label="✏️ 공고 편집 모드 - 내용을 수정한 후 저장 버튼을 눌러주세요"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="main-content">
+					<!-- 회사 이미지 갤러리 -->
+					<section class="company-images">
+						<xf:group class="image-gallery">
+							<xf:group class="main-image" id="main-image-container" style="width: 200%;">
+								<!-- 이미지 또는 회사명이 JavaScript로 동적 설정됩니다 -->
+							</xf:group>
+						</xf:group>
+					</section>
+
+					<!-- 공고 헤더 -->
+					<section class="job-header">
+						<div class="job-meta">공고 정보 로딩중...</div>
+
+						<!-- 읽기 모드: 제목 표시 -->
+						<w2:textbox class="job-title hide-on-edit" ref="data:dmp_postDetail.title"></w2:textbox>
+
+						<!-- 편집 모드: 제목 입력 -->
+						<xf:group class="edit-only">
+							<w2:input class="edit-input edit-title-input required-field" ref="data:dmp_postEdit.title" placeholder="공고 제목을 입력해주세요 (필수)"
+								maxlength="100" style="margin-bottom: 10px;">
+							</w2:input>
+							<xf:group class="error-message" id="titleError" style="display:none;">
+								<w2:textbox label="제목은 필수 입력사항입니다."></w2:textbox>
+							</xf:group>
+						</xf:group>
+
+						<xf:group class="job-actions">
+							<!-- 일반 사용자용 버튼들 -->
+							<xf:trigger class="btn-apply hide-on-edit" id="btnApply" type="button" ev:onclick="scwin.btnApply_onclick">
+								<xf:label>지원하기</xf:label>
+							</xf:trigger>
+
+							<!-- 기업 사용자용 버튼들 (작성자 본인만) - 읽기 모드 -->
+							<xf:trigger class="btn-edit hide-on-edit" id="btnEdit" type="button" ev:onclick="scwin.btnEdit_onclick"
+								style="display:none;">
+								<xf:label>수정하기</xf:label>
+							</xf:trigger>
+							<xf:trigger class="btn-delete hide-on-edit" id="btnDelete" type="button" ev:onclick="scwin.btnDelete_onclick"
+								style="display:none;">
+								<xf:label>삭제하기</xf:label>
+							</xf:trigger>
+							<xf:trigger class="btn-applicant_details hide-on-edit" id="btnApplicantDetails" type="button" style=""
+								ev:onclick="scwin.btnApplicantDetails_onclick">
+								<xf:label>지원자 보기</xf:label>
+							</xf:trigger>
+							<xf:trigger class="btn-scout hide-on-edit" id="btnScout" style="" type="button" ev:onclick="scwin.btnScout_onclick">
+								<xf:label>매칭 제안하기</xf:label>
+							</xf:trigger>
+
+							<!-- 편집 모드 버튼들 (편집 모드에서만 표시) -->
+							<xf:trigger class="btn-save edit-only" id="btnSave" type="button" ev:onclick="scwin.btnSave_onclick">
+								<xf:label></xf:label>
+							</xf:trigger>
+							<xf:trigger class="btn-cancel edit-only" id="btnCancel" type="button" ev:onclick="scwin.btnCancel_onclick">
+								<xf:label>❌ 취소</xf:label>
+							</xf:trigger>
+						</xf:group>
+					</section>
+
+					<!-- 공고 내용 -->
+					<section class="job-content">
+						<!-- 상세 설명 -->
+						<xf:group class="content-section">
+							<w2:textbox class="section-title" label="상세 설명" style="margin-top: 0px;"></w2:textbox>
+
+							<!-- 읽기 모드: 상세 설명 표시 -->
+							<w2:textbox class="section-content hide-on-edit" ref="data:dmp_postDetail.description"></w2:textbox>
+
+							<!-- 편집 모드: 상세 설명 입력 -->
+							<xf:group class="edit-only">
+								<w2:textarea class="edit-textarea edit-content-textarea required-field" ref="data:dmp_postEdit.description"
+									placeholder="우리 회사에서 함께 일하고 싶은 개발자의 특징이나 역량을 구체적으로 설명해주세요 (필수)" maxlength="2000" rows="6">
+								</w2:textarea>
+								<xf:group class="error-message" id="descriptionError" style="display:none;">
+									<w2:textbox label="상세 설명은 필수 입력사항입니다."></w2:textbox>
+								</xf:group>
+							</xf:group>
+						</xf:group>
+
+						<!-- 기술스택 -->
+						<xf:group class="content-section">
+							<w2:textbox class="section-title" label="기술스택"></w2:textbox>
+
+							<!-- 읽기 모드: 기술스택 표시 -->
+							<xf:group class="tags tech-tags hide-on-edit">
+								<!-- 기술스택 태그들이 JavaScript로 동적 생성됩니다 -->
+								<div class="loading-content">
+									<div class="loading-spinner"></div>
+									기술스택 정보 로딩중...
+								</div>
+							</xf:group>
+
+							<!-- 편집 모드: 기술스택 편집 (읽기 전용 - 복잡함) -->
+							<xf:group class="edit-only">
+								<w2:textbox class="help-text" label="기술스택 편집은 현재 지원되지 않습니다. 필요 시 새 공고를 등록해주세요."></w2:textbox>
+								<xf:group class="tags tech-tags">
+									<!-- 현재 기술스택들을 읽기 전용으로 표시 -->
+								</xf:group>
+							</xf:group>
+						</xf:group>
+
+						<!-- 선호 성향 -->
+						<xf:group class="content-section">
+							<w2:textbox class="section-title" label="성향">
+							</w2:textbox>
+                            
+								<xf:trigger id="btn_mbti_info" class="mbti-info-button" ev:onclick="scwin.goToMbtiExample">
+									<xf:label>?</xf:label>
+								</xf:trigger>
+
+							<!-- 읽기 모드: 선호 성향 표시 -->
+							<xf:group class="tags dev-type-tags hide-on-edit">
+								<!-- 성향 태그들이 JavaScript로 동적 생성됩니다 -->
+								<div class="loading-content">
+									<div class="loading-spinner"></div>
+									성향 정보 로딩중...
+								</div>
+							</xf:group>
+
+							<!-- 편집 모드: 선호 성향 편집 (읽기 전용 - 복잡함) -->
+							<xf:group class="edit-only">
+								<w2:textbox class="help-text" label="선호 성향 편집은 현재 지원되지 않습니다. 필요 시 새 공고를 등록해주세요."></w2:textbox>
+								<xf:group class="tags dev-type-tags">
+									<!-- 현재 선호 성향들을 읽기 전용으로 표시 -->
+								</xf:group>
+							</xf:group>
+						</xf:group>
+
+						<!-- 추가 정보 -->
+						<xf:group class="content-section">
+							<w2:textbox class="section-title" label="추가 정보"></w2:textbox>
+
+							<!-- 읽기 모드: 추가 정보 표시 -->
+							<xf:group class="info-tags hide-on-edit">
+								<!-- 기타 정보가 JavaScript로 동적 생성됩니다 -->
+								<div class="loading-content">
+									<div class="loading-spinner"></div>
+									정보 로딩중...
+								</div>
+							</xf:group>
+
+							<!-- 편집 모드: 추가 정보 입력 (PostCreate와 동일한 구조) -->
+							<xf:group class="edit-only">
+								<xf:group class="form-row">
+									<xf:group class="form-group half">
+										<w2:textbox class="form-label" label="선호 경력"></w2:textbox>
+										<xf:select1 class="form-select" chooseOption="경력 선택" appearance="minimal" ref="data:dmp_postEdit.experienceLevel">
+											<xf:choices>
+												<xf:item>
+													<xf:label><![CDATA[상관없음]]></xf:label>
+													<xf:value><![CDATA[any]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[신입 (0년)]]></xf:label>
+													<xf:value><![CDATA[new]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[1-2년]]></xf:label>
+													<xf:value><![CDATA[junior]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[3-5년]]></xf:label>
+													<xf:value><![CDATA[mid]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[5년 이상]]></xf:label>
+													<xf:value><![CDATA[senior]]></xf:value>
+												</xf:item>
+											</xf:choices>
+										</xf:select1>
+									</xf:group>
+
+									<xf:group class="form-group half">
+										<w2:textbox class="form-label" label="예상 연봉범위"></w2:textbox>
+										<xf:select1 class="form-select" chooseOption="연봉 선택" appearance="minimal" ref="data:dmp_postEdit.salaryRange">
+											<xf:choices>
+												<xf:item>
+													<xf:label><![CDATA[2,500만원 미만]]></xf:label>
+													<xf:value><![CDATA[under25]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[2,500-3,500만원]]></xf:label>
+													<xf:value><![CDATA[25to35]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[3,500-5,000만원]]></xf:label>
+													<xf:value><![CDATA[35to50]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[5,000만원 이상]]></xf:label>
+													<xf:value><![CDATA[over50]]></xf:value>
+												</xf:item>
+											</xf:choices>
+										</xf:select1>
+									</xf:group>
+								</xf:group>
+
+								<xf:group class="form-row">
+									<xf:group class="form-group half">
+										<w2:textbox class="form-label" label="근무 지역"></w2:textbox>
+										<xf:select1 class="form-select" chooseOption="지역 선택" appearance="minimal" ref="data:dmp_postEdit.location">
+											<xf:choices>
+												<xf:item>
+													<xf:label><![CDATA[서울]]></xf:label>
+													<xf:value><![CDATA[서울]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[경기]]></xf:label>
+													<xf:value><![CDATA[경기]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[인천]]></xf:label>
+													<xf:value><![CDATA[인천]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[부산]]></xf:label>
+													<xf:value><![CDATA[부산]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[대구]]></xf:label>
+													<xf:value><![CDATA[대구]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[대전]]></xf:label>
+													<xf:value><![CDATA[대전]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[광주]]></xf:label>
+													<xf:value><![CDATA[광주]]></xf:value>
+												</xf:item>
+											</xf:choices>
+										</xf:select1>
+									</xf:group>
+
+									<xf:group class="form-group half">
+										<w2:textbox class="form-label" label="근무 형태"></w2:textbox>
+										<xf:select1 class="form-select" chooseOption="형태 선택" appearance="minimal" ref="data:dmp_postEdit.workType">
+											<xf:choices>
+												<xf:item>
+													<xf:label><![CDATA[원격 근무]]></xf:label>
+													<xf:value><![CDATA[remote]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[출근 근무]]></xf:label>
+													<xf:value><![CDATA[onsite]]></xf:value>
+												</xf:item>
+												<xf:item>
+													<xf:label><![CDATA[하이브리드]]></xf:label>
+													<xf:value><![CDATA[hybrid]]></xf:value>
+												</xf:item>
+											</xf:choices>
+										</xf:select1>
+									</xf:group>
+								</xf:group>
+							</xf:group>
+						</xf:group>
+					</section>
+				</xf:group>
+			</main>
+		</xf:group>
+	</body>
+</html>

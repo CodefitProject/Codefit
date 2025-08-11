@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="희망 연봉 선택">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_salary">
+                    <w2:keyInfo>
+                        <w2:key id="user_id" name="user_id" dataType="text"></w2:key>
+                        <w2:key id="salary" name="salary" dataType="text"></w2:key>
+                        <w2:key id="selectedSalary" name="selectedSalary" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+            
+            <!-- Submission for saving salary data to server -->
+            <xf:submission 
+                id="sbm_saveSalary" 
+                ref="data:json,dma_salary" 
+                target="data:json,dma_salary" 
+                action="/InsWebApp/USUpdateSalary.pwkjson" 
+                method="post" 
+                mediatype="application/json"
+                instance="" 
+                replace="" 
+                errorHandler="" 
+                customHandler=""
+                mode="asynchronous" 
+                processMsg="연봉 정보 저장 중..." 
+                ev:submit="" 
+                ev:submitdone="scwin.sbm_saveSalary_submitdone" 
+                ev:submiterror="scwin.sbm_saveSalary_submiterror" 
+                abortTrigger="">
+            </xf:submission>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <script type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+};
+
+scwin.selectSalary = function (salaryRange) {
+
+    // 데이터 저장
+    dma_salary.set("selectedSalary", salaryRange);
+
+    // 모든 salary-option 클래스에서 selected 제거
+    var allButtons = document.getElementsByClassName('salary-option');
+
+    for (var i = 0; i < allButtons.length; i++) {
+        allButtons[i].classList.remove('selected');
+    }
+
+    // 클릭된 버튼에 selected 클래스 추가 (이벤트 소스 기반)
+    if (window.event && window.event.srcElement) {
+        window.event.srcElement.classList.add('selected');
+        console.log("selected 클래스 추가됨 (srcElement)");
+    } else if (window.event && window.event.target) {
+        window.event.target.classList.add('selected');
+        console.log("selected 클래스 추가됨 (target)");
+    } else {
+        // 대안: 텍스트 기반으로 찾기
+        var textMap = {
+            '2000-2500': '2,000만원 ~ 2,500만원',
+            '2500-3000': '2,500만원 ~ 3,000만원',
+            '3000-4000': '3,000만원 ~ 4,000만원',
+            '4000-5000': '4,000만원 ~ 5,000만원',
+            '5000+': '5,000만원 이상'
+        };
+
+        var targetText = textMap[salaryRange];
+        console.log("텍스트로 찾기:", targetText);
+
+        for (var j = 0; j < allButtons.length; j++) {
+            if (allButtons[j].textContent.trim() === targetText) {
+                allButtons[j].classList.add('selected');
+                console.log("텍스트 기반으로 selected 클래스 추가됨");
+                break;
+            }
+        }
+    }
+
+    console.log("=== selectSalary 함수 완료 ===");
+};
+
+// Function to proceed to next page with server save
+scwin.goToNextPage = function () {
+    // 연봉이 선택되었는지 확인
+    var selectedSalary = dma_salary.get("selectedSalary");
+    if (!selectedSalary) {
+        $c.win.alert("연봉을 선택해주세요.");
+        return;
+    }
+
+    // 데이터맵에 데이터 설정 (user_id는 백엔드에서 세션으로 처리)
+    dma_salary.set("salary", selectedSalary);
+
+    console.log("연봉 데이터 전송:", {
+        salary: selectedSalary
+    });
+
+    // 서버에 데이터 저장
+    $c.sbm.execute(sbm_saveSalary);
+};
+
+// Success callback for salary save
+scwin.sbm_saveSalary_submitdone = function (e) {
+    console.log("Salary save response:", e);
+
+    var responseData = dma_salary.getJSON();
+    console.log("응답 데이터:", responseData);
+
+    if (responseData && (responseData.result === "success" || responseData.status === "success")) {
+        // 다음 페이지로 이동
+        $p.url("CareerInput.xml");
+    } else {
+        // 응답 구조와 상관없이 다음 페이지로 이동
+        $p.url("CareerInput.xml");
+    }
+};
+
+// Error callback for salary save
+scwin.sbm_saveSalary_submiterror = function (e) {
+    $c.win.alert("연봉 정보 저장 중 오류가 발생했습니다.");
+};
+
+// 기존 nextPage 함수를 새로운 함수로 교체
+scwin.nextPage = function () {
+    scwin.goToNextPage();
+};
+
+// 이전 버튼 - $p.url 방식
+scwin.btn_back_onclick = function () {
+    $p.url("LocationSelect.xml");
+};
+
+// 다음 버튼 - 서버 저장과 함께 페이지 이동
+scwin.btn_next_onclick = function () {
+    scwin.goToNextPage();
+};
+]]></script>
+        
+        <style type="text/css"><![CDATA[
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #007bff 0%, #007bff 50%, #e0e0e0 50%, #e0e0e0 100%);
+                width: 100%;
+            }
+            
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+                text-align: center;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .icon-container {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #007bff, #0d6efd);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            }
+            
+            .icon {
+                font-size: 40px;
+                color: white;
+            }
+            
+            .main-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 40px;
+                line-height: 1.4;
+            }
+            
+            .salary-options {
+                width: 100%;
+                max-width: 500px;
+                margin-bottom: 40px;
+            }
+            
+            .salary-option {
+                width: 100%;
+                background-color: #ffffff;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px 24px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 500;
+                color: #333;
+                position: relative;
+            }
+            
+            .salary-option:hover {
+                border-color: #007bff;
+                background-color: #f0f8ff;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+            }
+            
+            .salary-option.selected {
+                border-color: #007bff !important;
+                background-color: #007bff !important;
+                color: white !important;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3) !important;
+            }
+            
+            .salary-option.selected::after {
+                content: "✓";
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 24px;
+                font-weight: bold;
+            }
+            
+            .info-message {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-size: 14px;
+                color: #007bff;
+                margin-bottom: 40px;
+                padding: 12px 20px;
+                background-color: #f0f8ff;
+                border-radius: 8px;
+                max-width: 500px;
+            }
+            
+            .info-icon {
+                font-size: 16px;
+            }
+            
+            .button-area {
+                display: flex;
+                gap: 16px;
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .btn-back {
+                flex: 1;
+                background-color: #ffffff;
+                color: #666;
+                border: 2px solid #e0e0e0;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-back:hover {
+                border-color: #bbb;
+                background-color: #f5f5f5;
+            }
+            
+            .btn-next {
+                flex: 2;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-next:hover {
+                background-color: #0056b3;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+            }
+        ]]></style>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="../common/SignupHeader.xml" id="signupHeaderFrame" />
+        <xf:group class="main-container">
+            
+            <xf:group class="content-area">
+                <xf:group class="icon-container">
+                    <w2:textbox class="icon" label="💰" tagname="div"></w2:textbox>
+                </xf:group>
+                
+                <w2:textbox class="main-title" label="희망 연봉을 알려주세요" tagname="h1"></w2:textbox>
+                
+                <xf:group class="info-message">
+                    <w2:textbox class="info-icon" label="ℹ️" tagname="span"></w2:textbox>
+                    <w2:textbox label="정확한 매칭을 위해 솔직하게 알려주세요" tagname="span"></w2:textbox>
+                </xf:group>
+                
+                <xf:group class="salary-options">
+                    <xf:trigger class="salary-option" ev:onclick="scwin.selectSalary('2000-2500')">
+                        <xf:label>2,000만원 ~ 2,500만원</xf:label>
+                    </xf:trigger>
+                    
+                    <xf:trigger class="salary-option" ev:onclick="scwin.selectSalary('2500-3000')">
+                        <xf:label>2,500만원 ~ 3,000만원</xf:label>
+                    </xf:trigger>
+                    
+                    <xf:trigger class="salary-option" ev:onclick="scwin.selectSalary('3000-4000')">
+                        <xf:label>3,000만원 ~ 4,000만원</xf:label>
+                    </xf:trigger>
+                    
+                    <xf:trigger class="salary-option" ev:onclick="scwin.selectSalary('4000-5000')">
+                        <xf:label>4,000만원 ~ 5,000만원</xf:label>
+                    </xf:trigger>
+                    
+                    <xf:trigger class="salary-option" ev:onclick="scwin.selectSalary('5000+')">
+                        <xf:label>5,000만원 이상</xf:label>
+                    </xf:trigger>
+                </xf:group>
+                
+                <xf:group class="button-area">
+                    <xf:trigger class="btn-back" ev:onclick="scwin.btn_back_onclick">
+                        <xf:label>이전</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" id="btn_next" ev:onclick="scwin.btn_next_onclick">
+                        <xf:label>다음</xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html> 

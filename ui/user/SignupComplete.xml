@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="CodeFIT 회원가입 완료">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_complete">
+                    <w2:keyInfo>
+                        <w2:key id="userName" name="사용자명" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <script type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    dma_complete.set("userName", "사용자");
+};
+
+// 다음 버튼 클릭 - $p.url 방식으로 추가정보 입력으로 이동
+scwin.btn_next_onclick = function () {
+    $p.url("LocationSelect.xml");
+};
+]]></script>
+        
+        <style type="text/css"><![CDATA[
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #007bff 0%, #007bff 100%);
+                width: 100%;
+            }
+            
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+                text-align: center;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .success-icon {
+                width: 120px;
+                height: 120px;
+                background: linear-gradient(135deg, #007bff, #0d6efd);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 8px 32px rgba(0, 123, 255, 0.3);
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.3);
+                }
+                50% {
+                    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.6);
+                }
+                100% {
+                    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.3);
+                }
+            }
+            
+            .success-checkmark {
+                font-size: 60px;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .main-title {
+                font-size: 32px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 16px;
+            }
+            
+            .sub-title {
+                font-size: 18px;
+                color: #666;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }
+            
+            .description {
+                font-size: 16px;
+                color: #888;
+                margin-bottom: 40px;
+                line-height: 1.6;
+                max-width: 500px;
+            }
+            
+            .next-button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 18px 40px;
+                border-radius: 50px;
+                font-size: 18px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            }
+            
+            .next-button:hover {
+                background-color: #0056b3;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+            }
+            
+            .celebration-text {
+                font-size: 24px;
+                color: #007bff;
+                font-weight: bold;
+                margin-bottom: 20px;
+                text-shadow: 2px 2px 4px rgba(0, 123, 255, 0.2);
+            }
+            
+            .feature-list {
+                text-align: left;
+                margin: 30px 0;
+                padding: 24px;
+                background-color: #f0f8ff;
+                border-radius: 12px;
+                border: 2px solid #cce7ff;
+                max-width: 500px;
+            }
+            
+            .feature-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 12px;
+                font-size: 16px;
+                color: #333;
+            }
+            
+            .feature-item:last-child {
+                margin-bottom: 0;
+            }
+            
+            .feature-icon {
+                width: 24px;
+                height: 24px;
+                background-color: #007bff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+        ]]></style>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="../common/SignupHeader.xml" id="signupHeaderFrame" />
+        <xf:group class="main-container">
+            
+            <xf:group class="content-area">
+                <xf:group class="success-icon">
+                    <w2:textbox class="success-checkmark" label="✓" tagname="div"></w2:textbox>
+                </xf:group>
+                
+                <w2:textbox class="celebration-text" label="🎉 축하합니다!" tagname="div"></w2:textbox>
+                <w2:textbox class="main-title" label="CodeFIT 회원가입이 완료되었습니다!" tagname="h1"></w2:textbox>
+                <w2:textbox class="sub-title" ref="data:dma_complete.userName" formatter="#binding + '님, 환영합니다!' " tagname="p"></w2:textbox>
+                <w2:textbox class="description" label="이제 당신만의 개발자 유형을 분석하고 맞춤형 채용 정보를 받아보세요." tagname="p"></w2:textbox>
+                
+                <xf:group class="feature-list">
+                    <xf:group class="feature-item">
+                        <xf:group class="feature-icon">
+                            <w2:textbox label="1" tagname="div"></w2:textbox>
+                        </xf:group>
+                        <w2:textbox label="개발자 유형 분석으로 나만의 코딩 스타일 발견" tagname="div"></w2:textbox>
+                    </xf:group>
+                    
+                    <xf:group class="feature-item">
+                        <xf:group class="feature-icon">
+                            <w2:textbox label="2" tagname="div"></w2:textbox>
+                        </xf:group>
+                        <w2:textbox label="맞춤형 채용공고 추천으로 시간 절약" tagname="div"></w2:textbox>
+                    </xf:group>
+                    
+                    <xf:group class="feature-item">
+                        <xf:group class="feature-icon">
+                            <w2:textbox label="3" tagname="div"></w2:textbox>
+                        </xf:group>
+                        <w2:textbox label="기업과의 완벽한 매칭으로 성공적인 취업" tagname="div"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <xf:trigger class="next-button" ev:onclick="scwin.btn_next_onclick">
+                    <xf:label>추가정보 입력하기</xf:label>
+                </xf:trigger>
+            </xf:group>
+        </xf:group>
+    </body>
+</html> 

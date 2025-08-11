@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="프로필을 완성해주세요">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_profile">
+                    <w2:keyInfo>
+                        <w2:key id="profileImage" name="프로필이미지" dataType="text"></w2:key>
+                        <w2:key id="bio" name="자기소개" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <script type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    console.log("프로필 추가 정보 페이지 로드됨");
+
+    // 파일 업로드 이벤트 설정
+    scwin.initializeFileUpload();
+
+    // 텍스트 영역 이벤트 바인딩
+    setTimeout(function () {
+        var textarea = document.querySelector('.additional-intro-textarea');
+        if (textarea) {
+            textarea.addEventListener('input', scwin.updateCharCount);
+            textarea.addEventListener('keyup', scwin.updateCharCount);
+        }
+    }, 100);
+};
+
+// 파일 업로드 초기화 (CodeAnalysisMain.xml 방식)
+scwin.initializeFileUpload = function () {
+    var inputElement = document.getElementById('profileImageInput');
+    if (inputElement) {
+        inputElement.addEventListener('change', function (e) {
+            scwin.handleFileUpload(e);
+        });
+    }
+};
+
+scwin.handleFileUpload = function (event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    // 파일 유형 검사
+    if (!file.type.startsWith('image/')) {
+        $c.win.alert('이미지 파일만 업로드 가능합니다.');
+        return;
+    }
+
+    // 파일 크기 검사 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        $c.win.alert('파일 크기는 5MB 이하여야 합니다.');
+        return;
+    }
+
+    // 미리보기 이미지 표시 (즉시)
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var uploadArea = document.querySelector('.upload-area');
+        var previewArea = document.querySelector('.preview-area');
+        var previewImage = document.querySelector('.preview-image');
+
+        if (uploadArea && previewArea && previewImage) {
+            uploadArea.style.display = 'none';
+            previewArea.style.display = 'block';
+            previewImage.src = e.target.result;
+            console.log("프로필 이미지 미리보기 표시 완료");
+        }
+    };
+    reader.readAsDataURL(file);
+
+    // 서버에 실제 파일 업로드
+    scwin.uploadToServer(file);
+};
+
+scwin.uploadToServer = function (file) {
+    console.log("서버 업로드 시작:", file.name);
+
+    // 현재는 임시로 사용자 ID를 1로 설정 (실제로는 세션에서 가져와야 함)
+    var userId = 1; // TODO: 실제 사용자 ID로 변경
+
+    var formData = new FormData();
+    formData.append('profileImage', file);
+    formData.append('userId', userId);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/InsWebApp/USProfileImageUpload.pwkjson', true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                var response = JSON.parse(xhr.responseText);
+
+                if (response.success) {
+                    // 데이터 모델에 서버에서 반환된 파일명 저장
+                    dma_profile.set("profileImage", response.fileName);
+                    $c.win.alert("프로필 이미지가 성공적으로 업로드되었습니다.");
+                } else {
+                    $c.win.alert("업로드 실패: " + response.message);
+                    scwin.removeImage(); // 실패 시 미리보기 제거
+                }
+            } catch (e) {
+                $c.win.alert("서버 응답 처리 중 오류가 발생했습니다.");
+                scwin.removeImage(); // 실패 시 미리보기 제거
+            }
+        } else {
+            $c.win.alert("서버 통신 오류가 발생했습니다.");
+            scwin.removeImage(); // 실패 시 미리보기 제거
+        }
+    };
+
+    xhr.onerror = function () {
+        $c.win.alert("네트워크 오류가 발생했습니다.");
+        scwin.removeImage(); // 실패 시 미리보기 제거
+    };
+
+    xhr.send(formData);
+};
+
+scwin.triggerFileUpload = function () {
+    console.log("파일 업로드 트리거 시작");
+
+    // HTML에 정의된 파일 입력 요소를 직접 클릭
+    var fileInput = document.getElementById('profileImageInput');
+    if (fileInput) {
+        fileInput.click();
+        console.log("파일 선택 대화상자 열림");
+    } else {
+        console.error("파일 입력 요소를 찾을 수 없습니다.");
+        $c.win.alert("파일 업로드 기능에 오류가 발생했습니다.");
+    }
+};
+
+scwin.removeImage = function (event) {
+    // 이벤트 버블링 방지 (부모의 파일 선택 이벤트가 실행되지 않도록)
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    }
+
+    var uploadArea = document.querySelector('.upload-area');
+    var previewArea = document.querySelector('.preview-area');
+    var fileInput = document.getElementById('profileImageInput');
+
+    if (uploadArea && previewArea) {
+        uploadArea.style.display = 'flex';
+        previewArea.style.display = 'none';
+
+        // 파일 입력 초기화
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        // 데이터 모델에서 제거
+        dma_profile.set("profileImage", "");
+        console.log("프로필 이미지 제거됨");
+    }
+};
+
+scwin.updateCharCount = function (event) {
+    var textarea = event ? event.target : document.querySelector('.additional-intro-textarea');
+    var currentLength = textarea ? textarea.value.length : 0;
+    var maxLength = 300;
+
+    // 글자 수 표시 업데이트
+    var charCountElement = document.querySelector('.char-count');
+    var charCountById = document.getElementById('additionalIntroCharCount');
+
+    if (charCountElement) {
+        charCountElement.textContent = currentLength + '/' + maxLength;
+    }
+    if (charCountById) {
+        charCountById.textContent = currentLength + '/' + maxLength;
+    }
+
+    // 최대 길이 제한
+    if (currentLength > maxLength) {
+        var limitedText = textarea.value.substring(0, maxLength);
+        if (textarea) {
+            textarea.value = limitedText;
+        }
+        dma_profile.set("bio", limitedText);
+
+        if (charCountElement) {
+            charCountElement.textContent = '300/300';
+        }
+        if (charCountById) {
+            charCountById.textContent = '300/300';
+        }
+    }
+};
+
+// 이전 버튼 - $p.url 방식
+scwin.btn_back_onclick = function () {
+    console.log("경력 입력 페이지로 이동");
+    $p.url("CareerInput.xml");
+};
+
+// 다음 버튼 (완료) - $p.url 방식
+scwin.btn_next_onclick = function () {
+    // 최신 값으로 데이터 모델 업데이트
+    var textarea = document.querySelector('.additional-intro-textarea');
+    var bio = textarea ? textarea.value : "";
+    dma_profile.set("bio", bio);
+
+    var profileImage = dma_profile.get("profileImage");
+
+    console.log("입력된 프로필 정보:", {
+        profileImage: profileImage,
+        bio: bio
+    });
+
+    // 모든 단계에서 입력된 데이터를 수집하여 서버에 전송
+    scwin.submitAllAdditionalInfo();
+};
+
+// 모든 추가 정보를 서버에 전송하는 함수
+scwin.submitAllAdditionalInfo = function () {
+    try {
+        // ProfileAdditional 현재 페이지 데이터만 처리 (이전 단계 데이터는 이미 저장됨)
+        var textarea = document.querySelector('.additional-intro-textarea');
+        var bio = textarea ? textarea.value : "";
+        var profileImage = dma_profile.get("profileImage") || "";
+
+        // 현재 페이지 데이터만 서버에 전송 (이전 단계 데이터는 빈 값으로 전송하지 않음)
+        var requestData = {
+            bio: bio,
+            profileImageName: profileImage
+        };
+
+        console.log("현재 페이지 데이터만 서버 전송:", requestData);
+
+        // 서버에 AJAX 요청으로 현재 페이지 데이터만 전송
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/InsWebApp/USUpdateAdditionalInfo.pwkjson', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log("서버 응답:", response);
+
+                    if (response.success) {
+                        console.log("추가 정보 저장 성공");
+                        // 프로필 작성 완료 페이지로 이동
+                        $p.url("ProfileComplete.xml");
+                    } else {
+                        $c.win.alert("정보 저장 중 오류가 발생했습니다: " + response.message);
+                    }
+                } catch (e) {
+                    $c.win.alert("서버 응답 처리 중 오류가 발생했습니다.");
+                }
+            } else {
+                $c.win.alert("서버 통신 오류가 발생했습니다.");
+            }
+        };
+
+        xhr.onerror = function () {
+            $c.win.alert("네트워크 오류가 발생했습니다.");
+        };
+
+        xhr.send(JSON.stringify(requestData));
+
+    } catch (e) {
+        $c.win.alert("데이터 전송 중 오류가 발생했습니다.");
+        // 오류가 발생해도 일단 다음 페이지로 이동
+        $p.url("ProfileComplete.xml");
+    }
+};
+]]></script>
+        
+        <style type="text/css"><![CDATA[
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #007bff 0%, #007bff 100%);
+                width: 100%;
+            }
+            
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 40px 20px;
+                text-align: center;
+                max-width: 700px;
+                margin: 0 auto;
+            }
+            
+            .icon-container {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #FF9800, #F57C00);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
+            }
+            
+            .icon {
+                font-size: 40px;
+                color: white;
+            }
+            
+            .main-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 15px;
+                line-height: 1.4;
+            }
+            
+            .sub-title {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 40px;
+                line-height: 1.5;
+            }
+            
+            .form-section {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 40px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 20px;
+                text-align: left;
+            }
+            
+            .profile-image-section {
+                margin-bottom: 40px;
+            }
+            
+            .image-upload-container {
+                width: 150px;
+                height: 150px;
+                margin: 0 auto 20px;
+                position: relative;
+            }
+            
+            .upload-area {
+                width: 100%;
+                height: 100%;
+                border: 3px dashed #e0e0e0;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background-color: #fafafa;
+            }
+            
+            .upload-area:hover {
+                border-color: #007bff;
+                background-color: #f0f8ff;
+            }
+            
+            .upload-icon {
+                font-size: 36px;
+                color: #ccc;
+                margin-bottom: 8px;
+            }
+            
+            .upload-text {
+                font-size: 14px;
+                color: #999;
+            }
+            
+            .preview-area {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                overflow: hidden;
+                position: relative;
+                display: none;
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+            }
+            
+            .preview-area:hover {
+                opacity: 0.8;
+            }
+            
+            .preview-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .image-remove-btn {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                width: 30px;
+                height: 30px;
+                background-color: #ff4444;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+                z-index: 10;
+            }
+            
+            .image-remove-btn:hover {
+                background-color: #cc0000;
+            }
+            
+            .hidden-file-input {
+                display: none;
+            }
+            
+            .additional-intro-section {
+                margin-bottom: 40px;
+            }
+            
+            .textarea-container {
+                position: relative;
+                margin-top: 16px;
+            }
+            
+            .additional-intro-textarea {
+                width: 100%;
+                min-height: 120px;
+                padding: 20px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                font-size: 16px;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                line-height: 1.6;
+                resize: vertical;
+                transition: border-color 0.3s ease;
+                box-sizing: border-box;
+            }
+            
+            .additional-intro-textarea:focus {
+                outline: none;
+                border-color: #007bff;
+            }
+            
+            .additional-intro-textarea::placeholder {
+                color: #999;
+                line-height: 1.6;
+            }
+            
+            .char-count {
+                position: absolute;
+                bottom: 12px;
+                right: 16px;
+                font-size: 12px;
+                color: #999;
+                background-color: rgba(255, 255, 255, 0.9);
+                padding: 4px 8px;
+                border-radius: 4px;
+            }
+            
+            .buttons-section {
+                display: flex;
+                gap: 16px;
+                width: 100%;
+                max-width: 600px;
+                margin-top: 20px;
+            }
+            
+            .btn-back {
+                flex: 1;
+                background-color: #ffffff;
+                color: #666;
+                border: 2px solid #e0e0e0;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-back:hover {
+                border-color: #bbb;
+                background-color: #f5f5f5;
+            }
+            
+            .btn-next {
+                flex: 2;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-next:hover {
+                background-color: #0056b3;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+            }
+        ]]></style>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <w2:wframe src="../common/SignupHeader.xml" id="signupHeaderFrame" />
+        <xf:group class="main-container">
+            
+            <xf:group class="content-area">
+                <xf:group class="icon-container">
+                    <w2:textbox class="icon" label="👤" tagname="div"></w2:textbox>
+                </xf:group>
+                
+                <w2:textbox class="main-title" label="프로필을 완성해주세요" tagname="h1"></w2:textbox>
+                <w2:textbox class="sub-title" label="개성 있는 프로필로 기업의 관심을 끌어보세요" tagname="p"></w2:textbox>
+                
+                <xf:group class="form-section profile-image-section">
+                    <w2:textbox class="section-title" label="프로필 사진 (선택)" tagname="div"></w2:textbox>
+                    <xf:group class="image-upload-container">
+                        <xf:group class="upload-area" ev:onclick="scwin.triggerFileUpload">
+                            <w2:textbox class="upload-icon" label="📷" tagname="div"></w2:textbox>
+                            <w2:textbox class="upload-text" label="사진 업로드" tagname="div"></w2:textbox>
+                        </xf:group>
+                        
+                        <xf:group class="preview-area" ev:onclick="scwin.triggerFileUpload">
+                            <img class="preview-image" src="" alt="프로필 미리보기" />
+                            <xf:trigger class="image-remove-btn" ev:onclick="scwin.removeImage">
+                                <xf:label>×</xf:label>
+                            </xf:trigger>
+                        </xf:group>
+                        
+                        <!-- Hidden file input for profile image upload -->
+                        <input type="file" id="profileImageInput" accept="image/*" class="hidden-file-input" />
+                    </xf:group>
+                </xf:group>
+                
+                <xf:group class="form-section additional-intro-section">
+                    <w2:textbox class="section-title" label="자기소개" tagname="div"></w2:textbox>
+                    <xf:group class="textarea-container">
+                        <textarea class="additional-intro-textarea" 
+                            placeholder="개발에 대한 관심을 갖게 된 계기나 배우고 싶은 기술, 목표 등을 자유롭게 작성해주세요."
+                            oninput="scwin.updateCharCount(event)"
+                            onkeyup="scwin.updateCharCount(event)"></textarea>
+                        <w2:textbox class="char-count" id="additionalIntroCharCount" label="0/300" tagname="div"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <xf:group class="buttons-section">
+                    <xf:trigger class="btn-back" ev:onclick="scwin.btn_back_onclick">
+                        <xf:label>이전</xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" ev:onclick="scwin.btn_next_onclick">
+                        <xf:label>완료</xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html> 

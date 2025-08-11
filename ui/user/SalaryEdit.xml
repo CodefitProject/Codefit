@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" 
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    
+    <head meta_screenName="희망하는 연봉을 알려주세요">
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_salary">
+                    <w2:keyInfo>
+                        <w2:key id="selectedSalary" name="선택된연봉" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        
+        <style type="text/css"><![CDATA[
+            /* 전체 컨테이너 스타일 */
+            .main-container {
+                background-color: #ffffff;
+                min-height: 100vh;
+                font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* 헤더 스타일 */
+            .header {
+                width: 100%;
+                height: 70px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .header-logo {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                letter-spacing: 2px;
+            }
+            
+            .header-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #00c851 0%, #00c851 25%, #e0e0e0 25%, #e0e0e0 100%);
+                width: 100%;
+            }
+            
+            /* 메인 콘텐츠 영역 */
+            .content-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+                text-align: center;
+            }
+            
+            /* 아이콘 스타일 */
+            .icon-container {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #00c851, #4CAF50);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(0, 200, 81, 0.3);
+            }
+            
+            .icon {
+                font-size: 40px;
+                color: white;
+            }
+            
+            /* 제목 스타일 */
+            .main-title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 40px;
+                line-height: 1.4;
+            }
+            
+            /* 연봉 선택 옵션들 */
+            .salary-options {
+                width: 100%;
+                max-width: 500px;
+                margin-bottom: 40px;
+            }
+            
+            .salary-option {
+                width: 100%;
+                background-color: #ffffff;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px 24px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 500;
+                color: #333;
+                position: relative;
+            }
+            
+            .salary-option:hover {
+                border-color: #00c851;
+                background-color: #f8fff9;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 200, 81, 0.15);
+            }
+            
+            .salary-option.selected {
+                border-color: #00c851;
+                background-color: #00c851;
+                color: white;
+                box-shadow: 0 4px 20px rgba(0, 200, 81, 0.3);
+            }
+            
+            .salary-option.selected::after {
+                content: "✓";
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 24px;
+                font-weight: bold;
+            }
+            
+            /* 안내 메시지 */
+            .info-message {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-size: 14px;
+                color: #2196F3;
+                margin-bottom: 40px;
+                padding: 12px 20px;
+                background-color: #e3f2fd;
+                border-radius: 8px;
+                max-width: 500px;
+            }
+            
+            .info-icon {
+                font-size: 16px;
+            }
+            
+            /* 버튼 영역 */
+            .button-area {
+                display: flex;
+                gap: 16px;
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .btn-back {
+                flex: 1;
+                background-color: #ffffff;
+                color: #666;
+                border: 2px solid #e0e0e0;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-back:hover {
+                border-color: #bbb;
+                background-color: #f5f5f5;
+            }
+            
+            .btn-next {
+                flex: 2;
+                background-color: #e0e0e0;
+                color: #999;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: not-allowed;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-next.active {
+                background-color: #00c851;
+                color: white;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+            }
+            
+            .btn-next.active:hover {
+                background-color: #00a844;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(0, 200, 81, 0.4);
+            }
+            
+            /* 반응형 디자인 */
+            @media (max-width: 768px) {
+                .content-area {
+                    padding: 20px 16px;
+                }
+                
+                .main-title {
+                    font-size: 24px;
+                    margin-bottom: 30px;
+                }
+                
+                .salary-option {
+                    padding: 16px 20px;
+                    font-size: 16px;
+                }
+                
+                .button-area {
+                    flex-direction: column;
+                }
+                
+                .btn-back, .btn-next {
+                    padding: 14px 24px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .icon-container {
+                    width: 60px;
+                    height: 60px;
+                    margin-bottom: 20px;
+                }
+                
+                .icon {
+                    font-size: 30px;
+                }
+                
+                .main-title {
+                    font-size: 20px;
+                    margin-bottom: 24px;
+                }
+                
+                .salary-option {
+                    padding: 14px 16px;
+                    font-size: 15px;
+                }
+            }
+        ]]></style>
+        
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+    // 초기화
+    dma_salary.set("selectedSalary", "");
+    scwin.updateNextButton();
+};
+
+// 연봉 옵션 선택
+scwin.selectSalary = function(salaryValue) {
+    // 기존 선택 제거
+    var allOptions = document.querySelectorAll('.salary-option');
+    allOptions.forEach(function(option) {
+        option.classList.remove('selected');
+    });
+    
+    // 새 선택 추가 - 웹스퀘어에서는 event.target 사용
+    var clickedElement = event.target.closest('.salary-option');
+    if (clickedElement) {
+        clickedElement.classList.add('selected');
+    }
+    
+    dma_salary.set("selectedSalary", salaryValue);
+    scwin.updateNextButton();
+};
+
+// 다음 버튼 상태 업데이트
+scwin.updateNextButton = function() {
+    var nextBtn = document.querySelector('.btn-next');
+    var selectedSalary = dma_salary.get("selectedSalary");
+    
+    if (selectedSalary && selectedSalary !== "") {
+        nextBtn.classList.add('active');
+        nextBtn.disabled = false;
+    } else {
+        nextBtn.classList.remove('active');
+        nextBtn.disabled = true;
+    }
+};
+
+// 이전 버튼 클릭
+scwin.goBack = function() {
+    if (confirm("이전 단계로 돌아가시겠습니까?")) {
+        $p.url("UserDetail.xml");
+    }
+};
+
+// 다음 버튼 클릭
+scwin.goNext = function() {
+    var selectedSalary = dma_salary.get("selectedSalary");
+    
+    if (!selectedSalary || selectedSalary === "") {
+        $c.win.alert("희망 연봉을 선택해주세요.");
+        return;
+    }
+    
+    // 사용자 정보 업데이트 (실제로는 서버로 전송)
+    $c.win.alert("연봉 정보가 업데이트되었습니다!");
+    
+    // 마이페이지로 돌아가기
+    $p.url("UserDetail.xml");
+};
+]]></script>
+    </head>
+    
+    <body ev:onpageload="scwin.onpageload">
+        <xf:group class="main-container">
+            <!-- 헤더 -->
+            <xf:group class="header">
+                <w2:textbox class="header-logo" label="JOBDA"></w2:textbox>
+                <xf:group class="header-progress"></xf:group>
+            </xf:group>
+            
+            <!-- 메인 콘텐츠 -->
+            <xf:group class="content-area">
+                <!-- 아이콘 -->
+                <xf:group class="icon-container">
+                    <w2:textbox class="icon" label="💰"></w2:textbox>
+                </xf:group>
+                
+                <!-- 제목 -->
+                <w2:textbox class="main-title" label="희망하는 연봉을 알려주세요."></w2:textbox>
+                
+                <!-- 연봉 선택 옵션들 -->
+                <xf:group class="salary-options">
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('1500')">
+                        <w2:textbox label="1,500만원 이상"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('2000')">
+                        <w2:textbox label="2,000만원 이상"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('2500')">
+                        <w2:textbox label="2,500만원 이상"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('3000')">
+                        <w2:textbox label="3,000만원 이상"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('3500')">
+                        <w2:textbox label="3,500만원 이상"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="salary-option" ev:onclick="scwin.selectSalary('4000')">
+                        <w2:textbox label="4,000만원 이상"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                
+                <!-- 안내 메시지 -->
+                <xf:group class="info-message">
+                    <w2:textbox class="info-icon" label="💡"></w2:textbox>
+                    <w2:textbox label="정확한 선호도와 경력범위로 매칭정확도를 높여보세요."></w2:textbox>
+                </xf:group>
+                
+                <!-- 버튼 영역 -->
+                <xf:group class="button-area">
+                    <xf:trigger class="btn-back" type="button" ev:onclick="scwin.goBack">
+                        <xf:label><![CDATA[이전]]></xf:label>
+                    </xf:trigger>
+                    <xf:trigger class="btn-next" type="button" ev:onclick="scwin.goNext">
+                        <xf:label><![CDATA[다음]]></xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
+    </body>
+</html>

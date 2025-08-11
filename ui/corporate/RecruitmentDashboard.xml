@@ -1,0 +1,1294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head meta_screenName="채용관리 대시보드">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<!-- 공고 목록 조회용 -->
+				<w2:dataMap baseNode="map" id="dmp_postVo" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="pageIndex" name="페이지_번호" defaultValue="1"></w2:key>
+						<w2:key dataType="text" id="pageSize" name="페이지_건수" defaultValue="9"></w2:key>
+						<w2:key dataType="text" id="companyId" name="회사_ID" defaultValue=""></w2:key>
+					</w2:keyInfo>
+					<w2:data use="false"></w2:data>
+				</w2:dataMap>
+
+
+
+				<!-- 공고 목록 데이터 -->
+				<w2:dataList baseNode="list" id="dlt_postVoList" repeatNode="map" saveRemovedData="true" style="">
+					<w2:columnInfo>
+						<w2:column dataType="text" id="jobPostingId" name="job_posting_id"></w2:column>
+						<w2:column dataType="text" id="companyId" name="company_id"></w2:column>
+						<w2:column dataType="text" id="title" name="title"></w2:column>
+						<w2:column dataType="text" id="description" name="description"></w2:column>
+						<w2:column dataType="text" id="requiredSkills" name="required_skills"></w2:column>
+						<w2:column dataType="text" id="experienceLevel" name="experience_level"></w2:column>
+						<w2:column dataType="text" id="salaryRange" name="salary_range"></w2:column>
+						<w2:column dataType="text" id="location" name="location"></w2:column>
+						<w2:column dataType="text" id="workType" name="work_type"></w2:column>
+						<w2:column dataType="text" id="preferredDeveloperTypes" name="preferred_developer_types"></w2:column>
+						<w2:column dataType="text" id="expiresAt" name="expires_at"></w2:column>
+						<w2:column dataType="text" id="postedAt" name="posted_at"></w2:column>
+						<w2:column dataType="text" id="status" name="status"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+
+				<!-- 공고 상세 데이터 -->
+				<w2:dataMap baseNode="map" id="dmp_postVoDetail" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="jobPostingId" name="job_posting_id"></w2:key>
+						<w2:key dataType="text" id="companyId" name="company_id"></w2:key>
+						<w2:key dataType="text" id="title" name="title"></w2:key>
+						<w2:key dataType="text" id="description" name="description"></w2:key>
+						<w2:key dataType="text" id="requiredSkills" name="required_skills"></w2:key>
+						<w2:key dataType="text" id="experienceLevel" name="experience_level"></w2:key>
+						<w2:key dataType="text" id="salaryRange" name="salary_range"></w2:key>
+						<w2:key dataType="text" id="location" name="location"></w2:key>
+						<w2:key dataType="text" id="workType" name="work_type"></w2:key>
+						<w2:key dataType="text" id="preferredDeveloperTypes" name="preferred_developer_types"></w2:key>
+						<w2:key dataType="text" id="expiresAt" name="expires_at"></w2:key>
+						<w2:key dataType="text" id="postedAt" name="posted_at"></w2:key>
+						<w2:key dataType="text" id="status" name="status"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+
+
+
+			<!-- 기업용 공고 목록 조회 (자신의 공고만) -->
+			<xf:submission id="sbm_selectPostVoList" ref='data:json,{"id":"dmp_postVo","key":"postVo"}'
+				target='data:json,{"id":"dlt_postVoList","key":"elData.postVoList"}' action="/InsWebApp/POS0005List.pwkjson" method="post"
+				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
+				processMsg="우리 회사의 공고정보를 조회 중입니다." ev:submit="" ev:submitdone="scwin.sbm_postList_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+
+			<!-- 공고 수정 -->
+			<xf:submission id="sbm_updatePostVo" ref='data:json,{"id":"dmp_postVoDetail","key":"postVo"}' target=""
+				action="/InsWebApp/POS0001Upd.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="공고정보를 수정 중입니다." ev:submit=""
+				ev:submitdone="scwin.sbm_updatePost_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+
+			<!-- 공고 삭제 -->
+			<xf:submission id="sbm_deletePostVo" ref='data:json,{"id":"dmp_postVoDetail","key":"postVo"}' target=""
+				action="/InsWebApp/POS0001Del.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="공고정보를 삭제 중입니다." ev:submit=""
+				ev:submitdone="scwin.sbm_deletePost_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+
+			<xf:submission id="sbm_deleteCorporateVo" action="/InsWebApp/CP0001Del.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dmp_corporateVoDetail","key":"corporateVo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_deleteCorporateVo_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<style type="text/css"><![CDATA[
+            /* ==========================================================================
+               전역 설정
+               ========================================================================== */
+            * {
+                box-sizing: border-box;
+            }
+
+            /* ==========================================================================
+               메인 컨테이너
+               ========================================================================== */
+            .dashboard_container {
+                min-height: 100vh;
+                <!-- background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -->
+                padding: 0;
+                margin: 0;
+            }
+
+            .dashboard_content {
+                padding: 40px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            /* ==========================================================================
+               헤더 섹션
+               ========================================================================== */
+            .dashboard_header {
+                text-align: center;
+                margin-bottom: 50px;
+                color: white;
+            }
+            
+            .dashboard_title {
+                font-size: 48px;
+                font-weight: 800;
+                margin-bottom: 12px;
+                text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                color: #000000; /* Changed from white gradient to black */
+            }
+            
+            .dashboard_subtitle {
+                font-size: 20px;
+                font-weight: 400;
+                opacity: 0.9;
+                text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                color: #000000; /* Changed from white to black */
+            }
+
+            /* ==========================================================================
+               통계 카드 섹션
+               ========================================================================== */
+            .stats_grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                margin-bottom: 50px;
+            }
+            
+            .stat_card {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 32px 28px;
+                text-align: center;
+                border: 2px solid #e8f4ff;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.1);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+            }
+
+            .stat_card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 30px rgba(0, 123, 255, 0.2);
+                border-color: #007bff;
+            }
+
+
+            .stat_icon {
+                width: 70px;
+                height: 70px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 36px;
+                margin: 0 auto 20px;
+                background: #f8fbff;
+                border: 2px solid #e8f4ff;
+            }
+
+            .stat_card.blue .stat_icon { 
+                background: #e3f2fd; 
+                border-color: #007bff;
+            }
+            .stat_card.green .stat_icon { 
+                background: #e8f5e9; 
+                border-color: #28a745;
+            }
+            .stat_card.orange .stat_icon { 
+                background: #ffebee; 
+                border-color: #dc3545;
+            }
+
+            .stat_value {
+                font-size: 42px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 12px;
+            }
+            
+            .stat_label {
+                font-size: 16px;
+                color: #6c757d;
+                font-weight: 500;
+                letter-spacing: 0.5px;
+            }
+
+            /* ==========================================================================
+               액션 카드 섹션
+               ========================================================================== */
+            .action_grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 30px;
+                margin-bottom: 50px;
+            }
+
+            .action_card {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 32px;
+                border: 2px solid #f1f3f4;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 260px;
+            }
+
+            .action_card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 30px rgba(0, 123, 255, 0.15);
+                border-color: #dee2e6;
+            }
+
+            .action_header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+            
+            .action_icon {
+                width: 56px;
+                height: 56px;
+                border-radius: 14px;
+                background: #f8fbff;
+                border: 2px solid #e8f4ff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                margin-right: 16px;
+                box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+            }
+            
+            .action_title {
+                font-size: 20px;
+                font-weight: 600;
+                color: #2c3e50;
+                margin: 0;
+            }
+            
+            .action_description {
+                color: #6c757d;
+                font-size: 15px;
+                line-height: 1.5;
+                margin-bottom: 24px;
+                flex-grow: 1;
+            }
+
+            /* ==========================================================================
+               버튼 스타일
+               ========================================================================== */
+            .btn_primary {
+                background: #007bff;
+                color: #ffffff;
+                border: 2px solid #007bff;
+                padding: 12px 28px;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 3px 12px rgba(0, 123, 255, 0.2);
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .btn_primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+                background: #0056b3;
+                border-color: #0056b3;
+            }
+            
+            .btn_secondary {
+                background: #ffffff;
+                color: #007bff;
+                border: 2px solid #007bff;
+                padding: 12px 28px;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 3px 12px rgba(0, 123, 255, 0.1);
+            }
+
+            .btn_secondary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.2);
+                background: #007bff;
+                color: #ffffff;
+                border-color: #007bff;
+            }
+
+            /* ==========================================================================
+               공고 관리 섹션
+               ========================================================================== */
+            .posts_section {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+                margin-bottom: 30px;
+                padding: 40px;
+                max-width: 1350px;
+                margin: 0 auto 30px auto;
+            }
+
+            .section_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .section_title {
+                font-size: 28px;
+                font-weight: 700;
+                color: #000000;
+            }
+
+            /* ==========================================================================
+               공고 카드 레이아웃
+               ========================================================================== */
+            .posts_container {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 20px;
+                border: 1px solid #ffffff;
+            }
+            
+            .posts_header_controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .record_count {
+                color: #64748b;
+                font-size: 16px;
+                font-weight: 500;
+            }
+
+            .record_number {
+                color: #1a2332;
+                font-weight: 700;
+                font-size: 18px;
+                margin: 0 5px;
+            }
+
+            .posts_actions {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .btn_refresh {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 1px solid #0ea5e9;
+                background: white;
+                color: #0ea5e9;
+            }
+            
+            .btn_refresh:hover {
+                background: #0ea5e9;
+                color: white;
+            }
+
+            /* 공고 카드 그리드 */
+            .posts_grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+
+            .post_card {
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 24px;
+                border: 2px solid #e8f4ff;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.1);
+                transition: all 0.3s ease;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .post_card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 30px rgba(0, 123, 255, 0.2);
+                border-color: #007bff;
+            }
+
+
+            .post_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 15px;
+            }
+
+            .post_title {
+                font-size: 18px;
+                font-weight: 700;
+                color: #1a2332;
+                margin: 0;
+                line-height: 1.4;
+                flex: 1;
+                margin-right: 15px;
+            }
+
+            .post_status {
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .post_description {
+                color: #64748b;
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 15px;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .post_details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .post_detail_item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 13px;
+                color: #64748b;
+            }
+
+            .post_detail_icon {
+                font-size: 14px;
+            }
+
+            .post_footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 15px;
+                border-top: 1px solid #e2e8f0;
+            }
+
+            .post_date {
+                font-size: 12px;
+                color: #94a3b8;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .post_id {
+                font-size: 11px;
+                color: #cbd5e1;
+                font-family: monospace;
+            }
+
+            .no_posts {
+                text-align: center;
+                padding: 80px 20px;
+                color: #94a3b8;
+            }
+
+            .no_posts_icon {
+                font-size: 64px;
+                margin-bottom: 20px;
+                opacity: 0.5;
+            }
+
+            .no_posts_title {
+                font-size: 20px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: #64748b;
+            }
+
+            .no_posts_desc {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            /* ==========================================================================
+               반응형 디자인
+               ========================================================================== */
+            @media (max-width: 1200px) {
+                .dashboard_content {
+                    padding: 30px 20px;
+                }
+
+                .stats_grid {
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 20px;
+                }
+                
+                .action_grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .posts_grid {
+                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                    gap: 20px;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .dashboard_content {
+                    padding: 20px 15px;
+                }
+
+                .dashboard_title {
+                    font-size: 36px;
+                }
+
+                .dashboard_subtitle {
+                    font-size: 18px;
+                }
+
+                .stats_grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .stat_card {
+                    padding: 30px 25px;
+                }
+                
+                .section_header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .posts_header_controls {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .posts_grid {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+
+                .post_card {
+                    padding: 20px;
+                }
+
+                .post_details {
+                    grid-template-columns: 1fr;
+                    gap: 8px;
+                }
+            }
+
+            /* ==========================================================================
+               애니메이션
+               ========================================================================== */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in-up {
+                animation: fadeInUp 0.6s ease-out forwards;
+            }
+
+            .delay-100 { animation-delay: 0.1s; }
+            .delay-200 { animation-delay: 0.2s; }
+            .delay-300 { animation-delay: 0.3s; }
+            .delay-400 { animation-delay: 0.4s; }
+        ]]></style>
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+
+    var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+    if (!userInfoStr) {
+        $p.url("/InsWebApp/ui/common/MainPage.xml");
+        return;
+    }
+
+    try {
+        var userInfo = JSON.parse(userInfoStr);
+        if (userInfo.role !== "COMPANY") {
+            $p.url("/InsWebApp/ui/common/MainPage.xml");
+            return;
+        }
+
+        console.log("기업 정보:", userInfo);
+
+        // 페이지 로드 시 초기화
+        scwin.initializeDashboard();
+
+        // 애니메이션 효과 적용
+        scwin.applyAnimations();
+
+    } catch (e) {
+        console.error("사용자 정보 파싱 오류:", e);
+        $p.url("/InsWebApp/ui/common/MainPage.xml");
+    }
+};
+
+// 대시보드 초기화
+scwin.initializeDashboard = function () {
+    console.log("대시보드 초기화 시작");
+
+    // 회사 ID 설정
+    var userInfoStr = WebSquare.cookie.getCookie("userInfo");
+    var userInfo = JSON.parse(userInfoStr);
+    var companyId = userInfo.companyId;
+
+    if (companyId) {
+        dmp_postVo.set("companyId", companyId);
+
+        // 공고 목록 조회 (통계는 이 결과에서 계산)
+        scwin.loadPostList();
+    } else {
+        console.error("회사 ID를 찾을 수 없습니다.");
+        $c.win.alert("회사 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+    }
+};
+
+// 공고 데이터로부터 통계 계산
+scwin.calculateStatistics = function (postList) {
+    console.log("통계 계산 시작");
+
+    var totalJobs = postList.length;
+    var activeJobs = 0;
+    var closedJobs = 0;
+    var currentDate = new Date();
+
+    console.log("현재 시간:", currentDate);
+
+    // 각 공고의 만료일을 확인해서 상태 계산
+    for (var i = 0; i < postList.length; i++) {
+        var post = postList[i];
+        var expiresAt = post.expiresAt;
+
+        // 만료일 파싱
+        var expirationDate = null;
+        if (expiresAt) {
+            // ISO 8601 형식의 날짜 처리 (예: 2025-07-21T00:21:37.000Z)
+            expirationDate = new Date(expiresAt);
+        }
+
+        // 만료 여부 확인
+        var isExpired = expirationDate && expirationDate < currentDate;
+
+        console.log("공고 ID:", post.jobPostingId,
+                   "제목:", post.title,
+                   "만료일:", expiresAt,
+                   "파싱된 날짜:", expirationDate,
+                   "만료됨:", isExpired);
+
+        if (isExpired) {
+            closedJobs++;
+        } else {
+            activeJobs++;
+        }
+    }
+
+    // 카운터 애니메이션과 함께 값 설정
+    scwin.animateCounter(tbx_totalJobs, totalJobs);
+    scwin.animateCounter(tbx_activeJobs, activeJobs);
+    scwin.animateCounter(tbx_closedJobs, closedJobs);
+
+    console.log("통계 업데이트 완료:", {
+        totalJobs: totalJobs,
+        activeJobs: activeJobs,
+        closedJobs: closedJobs,
+        currentDate: currentDate
+    });
+};
+
+// 카운터 애니메이션
+scwin.animateCounter = function (element, targetValue) {
+    var currentValue = 0;
+    var increment = targetValue / 20;
+    var timer = setInterval(function() {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.setValue(Math.floor(currentValue).toString());
+    }, 50); // 50ms 간격
+};
+
+// 공고 목록 조회
+scwin.loadPostList = function () {
+    console.log("공고 목록 조회 시작");
+
+    // 페이지 번호 초기화
+    dmp_postVo.set("pageIndex", "1");
+    if (pgl_postList) {
+        pgl_postList.setSelectedIndex(1);
+    }
+
+    // 서버통신 - 공고정보 조회
+    $c.sbm.execute($p, sbm_selectPostVoList);
+};
+
+// 공고 목록 조회 완료
+scwin.sbm_postList_submitdone = function (e) {
+    console.log("공고 목록 조회 완료:", e.responseJSON);
+
+    var elHeader = e.responseJSON.elHeader;
+    if (elHeader && elHeader.resSuc === false) {
+        console.error("공고 목록 조회 에러:", elHeader);
+        $c.win.alert(`에러: ${elHeader.resMsg}`);
+        return false;
+    }
+
+    var elData = e.responseJSON.elData;
+    var originalPostList = elData.postVoList || [];
+
+    // 활성 공고만 필터링 (만료되지 않은 공고만)
+    var currentDate = new Date();
+    var activePostList = [];
+
+    for (var i = 0; i < originalPostList.length; i++) {
+        var post = originalPostList[i];
+        var expirationDate = post.expiresAt ? new Date(post.expiresAt) : null;
+        var isExpired = expirationDate && expirationDate < currentDate;
+
+        if (!isExpired) {
+            activePostList.push(post);
+        }
+    }
+
+    console.log("전체 공고:", originalPostList.length, "활성 공고:", activePostList.length);
+
+    // 선택된 공고 정보 초기화
+    dmp_postVoDetail.setEmptyValue();
+
+    // 총 레코드 수 업데이트 (활성 공고만)
+    if (spn_listCnt) {
+        spn_listCnt.setLabel(activePostList.length);
+    }
+
+    // 데이터리스트에 활성 공고 바인딩 (페이징을 위해 유지)
+    dlt_postVoList.setJSON(activePostList);
+
+    // 카드 레이아웃으로 공고 목록 렌더링
+    scwin.renderPostCards(activePostList);
+
+    // 페이지 네비게이터 업데이트 (활성 공고 기준)
+    if (pgl_postList && activePostList.length > 0) {
+        var pageSize = dmp_postVo.get("pageSize") || 9; // 카드는 9개씩 표시
+        var totalPageCount = Math.ceil(activePostList.length / pageSize);
+        pgl_postList.setCount(totalPageCount);
+    }
+
+    // 통계 계산 (전체 공고 리스트로, 내부에서 만료 여부 확인)
+    if (originalPostList && originalPostList.length > 0) {
+        scwin.calculateStatistics(originalPostList);
+    } else {
+        // 데이터가 없으면 0으로 설정
+        scwin.animateCounter(tbx_totalJobs, 0);
+        scwin.animateCounter(tbx_activeJobs, 0);
+        scwin.animateCounter(tbx_closedJobs, 0);
+    }
+
+    console.log("공고 목록 카드 렌더링 완료 - 활성 공고만 표시");
+};
+
+// 카드 레이아웃으로 공고 목록 렌더링 (PostList.xml 방식 적용)
+scwin.renderPostCards = function (postList) {
+    console.log("=== 공고 카드 렌더링 시작 ===");
+    console.log("postList:", postList);
+    console.log("postList.length:", postList ? postList.length : "null/undefined");
+    
+    try {
+        // PostList.xml 방식: document.querySelector 사용
+        var postsGridContainer = document.querySelector('.posts_grid');
+        if (!postsGridContainer) {
+            console.error("posts_grid 컨테이너를 찾을 수 없습니다.");
+            if (debug_message) {
+                debug_message.show();
+                debug_message.setLabel("컨테이너 찾기 실패");
+            }
+            return;
+        }
+        
+        console.log("posts_grid 컨테이너 찾음:", postsGridContainer);
+        
+        // 기존 카드들 제거
+        postsGridContainer.innerHTML = '';
+        
+        var noPosts = grp_noPosts;
+        var pagination = grp_pagination;
+        
+        if (!postList || postList.length === 0) {
+            console.log("공고가 없음 - 빈 상태 표시");
+            if (noPosts) noPosts.show();
+            if (pagination) pagination.hide();
+            if (debug_message) debug_message.hide();
+            return;
+        }
+        
+        if (noPosts) noPosts.hide();
+        if (pagination) pagination.show();
+        
+        // 페이징 처리
+        var pageIndex = parseInt(dmp_postVo.get("pageIndex") || "1");
+        var pageSize = parseInt(dmp_postVo.get("pageSize") || "9");
+        var startIndex = (pageIndex - 1) * pageSize;
+        var endIndex = Math.min(startIndex + pageSize, postList.length);
+        
+        console.log("페이징 정보:", {
+            pageIndex: pageIndex, 
+            pageSize: pageSize, 
+            startIndex: startIndex, 
+            endIndex: endIndex
+        });
+        
+        if (debug_message) {
+            debug_message.show();
+            debug_message.setLabel("카드 생성 중... (" + (endIndex - startIndex) + "개)");
+        }
+        
+        // 현재 페이지의 공고들만 카드로 생성
+        for (var i = startIndex; i < endIndex; i++) {
+            var post = postList[i];
+            console.log("카드 생성 시도:", i, post ? post.title : "no title");
+            var cardElement = scwin.createPostCard(post, i);
+            if (cardElement) {
+                postsGridContainer.appendChild(cardElement);
+            }
+        }
+        
+        if (debug_message) debug_message.hide();
+        
+        console.log("=== 카드 렌더링 완료 ===");
+        
+    } catch (e) {
+        console.error("렌더링 전체 오류:", e);
+        console.error("오류 스택:", e.stack);
+        if (debug_message) {
+            debug_message.show();
+            debug_message.setLabel("렌더링 오류: " + e.message);
+        }
+    }
+};
+
+// PostList.xml 방식의 카드 제거 (불필요한 함수들 정리)
+
+// 개별 공고 카드 생성 (PostList.xml 방식 적용)
+scwin.createPostCard = function (post, index) {
+    console.log("=== 개별 카드 생성 시작 ===", index);
+    try {
+        if (!post) {
+            console.warn("공고 데이터가 없습니다:", index);
+            return null;
+        }
+        
+        console.log("공고 데이터:", post.title);
+        
+        // PostList.xml 방식: document.createElement('xf:group') 사용
+        var card = document.createElement('xf:group');
+        card.className = 'post_card';
+        card.setAttribute('data-job-id', post.jobPostingId || '');
+        card.setAttribute('data-index', index);
+        card.onclick = function() {
+            console.log("카드 클릭됨:", post.title);
+            scwin.onPostCardClick(post);
+        };
+        
+        // 카드 데이터 준비
+        var title = post.title || "제목 없음";
+        var description = post.description || "설명 없음";
+        var location = post.location || "위치 미정";
+        var workType = post.workType || "미정";
+        var experienceLevel = post.experienceLevel || "경력무관";
+        var salaryRange = post.salaryRange || "협의";
+        var postedAt = scwin.formatDate(post.postedAt);
+        var jobPostingId = post.jobPostingId || "";
+        
+        // 설명 텍스트 길이 제한
+        if (description && description.length > 80) {
+            description = description.substring(0, 80) + "...";
+        }
+        
+        // PostList.xml 방식의 HTML 구조 (xf:group 태그 사용)
+        card.innerHTML = 
+            '<xf:group class="post_header">' +
+                '<xf:group class="post_title">' + scwin.escapeHtml(title) + '</xf:group>' +
+                '<xf:group class="post_status">활성</xf:group>' +
+            '</xf:group>' +
+            '<xf:group class="post_description">' + scwin.escapeHtml(description) + '</xf:group>' +
+            '<xf:group class="post_details">' +
+                '<xf:group class="post_detail_item">' +
+                    '<xf:group class="post_detail_icon">&#128205;</xf:group>' +
+                    '<xf:group>' + scwin.escapeHtml(location) + '</xf:group>' +
+                '</xf:group>' +
+                '<xf:group class="post_detail_item">' +
+                    '<xf:group class="post_detail_icon">&#127968;</xf:group>' +
+                    '<xf:group>' + scwin.escapeHtml(workType) + '</xf:group>' +
+                '</xf:group>' +
+                '<xf:group class="post_detail_item">' +
+                    '<xf:group class="post_detail_icon">&#128188;</xf:group>' +
+                    '<xf:group>' + scwin.escapeHtml(experienceLevel) + '</xf:group>' +
+                '</xf:group>' +
+                '<xf:group class="post_detail_item">' +
+                    '<xf:group class="post_detail_icon">&#128176;</xf:group>' +
+                    '<xf:group>' + scwin.escapeHtml(salaryRange) + '</xf:group>' +
+                '</xf:group>' +
+            '</xf:group>' +
+            '<xf:group class="post_footer">' +
+                '<xf:group class="post_date">' +
+                    '<xf:group>&#128197;</xf:group>' +
+                    scwin.escapeHtml(postedAt) +
+                '</xf:group>' +
+                '<xf:group class="post_id">ID: ' + scwin.escapeHtml(jobPostingId) + '</xf:group>' +
+            '</xf:group>';
+        
+        console.log("카드 생성 완료:", title);
+        return card;
+        
+    } catch (e) {
+        console.error("카드 생성 오류:", e);
+        console.error("오류 스택:", e.stack);
+        return null;
+    }
+};
+
+// generateCardHtml 함수 제거됨 (PostList.xml 방식에서는 불필요)
+
+// 카드 클릭 이벤트
+scwin.onPostCardClick = function (post) {
+    console.log("공고 카드 클릭:", post.title);
+    
+    // 선택된 공고 데이터 설정
+    dmp_postVoDetail.setJSON(post);
+    
+    // 공고 상세 페이지로 이동
+    scwin.openPostDetail(post.jobPostingId);
+};
+
+// HTML 이스케이프 처리
+scwin.escapeHtml = function (text) {
+    if (!text) return "";
+    return text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
+
+// 날짜 포맷팅
+scwin.formatDate = function (dateStr) {
+    if (!dateStr) return "";
+    
+    try {
+        var date = new Date(dateStr);
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        
+        // padStart 대신 조건문 사용 (WebSquare 환경 호환성)
+        var monthStr = (month < 10) ? '0' + month : '' + month;
+        var dayStr = (day < 10) ? '0' + day : '' + day;
+        
+        return year + '-' + monthStr + '-' + dayStr;
+    } catch (e) {
+        return dateStr;
+    }
+};
+
+// 애니메이션 효과 적용
+scwin.applyAnimations = function () {
+    // 애니메이션 클래스 추가 (실제 DOM 조작은 WebSquare 환경에서 제한적)
+    console.log("애니메이션 효과 적용");
+};
+
+// =========================
+// 빠른 액션 기능들
+// =========================
+
+// 새 공고 작성
+scwin.btn_newJob_onclick = function (e) {
+    console.log("새 공고 작성 버튼 클릭");
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("../post/PostCreate.xml");
+        } else {
+            $p.url("../post/PostCreate.xml");
+        }
+    } catch (error) {
+        console.error("페이지 이동 오류:", error);
+        $p.url("../post/PostCreate.xml");
+    }
+};
+
+
+
+// 기업정보 수정
+scwin.btn_companyUpdate_onclick = function (e) {
+    console.log("기업정보 수정 버튼 클릭");
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("../corporate/CorporateUpdate.xml");
+        } else {
+            $p.url("../corporate/CorporateUpdate.xml");
+        }
+    } catch (error) {
+        console.error("페이지 이동 오류:", error);
+        $p.url("../corporate/CorporateUpdate.xml");
+    }
+};
+
+
+
+// 전체 공고 보기
+scwin.btn_allPosts_onclick = function (e) {
+    console.log("전체 공고 보기 버튼 클릭");
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("../post/PostList.xml");
+        } else {
+            $p.url("../post/PostList.xml");
+        }
+    } catch (error) {
+        console.error("페이지 이동 오류:", error);
+        $p.url("../post/PostList.xml");
+    }
+};
+
+// =========================
+// 공고 관리 기능들
+// =========================
+
+// 카드 기반 공고 관리 (기존 그리드뷰 클릭 이벤트는 제거됨)
+
+// 공고 상세보기 페이지로 이동
+scwin.openPostDetail = function (jobPostingId) {
+    console.log("공고 상세보기:", jobPostingId);
+
+    if (!jobPostingId) {
+        $c.win.alert("공고 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    try {
+        if ($p.parent() && $p.parent().pf_main) {
+            $p.parent().pf_main.setSrc("../post/PostDetail.xml", {
+                dataObject: { jobPostingId: jobPostingId }
+            });
+        } else {
+            $p.url("../post/PostDetail.xml?jobPostingId=" + encodeURIComponent(jobPostingId));
+        }
+    } catch (error) {
+        console.error("페이지 이동 오류:", error);
+        $c.win.alert("페이지 이동 중 오류가 발생했습니다.");
+    }
+};
+
+// 새로고침
+scwin.btn_refresh_onclick = function () {
+    console.log("새로고침 버튼 클릭");
+    scwin.loadPostList();
+};
+
+// 삭제 기능은 공고 상세 페이지에서 처리 (중복 기능 제거)
+
+// 페이지 변경
+scwin.pgl_postList_onclick = function (idx) {
+    console.log("페이지 변경:", idx);
+    dmp_postVo.set("pageIndex", idx);
+    
+    // 현재 로드된 데이터로 카드 다시 렌더링 (서버 재호출 없이)
+    var currentPostList = dlt_postVoList.getJSON();
+    if (currentPostList && currentPostList.length > 0) {
+        scwin.renderPostCards(currentPostList);
+    } else {
+        // 데이터가 없으면 서버에서 다시 조회
+        $c.sbm.execute($p, sbm_selectPostVoList);
+    }
+};
+
+// 통계 카드 클릭 이벤트들
+scwin.statCard_totalJobs_onclick = function () {
+    console.log("총 공고 수 카드 클릭");
+    // 스크롤을 공고 목록으로 이동
+    document.querySelector('.posts_section').scrollIntoView({ behavior: 'smooth' });
+};
+
+scwin.statCard_activeJobs_onclick = function () {
+    console.log("활성 공고 카드 클릭");
+    // 스크롤을 공고 목록으로 이동
+    document.querySelector('.posts_section').scrollIntoView({ behavior: 'smooth' });
+};
+
+scwin.statCard_closedJobs_onclick = function () {
+    console.log("마감된 공고 카드 클릭");
+    // 스크롤을 공고 목록으로 이동
+    document.querySelector('.posts_section').scrollIntoView({ behavior: 'smooth' });
+};
+
+
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<w2:wframe src="../common/Header.xml" id="headerFrame" />
+		<xf:group class="dashboard_container" id="">
+			<xf:group class="dashboard_content" id="">
+				<!-- 헤더 섹션 -->
+				<xf:group class="dashboard_header fade-in-up" id="">
+					<w2:textbox id="" label="채용관리 대시보드" class="dashboard_title"></w2:textbox>
+					<w2:textbox id="" label="우리 회사의 공고를 관리하고 우수한 인재를 찾아보세요" class="dashboard_subtitle"></w2:textbox>
+				</xf:group>
+
+				<!-- 통계 카드 섹션 -->
+				<xf:group class="stats_grid" id="">
+					<!-- 총 공고 수 -->
+					<xf:group class="stat_card blue fade-in-up delay-100" id="" ev:onclick="scwin.statCard_totalJobs_onclick">
+						<xf:group class="stat_icon" id="">
+							<xf:image src="/InsWebApp/images/document/stack_sheets_star.png" style="width: 70px; height: 70px;"></xf:image>
+						</xf:group>
+						<w2:textbox id="tbx_totalJobs" label="0" class="stat_value"></w2:textbox>
+						<w2:textbox id="" label="총 공고 수" class="stat_label"></w2:textbox>
+					</xf:group>
+
+					<!-- 활성 공고 -->
+					<xf:group class="stat_card green fade-in-up delay-200" id="" ev:onclick="scwin.statCard_activeJobs_onclick">
+						<xf:group class="stat_icon" id="">
+							<xf:image src="/InsWebApp/images/document/green_sheet_check.png" style="width: 70px; height: 70px;"></xf:image>
+						</xf:group>
+						<w2:textbox id="tbx_activeJobs" label="0" class="stat_value"></w2:textbox>
+						<w2:textbox id="" label="활성 공고" class="stat_label"></w2:textbox>
+					</xf:group>
+
+					<!-- 마감된 공고 -->
+					<xf:group class="stat_card orange fade-in-up delay-300" id="" ev:onclick="scwin.statCard_closedJobs_onclick">
+						<xf:group class="stat_icon" id="">
+							<xf:image src="/InsWebApp/images/document/pink_sheet_x.png" style="width: 70px; height: 70px;"></xf:image>
+						</xf:group>
+						<w2:textbox id="tbx_closedJobs" label="0" class="stat_value"></w2:textbox>
+						<w2:textbox id="" label="마감된 공고" class="stat_label"></w2:textbox>
+					</xf:group>
+				</xf:group>
+
+				<!-- 빠른 액션 카드 -->
+				<xf:group class="action_grid" id="">
+					<!-- 공고 작성 카드 -->
+					<xf:group class="action_card fade-in-up delay-100" id="">
+						<xf:group class="action_header" id="">
+							<xf:group class="action_icon" id="">
+								<xf:image src="/InsWebApp/images/document/blue_sheet_plus.png" style="width: 60px; height: 60px;"></xf:image>
+							</xf:group>
+							<w2:textbox id="" label="새로운 공고 작성" class="action_title"></w2:textbox>
+						</xf:group>
+						<w2:textbox id="" label="새로운 채용공고를 작성하여 우수한 인재를 찾아보세요." class="action_description"></w2:textbox>
+						<xf:trigger id="btn_newJob" type="button" class="btn_secondary" ev:onclick="scwin.btn_newJob_onclick">
+							<xf:label><![CDATA[공고 작성하기]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+
+					<!-- 전체 공고 보기 카드 -->
+					<xf:group class="action_card fade-in-up delay-200" id="">
+						<xf:group class="action_header" id="">
+							<xf:group class="action_icon" id="">
+								<xf:image src="/InsWebApp/images/document/stack_sheets_magnifier.png" style="width: 60px; height: 60px;"></xf:image>
+							</xf:group>
+							<w2:textbox id="" label="전체 공고 보기" class="action_title"></w2:textbox>
+						</xf:group>
+						<w2:textbox id="" label="시장의 다른 공고들을 확인하고 경쟁력을 분석해보세요." class="action_description"></w2:textbox>
+						<xf:trigger id="btn_allPosts" type="button" class="btn_secondary" ev:onclick="scwin.btn_allPosts_onclick">
+							<xf:label><![CDATA[전체 공고 보기]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+
+					<!-- 기업정보 관리 카드 -->
+					<xf:group class="action_card fade-in-up delay-300" id="">
+						<xf:group class="action_header" id="">
+							<xf:group class="action_icon" id="">
+								<xf:image src="/InsWebApp/images/document/office_building_settings.png" style="width: 60px; height: 60px;"></xf:image>
+							</xf:group>
+                            <w2:textbox id="" label="기업정보 관리" class="action_title"></w2:textbox>
+						</xf:group>
+						<w2:textbox id="" label="회사 정보와 프로필을 최신 상태로 유지하세요." class="action_description"></w2:textbox>
+						<xf:trigger id="btn_companyUpdate" type="button" class="btn_secondary" ev:onclick="scwin.btn_companyUpdate_onclick">
+							<xf:label><![CDATA[정보 수정]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 채용공고 목록 섹션 -->
+			<xf:group class="posts_section fade-in-up" id="">
+				<xf:group class="section_header" id="">
+					<w2:textbox id="" label="현재 진행 중인 채용공고" class="section_title"></w2:textbox>
+				</xf:group>
+
+				<!-- 공고 카드 컨테이너 -->
+				<xf:group class="posts_container" id="">
+					<xf:group class="posts_header_controls" id="">
+						<xf:group class="record_count" id="">
+							<w2:span id="" label="활성 공고"></w2:span>
+							<w2:span class="record_number" id="spn_listCnt" label="0"></w2:span>
+							<w2:span id="" label="개 (마감된 공고 제외)"></w2:span>
+						</xf:group>
+						<xf:group class="posts_actions" id="">
+							<xf:trigger class="btn_refresh" id="btn_refresh" type="button" ev:onclick="scwin.btn_refresh_onclick">
+								<xf:label><![CDATA[새로고침]]></xf:label>
+							</xf:trigger>
+						</xf:group>
+					</xf:group>
+
+					<!-- 공고 카드 목록 -->
+					<xf:group class="posts_grid" id="grp_postsGrid">
+						<!-- 공고 카드들이 동적으로 생성될 영역 -->
+						<w2:textbox id="debug_message" label="카드 로딩 중..." style="display: none;"></w2:textbox>
+					</xf:group>
+
+					<!-- 공고가 없을 때 표시 -->
+					<xf:group class="no_posts" id="grp_noPosts" style="display: none;">
+						<w2:textbox class="no_posts_icon" label="📭"></w2:textbox>
+						<w2:textbox class="no_posts_title" label="등록된 공고가 없습니다"></w2:textbox>
+						<w2:textbox class="no_posts_desc" label="새로운 채용공고를 등록하여 우수한 인재를 찾아보세요."></w2:textbox>
+					</xf:group>
+
+					<!-- 페이징 -->
+					<xf:group style="text-align: center; padding: 25px 0;" id="grp_pagination">
+						<w2:pageList displayButtonType="display" displayFormat="#" id="pgl_postList" pageSize="5" pagingType="0"
+							style="display: inline-block;" ev:onclick="scwin.pgl_postList_onclick">
+						</w2:pageList>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
