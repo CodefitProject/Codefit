@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './common.css';
-import Header from './components/Header.tsx';
+import '../styles/common.css';
+import Header from '../components/common/Header.tsx';
+import Footer from '../components/common/Footer.tsx';
 
 interface Company {
     userId: number;
@@ -202,7 +203,7 @@ const MainPage: React.FC = () => {
                                 <div className="profile-header">
                                     <div className="profile-avatar">
                                         <img 
-                                            src="/images/ws5/default_user.png" 
+                                            src="/images/main/default_user.png" 
                                             alt="User Avatar"
                                             style={{width: '60px', height: '60px', borderRadius: '50%'}}
                                         />
@@ -278,7 +279,7 @@ const MainPage: React.FC = () => {
                         <div className="card card-green" onClick={handleCard1Click}>
                             <div className="card-icon card-icon-green">
                                 <img 
-                                    src="/images/ws5/mbti/png/BITF.png" 
+                                    src="/images/mbti/png/BITF.png" 
                                     alt="성향 유형"
                                     style={{width: '150px', height: '150px'}}
                                 />
@@ -289,7 +290,7 @@ const MainPage: React.FC = () => {
                         <div className={`card card-blue ${userInfo?.isMbtiChecked ? 'completed' : ''}`} onClick={handleCard2Click}>
                             <div className="card-icon card-icon-blue">
                                 <img 
-                                    src="/images/ws5/main/mbti_check.png" 
+                                    src="/images/main/mbti_check.png" 
                                     alt="개발자 성향분석"
                                     style={{width: '150px', height: '150px'}}
                                 />
@@ -300,7 +301,7 @@ const MainPage: React.FC = () => {
                         <div className={`card card-orange ${userInfo?.isCodeChecked ? 'completed' : ''}`} onClick={handleCard3Click}>
                             <div className="card-icon card-icon-orange">
                                 <img 
-                                    src="/images/ws5/main/code_check.png" 
+                                    src="/images/main/code_check.png" 
                                     alt="코드분석"
                                     style={{width: '150px', height: '150px'}}
                                 />
@@ -326,7 +327,7 @@ const MainPage: React.FC = () => {
                                 >
                                     <div className="position-header">
                                         <img 
-                                            src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/ws5/default_job.png'}
+                                            src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/main/default_job.png'}
                                             alt="Job Image"
                                             style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
                                         />
@@ -365,7 +366,7 @@ const MainPage: React.FC = () => {
                                 >
                                     <img 
                                         className="company-logo"
-                                        src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/ws5/default_company.png'}
+                                        src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/main/default_company.png'}
                                         alt={`${company.name} Logo`}
                                     />
                                     <span className="company-name">{company.name}</span>
@@ -380,15 +381,7 @@ const MainPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="footer">
-                <div className="footer-container">
-                    <span className="footer-title">WeaveType</span>
-                    <span className="footer-text">(주)위브타입 | 대표이사 홍길동 | 대표고객문의 support@weavetype.com</span>
-                    <span className="footer-text">서울특별시 강남구 테헤란로 123 위브타워 15층 | 전화번호: 02-123-4567</span>
-                    <span className="footer-text">© 2023 WeaveType Inc. All Rights Reserved.</span>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }

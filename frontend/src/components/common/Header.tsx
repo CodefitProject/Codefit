@@ -109,7 +109,7 @@ const Header: React.FC = () => {
                 <div className="header-left">
                     <div className="nav-menu">
                         <img 
-                            src="/images/ws5/codefit_logo.png" 
+                            src="/images/logos/codefit_logo.png" 
                             alt="CodeFIT Logo"
                             style={{width: '150px', height: '50px', cursor: 'pointer'}}
                             className="logo"
