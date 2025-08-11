@@ -39,3 +39,6 @@ out/
 
 ### properties ###
 *.properties
+
+### UI folder ###
+ui/
