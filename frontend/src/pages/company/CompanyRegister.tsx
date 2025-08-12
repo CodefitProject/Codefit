@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useRef } from 'react';
 import './CompanyRegister.css';
 
 interface FormData {
@@ -16,6 +16,11 @@ interface FormData {
 interface FileNames {
   businessCertificate: string;
   logo: string;
+}
+
+interface ImagePreviews {
+  businessCertificate: string | null;
+  logo: string | null;
 }
 
 interface BusinessNumberApiResponse {
@@ -42,6 +47,14 @@ const CompanyRegister: React.FC = () => {
     logo: ''
   });
 
+  const [imagePreviews, setImagePreviews] = useState<ImagePreviews>({
+    businessCertificate: null,
+    logo: null
+  });
+
+  const businessCertificateRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -50,17 +63,43 @@ const CompanyRegister: React.FC = () => {
     }));
   };
 
+  const isImageFile = (file: File): boolean => {
+    return file.type.startsWith('image/');
+  };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, files } = e.target;
     if (files && files[0]) {
+      const file = files[0];
+      
       setFormData(prev => ({
         ...prev,
-        [name]: files[0]
+        [name]: file
       }));
       setFileNames(prev => ({
         ...prev,
-        [name]: files[0].name
+        [name]: file.name
       }));
+
+      // 이미지 파일인 경우 미리보기 생성
+      if (isImageFile(file)) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setImagePreviews(prev => ({
+              ...prev,
+              [name]: event.target!.result as string
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // 이미지가 아닌 경우 미리보기 제거
+        setImagePreviews(prev => ({
+          ...prev,
+          [name]: null
+        }));
+      }
     }
   };
 
@@ -123,6 +162,14 @@ const CompanyRegister: React.FC = () => {
 
   const handleCancel = (): void => {
     window.history.back();
+  };
+
+  const handleFileButtonClick = (fileType: 'businessCertificate' | 'logo'): void => {
+    if (fileType === 'businessCertificate' && businessCertificateRef.current) {
+      businessCertificateRef.current.click();
+    } else if (fileType === 'logo' && logoRef.current) {
+      logoRef.current.click();
+    }
   };
 
   return (
@@ -205,17 +252,38 @@ const CompanyRegister: React.FC = () => {
           <label className="form-label required">사업자등록증명원</label>
           <div className={`upload-container ${fileNames.businessCertificate ? 'file-selected' : ''}`}>
             <div className="upload-label">PDF, JPG, PNG 파일 업로드 (최대 10MB)</div>
-            <input
-              type="file"
-              name="businessCertificate"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              style={{ width: '250px', height: '23px' }}
-            />
-            {fileNames.businessCertificate && (
-              <div className="file-info show">
-                <span className="file-name">{fileNames.businessCertificate}</span>
-                <div>✓ 파일이 선택되었습니다</div>
+            <div className="file-upload-section">
+              <input
+                type="file"
+                name="businessCertificate"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
+                className="file-input-hidden"
+                ref={businessCertificateRef}
+              />
+              <button
+                type="button"
+                className="file-upload-btn"
+                onClick={() => handleFileButtonClick('businessCertificate')}
+              >
+                파일 선택
+              </button>
+              {fileNames.businessCertificate && (
+                <div className="file-status">
+                  <div className="file-info show">
+                    <span className="file-name">{fileNames.businessCertificate}</span>
+                    <div>✓ 파일이 선택되었습니다</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {imagePreviews.businessCertificate && (
+              <div className="image-preview">
+                <img 
+                  src={imagePreviews.businessCertificate} 
+                  alt="사업자등록증명원 미리보기" 
+                  className="preview-image"
+                />
               </div>
             )}
           </div>
@@ -269,17 +337,38 @@ const CompanyRegister: React.FC = () => {
           <label className="form-label">기업 로고 (선택사항)</label>
           <div className={`upload-container ${fileNames.logo ? 'file-selected' : ''}`}>
             <div className="upload-label">PNG, JPG, SVG 파일 업로드 (최대 5MB)</div>
-            <input
-              type="file"
-              name="logo"
-              accept=".png,.jpg,.jpeg,.svg"
-              onChange={handleFileChange}
-              style={{ width: '250px', height: '23px' }}
-            />
-            {fileNames.logo && (
-              <div className="file-info show">
-                <span className="file-name">{fileNames.logo}</span>
-                <div>✓ 파일이 선택되었습니다</div>
+            <div className="file-upload-section">
+              <input
+                type="file"
+                name="logo"
+                accept=".png,.jpg,.jpeg,.svg"
+                onChange={handleFileChange}
+                className="file-input-hidden"
+                ref={logoRef}
+              />
+              <button
+                type="button"
+                className="file-upload-btn"
+                onClick={() => handleFileButtonClick('logo')}
+              >
+                파일 선택
+              </button>
+              {fileNames.logo && (
+                <div className="file-status">
+                  <div className="file-info show">
+                    <span className="file-name">{fileNames.logo}</span>
+                    <div>✓ 파일이 선택되었습니다</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {imagePreviews.logo && (
+              <div className="image-preview">
+                <img 
+                  src={imagePreviews.logo} 
+                  alt="기업 로고 미리보기" 
+                  className="preview-image"
+                />
               </div>
             )}
           </div>
