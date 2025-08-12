@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent, useRef } from 'react';
+import axios from 'axios';
 import './CompanyRegister.css';
 
 interface FormData {
@@ -173,20 +174,15 @@ const CompanyRegister: React.FC = () => {
           submitFormData.append('logo', formData.logo);
         }
 
-        const response = await fetch('/api/company/register', {
-          method: 'POST',
-          body: submitFormData
+        const response = await axios.post('/api/company/register', submitFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data' // axios will set this automatically for FormData, but good to be explicit
+          }
         });
 
-        if (response.ok) {
-          const result = await response.text();
-          alert(result);
-          // 성공 시 폼 초기화 또는 리다이렉트
-          window.location.href = '/company';
-        } else {
-          const error = await response.text();
-          alert("등록 실패: " + error);
-        }
+        alert("등록 성공: " + response.data);
+        // 성공 시 폼 초기화 또는 리다이렉트
+        window.location.href = '/company';
       } catch (error) {
         console.error("API 호출 오류:", error);
         alert("서버와의 통신 중 오류가 발생했습니다.");
