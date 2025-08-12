@@ -1,44 +1,80 @@
 import React, { useEffect } from 'react';
 import './CompanyMain.css';
 
-const CompanyMain = () => {
-  const handleGoBack = () => {
+interface Node {
+  garden: NodeGarden;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  m: number;
+  reset: (ref?: Partial<Node>) => void;
+  addForce: (force: number, direction: { x: number; y: number }) => void;
+  distanceTo: (node: Node) => { x: number; y: number; total: number };
+  update: (deltaTime: number) => void;
+  squaredDistanceTo: (node: Node) => number;
+  collideTo: (node: Node) => void;
+  render: () => void;
+  getDiameter: () => number;
+}
+
+interface NodeGarden {
+  nodes: Node[];
+  container: HTMLElement;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  started: boolean;
+  playing: boolean;
+  width: number;
+  height: number;
+  area: number;
+  lastTime: number;
+  start: () => void;
+  stop: () => void;
+  resize: () => void;
+  render: (start?: boolean, time?: number) => void;
+}
+
+declare global {
+  interface Window {
+    currentNodeGarden?: NodeGarden;
+    currentResizeHandler?: () => void;
+  }
+}
+
+const CompanyMain: React.FC = () => {
+  const handleGoBack = (): void => {
     window.history.back();
   };
 
-  const handleStart = () => {
-    alert("시작하기 버튼이 클릭되었습니다!");
+  const handleStart = (): void => {
+    window.location.href = '/company/register';
   };
 
   useEffect(() => {
-    var containerName = 'nodeBackground';
-    var backgroundColor = '#0a0a0a';
-    var nodeColor = '#124559';
-    var connectionRGB = '0,157,220';
+    const containerName = 'nodeBackground';
+    const backgroundColor = '#0a0a0a';
+    const nodeColor = '#124559';
+    const connectionRGB = '0,157,220';
 
-    var active = 0;
-    var checkExist = setInterval(function() {
+    let active = 0;
+    const checkExist = setInterval(() => {
       if (document.getElementById(containerName)) {
         if (active === 0) {
           active = 1;
-          function defined(a, b) {
+          function defined<T>(a: T | null | undefined, b: T): T {
             return a != null ? a : b;
           }
 
-          var targetFPS = 1000 / 60;
+          const targetFPS = 1000 / 60;
 
-          var Node = function Node(garden) {
+          const NodeConstructor = function(this: Node, garden: NodeGarden) {
             this.garden = garden;
             this.reset();
-          };
+          } as any as new (garden: NodeGarden) => Node;
 
-          Node.prototype.reset = function reset(ref) {
-            if (ref === void 0) ref = {};
-            var x = ref.x;
-            var y = ref.y;
-            var vx = ref.vx;
-            var vy = ref.vy;
-            var m = ref.m;
+          NodeConstructor.prototype.reset = function(this: Node, ref: Partial<Node> = {}) {
+            const { x, y, vx, vy, m } = ref;
 
             this.x = defined(x, Math.random() * this.garden.width);
             this.y = defined(y, Math.random() * this.garden.height);
@@ -47,15 +83,15 @@ const CompanyMain = () => {
             this.m = defined(m, Math.random() * 7);
           };
 
-          Node.prototype.addForce = function addForce(force, direction) {
+          NodeConstructor.prototype.addForce = function(this: Node, force: number, direction: { x: number; y: number }) {
             this.vx += force * direction.x / this.m;
             this.vy += force * direction.y / this.m;
           };
 
-          Node.prototype.distanceTo = function distanceTo(node) {
-            var x = node.x - this.x;
-            var y = node.y - this.y;
-            var total = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+          NodeConstructor.prototype.distanceTo = function(this: Node, node: Node) {
+            const x = node.x - this.x;
+            const y = node.y - this.y;
+            const total = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
             return {
               x: x,
@@ -64,7 +100,7 @@ const CompanyMain = () => {
             };
           };
 
-          Node.prototype.update = function update(deltaTime) {
+          NodeConstructor.prototype.update = function(this: Node, deltaTime: number) {
             this.x += this.vx * deltaTime / targetFPS;
             this.y += this.vy * deltaTime / targetFPS;
 
@@ -73,20 +109,21 @@ const CompanyMain = () => {
             }
           };
 
-          Node.prototype.squaredDistanceTo = function squaredDistanceTo(node) {
+          NodeConstructor.prototype.squaredDistanceTo = function(this: Node, node: Node) {
             return (node.x - this.x) * (node.x - this.x) + (node.y - this.y) * (node.y - this.y);
           };
 
-          Node.prototype.collideTo = function collideTo(node) {
+          NodeConstructor.prototype.collideTo = function(this: Node, node: Node) {
             node.vx = node.m * node.vx / (this.m + node.m) + this.m * this.vx / (this.m + node.m);
             node.vy = node.m * node.vy / (this.m + node.m) + this.m * this.vy / (this.m + node.m);
             this.reset();
           };
 
-          Node.prototype.render = function render() {
+          NodeConstructor.prototype.render = function(this: Node) {
             this.garden.ctx.beginPath();
-            var innerRadius = this.getDiameter()/8, outerRadius = this.getDiameter();
-            var gradient = this.garden.ctx.createRadialGradient(this.x, this.y, innerRadius, this.x, this.y, outerRadius);
+            const innerRadius = this.getDiameter()/8;
+            const outerRadius = this.getDiameter();
+            const gradient = this.garden.ctx.createRadialGradient(this.x, this.y, innerRadius, this.x, this.y, outerRadius);
             gradient.addColorStop(1, backgroundColor);
             gradient.addColorStop(0, nodeColor);
             this.garden.ctx.arc(this.x, this.y, outerRadius, 0, 2 * Math.PI);
@@ -94,19 +131,20 @@ const CompanyMain = () => {
             this.garden.ctx.fill();
           };
 
-          Node.prototype.getDiameter = function getDiameter() {
+          NodeConstructor.prototype.getDiameter = function(this: Node) {
             return this.m;
           };
 
-          var devicePixelRatio = window.devicePixelRatio;
-          if (devicePixelRatio === void 0) devicePixelRatio = 1;
-          var requestAnimationFrame = window.requestAnimationFrame;
+          const devicePixelRatio = window.devicePixelRatio || 1;
+          const requestAnimationFrame = window.requestAnimationFrame;
 
-          var NodeGarden = function NodeGarden(container) {
+          const NodeGardenConstructor = function(this: NodeGarden, container: HTMLElement) {
             this.nodes = [];
             this.container = container;
             this.canvas = document.createElement('canvas');
-            this.ctx = this.canvas.getContext('2d');
+            const ctx = this.canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas context not available');
+            this.ctx = ctx;
             this.started = false;
 
             if (devicePixelRatio && (devicePixelRatio !== 1)) {
@@ -117,22 +155,22 @@ const CompanyMain = () => {
 
             this.container.appendChild(this.canvas);
             this.resize();
-          };
+          } as any as new (container: HTMLElement) => NodeGarden;
 
-          NodeGarden.prototype.start = function start() {
+          NodeGardenConstructor.prototype.start = function(this: NodeGarden) {
             if (!this.playing) {
               this.playing = true;
               this.render(true);
             }
           };
 
-          NodeGarden.prototype.stop = function stop() {
+          NodeGardenConstructor.prototype.stop = function(this: NodeGarden) {
             if (this.playing) {
               this.playing = false;
             }
           };
 
-          NodeGarden.prototype.resize = function resize() {
+          NodeGardenConstructor.prototype.resize = function(this: NodeGarden) {
             this.width = this.container.clientWidth * devicePixelRatio;
             this.height = this.container.clientHeight * devicePixelRatio;
             this.area = this.width * this.height;
@@ -144,40 +182,40 @@ const CompanyMain = () => {
 
             this.ctx.fillStyle = nodeColor;
 
-            for (var i = 0; i < this.nodes.length; i++) {
+            for (let i = 0; i < this.nodes.length; i++) {
               if (this.nodes[i]) {
                 continue;
               }
-              this.nodes[i] = new Node(this);
+              this.nodes[i] = new NodeConstructor(this);
             }
           };
 
-          NodeGarden.prototype.render = function render(start, time) {
-            var self = this;
+          NodeGardenConstructor.prototype.render = function(this: NodeGarden, start?: boolean, time?: number) {
+            const self = this;
 
             if (!this.playing) {
               return;
             }
 
             if (start) {
-              requestAnimationFrame(function (time) {
+              requestAnimationFrame((time: number) => {
                 self.render(true, time);
               });
             }
 
-            var deltaTime = time - (this.lastTime || time);
-            this.lastTime = time;
+            const deltaTime = time! - (this.lastTime || time!);
+            this.lastTime = time!;
 
             this.ctx.clearRect(0, 0, this.width, this.height);
 
-            for (var i = 0; i < this.nodes.length - 1; i++) {
-              var nodeA = this.nodes[i];
-              for (var j = i + 1; j < this.nodes.length; j++) {
-                var nodeB = this.nodes[j];
-                var squaredDistance = nodeA.squaredDistanceTo(nodeB);
+            for (let i = 0; i < this.nodes.length - 1; i++) {
+              const nodeA = this.nodes[i];
+              for (let j = i + 1; j < this.nodes.length; j++) {
+                const nodeB = this.nodes[j];
+                const squaredDistance = nodeA.squaredDistanceTo(nodeB);
 
-                var force = 0.4 * (nodeA.m * nodeB.m) / squaredDistance;
-                var opacity = force * 100;
+                const force = 0.4 * (nodeA.m * nodeB.m) / squaredDistance;
+                const opacity = force * 100;
 
                 if (opacity < 0.025) {
                   continue;
@@ -192,9 +230,9 @@ const CompanyMain = () => {
                   continue;
                 }
 
-                var distance = nodeA.distanceTo(nodeB);
+                const distance = nodeA.distanceTo(nodeB);
 
-                var direction = {
+                const direction = {
                   x: distance.x / distance.total,
                   y: distance.y / distance.total
                 };
@@ -210,18 +248,18 @@ const CompanyMain = () => {
               }
             }
 
-            for (var i = 0; i < this.nodes.length; i++) {
+            for (let i = 0; i < this.nodes.length; i++) {
               this.nodes[i].render();
               this.nodes[i].update(deltaTime || 0);
             }
           };
 
-          var $container = document.getElementById(containerName);
-          var nodeGarden = new NodeGarden($container);
+          const $container = document.getElementById(containerName)!;
+          const nodeGarden = new NodeGardenConstructor($container);
 
           nodeGarden.start();
 
-          const handleResize = function () {
+          const handleResize = () => {
             nodeGarden.resize();
           };
 
@@ -239,11 +277,11 @@ const CompanyMain = () => {
     return () => {
       if (window.currentNodeGarden) {
         window.currentNodeGarden.stop();
-        window.currentNodeGarden = null;
+        window.currentNodeGarden = undefined;
       }
       if (window.currentResizeHandler) {
         window.removeEventListener('resize', window.currentResizeHandler);
-        window.currentResizeHandler = null;
+        window.currentResizeHandler = undefined;
       }
       clearInterval(checkExist);
     };
@@ -261,9 +299,9 @@ const CompanyMain = () => {
         color: 'white',
         zIndex: 10
       }}>
-        <h1>CodeFIT</h1>
-        <p>최고의 개발 인재를 가장 스마트하게 만나는 방법</p>
-        <div className="company-buttons">
+        <h1 className="fade-in-title">CodeFIT</h1>
+        <p className="fade-in-subtitle">최고의 개발 인재를 가장 스마트하게 만나는 방법</p>
+        <div className="company-buttons fade-in-buttons">
           <button className="company-btn company-btn-back" onClick={handleGoBack}>
             뒤로가기
           </button>
