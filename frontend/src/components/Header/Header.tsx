@@ -70,7 +70,7 @@ const Header: React.FC = () => {
     };
 
     const handleCompanyBrowse = () => {
-        alert("기업 둘러보기 페이지로 이동합니다.");
+        window.location.href = "/post";
     };
 
     const handleEnterpriseService = () => {
