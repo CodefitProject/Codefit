@@ -1,8 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './CompanyRegister.css';
 
-const CompanyRegister = () => {
-  const [formData, setFormData] = useState({
+interface FormData {
+  email: string;
+  password: string;
+  name: string;
+  businessNumber: string;
+  industry: string;
+  empCount: string;
+  description: string;
+  businessCertificate: File | null;
+  logo: File | null;
+}
+
+interface FileNames {
+  businessCertificate: string;
+  logo: string;
+}
+
+interface BusinessNumberApiResponse {
+  data?: Array<{
+    tax_type?: string;
+  }>;
+}
+
+const CompanyRegister: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     name: '',
@@ -14,12 +37,12 @@ const CompanyRegister = () => {
     logo: null
   });
 
-  const [fileNames, setFileNames] = useState({
+  const [fileNames, setFileNames] = useState<FileNames>({
     businessCertificate: '',
     logo: ''
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -27,9 +50,9 @@ const CompanyRegister = () => {
     }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, files } = e.target;
-    if (files[0]) {
+    if (files && files[0]) {
       setFormData(prev => ({
         ...prev,
         [name]: files[0]
@@ -41,7 +64,7 @@ const CompanyRegister = () => {
     }
   };
 
-  const handleBusinessNumberCheck = async () => {
+  const handleBusinessNumberCheck = async (): Promise<void> => {
     const bizNo = formData.businessNumber.replace(/[^0-9]/g, "");
     if (bizNo.length === 0) {
       alert("사업자등록번호를 입력해 주세요.");
@@ -57,7 +80,7 @@ const CompanyRegister = () => {
         body: JSON.stringify({ b_no: [bizNo] })
       });
 
-      const result = await response.json();
+      const result: BusinessNumberApiResponse = await response.json();
 
       if (result && result.data && result.data.length > 0) {
         const info = result.data[0];
@@ -70,14 +93,15 @@ const CompanyRegister = () => {
         alert("조회 결과가 없습니다. 번호를 확인해 주세요.");
       }
     } catch (error) {
+      console.error("Business number check error:", error);
       alert("조회 중 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     
-    const errors = [];
+    const errors: string[] = [];
     if (!formData.email) errors.push("이메일을 입력해주세요.");
     if (!formData.password) errors.push("패스워드를 입력해주세요.");
     if (!formData.name) errors.push("기업명을 입력해주세요.");
@@ -97,7 +121,7 @@ const CompanyRegister = () => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     window.history.back();
   };
 

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
 import CompanyMain from './pages/company/CompanyMain.tsx';
-import CompanyRegister from './pages/company/CompanyRegister.js';
+import CompanyRegister from './pages/company/CompanyRegister.tsx';
 
 function App() {
   return (
