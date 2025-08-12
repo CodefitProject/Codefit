@@ -137,7 +137,7 @@ const CompanyRegister: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     
     const errors: string[] = [];
@@ -154,9 +154,43 @@ const CompanyRegister: React.FC = () => {
     }
 
     if (window.confirm("저장하시겠습니까?")) {
-      // 여기에 실제 API 호출 로직 구현
-      console.log('Form submitted:', formData);
-      alert("회사 등록이 완료되었습니다!");
+      try {
+        // FormData 객체 생성
+        const submitFormData = new FormData();
+        submitFormData.append('email', formData.email);
+        submitFormData.append('password', formData.password);
+        submitFormData.append('name', formData.name);
+        submitFormData.append('businessNumber', formData.businessNumber);
+        submitFormData.append('industry', formData.industry);
+        submitFormData.append('empCount', formData.empCount);
+        submitFormData.append('description', formData.description);
+        
+        if (formData.businessCertificate) {
+          submitFormData.append('businessCertificate', formData.businessCertificate);
+        }
+        
+        if (formData.logo) {
+          submitFormData.append('logo', formData.logo);
+        }
+
+        const response = await fetch('/api/company/register', {
+          method: 'POST',
+          body: submitFormData
+        });
+
+        if (response.ok) {
+          const result = await response.text();
+          alert(result);
+          // 성공 시 폼 초기화 또는 리다이렉트
+          window.location.href = '/company';
+        } else {
+          const error = await response.text();
+          alert("등록 실패: " + error);
+        }
+      } catch (error) {
+        console.error("API 호출 오류:", error);
+        alert("서버와의 통신 중 오류가 발생했습니다.");
+      }
     }
   };
 
