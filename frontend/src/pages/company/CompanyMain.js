@@ -261,9 +261,9 @@ const CompanyMain = () => {
         color: 'white',
         zIndex: 10
       }}>
-        <h1>CodeFIT</h1>
-        <p>최고의 개발 인재를 가장 스마트하게 만나는 방법</p>
-        <div className="company-buttons">
+        <h1 className="fade-in-title">CodeFIT</h1>
+        <p className="fade-in-subtitle">최고의 개발 인재를 가장 스마트하게 만나는 방법</p>
+        <div className="company-buttons fade-in-buttons">
           <button className="company-btn company-btn-back" onClick={handleGoBack}>
             뒤로가기
           </button>
