@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
 import CompanyMain from './pages/company/CompanyMain.js';
+import CompanyRegister from './pages/company/CompanyRegister.js';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/mbti-example" element={<MbtiExample />} />
           <Route path="/company" element={<CompanyMain />} />
+          <Route path="/company/register" element={<CompanyRegister />} />
         </Routes>
       </Router>
     </div>

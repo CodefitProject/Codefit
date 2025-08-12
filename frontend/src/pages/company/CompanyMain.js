@@ -7,7 +7,7 @@ const CompanyMain = () => {
   };
 
   const handleStart = () => {
-    alert("시작하기 버튼이 클릭되었습니다!");
+    window.location.href = '/company/register';
   };
 
   useEffect(() => {
