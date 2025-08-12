@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
-import CompanyMain from './pages/company/CompanyMain.js';
+import CompanyMain from './pages/company/CompanyMain.tsx';
+import CompanyRegister from './pages/company/CompanyRegister.tsx';
 import PostList from './pages/post/PostList.tsx';
 import PostDetail from './pages/post/PostDetail.tsx';
 import PostCreate from './pages/post/PostCreate.tsx';
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/mbti-example" element={<MbtiExample />} />
           <Route path="/company" element={<CompanyMain />} />
+          <Route path="/company/register" element={<CompanyRegister />} />
           <Route path="/post" element={<PostList />} />
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />
