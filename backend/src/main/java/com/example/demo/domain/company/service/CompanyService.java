@@ -4,7 +4,6 @@ import com.example.demo.domain.company.dto.CreateCompanyDto;
 import com.example.demo.domain.company.entity.Company;
 import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.global.exception.BusinessException;
-import com.example.demo.util.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,7 @@ public class CompanyService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    public ResponseEntity<ApiResponse<Long>> createCompany(CreateCompanyDto dto) {
+    public ResponseEntity<String> createCompany(CreateCompanyDto dto) {
         // 중복 검사
         if (companyRepository.existsByEmail(dto.email())) {
             throw new BusinessException("이미 등록된 이메일입니다.");
@@ -56,7 +55,7 @@ public class CompanyService {
                 .build();
 
         Company savedCompany = companyRepository.save(company);
-        return ApiResponse.success("회사 등록이 성공적으로 완료되었습니다.", savedCompany.getId());
+        return new ResponseEntity<>("회사 등록이 성공적으로 완료되었습니다. (ID: " + savedCompany.getId() + ")", org.springframework.http.HttpStatus.OK);
     }
 
     private String saveFile(MultipartFile file, String directory) {
