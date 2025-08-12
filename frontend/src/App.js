@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
-import CompanyMain from './pages/company/CompanyMain.js';
+import CompanyMain from './pages/company/CompanyMain.tsx';
 import CompanyRegister from './pages/company/CompanyRegister.js';
 
 function App() {
