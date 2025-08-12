@@ -42,3 +42,7 @@ out/
 
 ### UI folder ###
 ui/
+
+# Custom
+.cursor/
+.gemini/
