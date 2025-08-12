@@ -43,6 +43,6 @@ out/
 ### UI folder ###
 ui/
 
-# Custom
+### Custom
 .cursor/
 .gemini/
