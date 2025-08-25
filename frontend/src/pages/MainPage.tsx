@@ -144,7 +144,7 @@ const MainPage: React.FC = () => {
             return;
         }
         // 개발자 성향분석 페이지로 이동
-        alert("개발자 성향분석 페이지로 이동합니다.");
+        window.location.href = "/survey/mbti";
     };
     
     const handleCard3Click = () => {
