@@ -65,7 +65,7 @@ const Header: React.FC = () => {
         if (!userInfo) {
             alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
         } else {
-            alert("성향분석 페이지로 이동합니다.");
+            window.location.href = "/survey/mbti";
         }
     };
 
