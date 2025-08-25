@@ -20,7 +20,7 @@ public class CompanyController {
     }
 
     @GetMapping("/public/companies")
-    public ResponseEntity<CompanyListResponseDto> getCompanies(
+    public ResponseEntity<CompanyListResponseDto> getCompaniesForMainPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "16") int size) {
         return ResponseEntity.ok(companyService.getCompaniesForMainPage(page, size));

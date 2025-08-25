@@ -20,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("사용자 조회 시도: {}", username);
         
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> {
                     log.error("사용자를 찾을 수 없습니다: {}", username);
                     return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);

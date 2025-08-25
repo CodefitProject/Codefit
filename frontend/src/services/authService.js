@@ -1,14 +1,12 @@
 class AuthService {
   static async login(loginData) {
     try {
-      const response = await fetch('/InsWebApp/USLogin.pwkjson', {
+      const response = await fetch('/loginPro', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          loginVo: loginData
-        }),
+        body: JSON.stringify(loginData),
       });
 
       if (!response.ok) {
@@ -54,7 +52,7 @@ class AuthService {
     if (userRole === "USER") {
       window.location.reload();
     } else if (userRole === "COMPANY") {
-      window.location.href = "../corporate/RecruitmentDashboard.xml";
+      window.location.href = "/company/dashboard";
     }
   }
 }

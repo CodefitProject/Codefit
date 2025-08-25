@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @Transactional
 public class CompanyService {
     private final CompanyRepository companyRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
     
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
@@ -49,7 +51,7 @@ public class CompanyService {
         // Entity 생성 및 저장
         Company company = Company.builder()
                 .email(dto.email())
-                .password(dto.password()) // TODO: 암호화 처리 필요
+                .password(passwordEncoder.encode(dto.password())) // 비밀번호 암호화
                 .name(dto.name())
                 .businessNumber(dto.businessNumber())
                 .industry(dto.industry())
