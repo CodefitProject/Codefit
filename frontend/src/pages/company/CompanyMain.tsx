@@ -288,7 +288,7 @@ const CompanyMain: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <div className="company-main-page" style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <div id="nodeBackground" style={{ width: '100%', height: '100%' }}></div>
       <div style={{
         position: 'absolute',

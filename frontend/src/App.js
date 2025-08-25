@@ -4,6 +4,7 @@ import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
 import CompanyMain from './pages/company/CompanyMain.tsx';
 import CompanyRegister from './pages/company/CompanyRegister.tsx';
+import CompanyDashboard from './pages/company/CompanyDashboard.tsx';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/mbti-example" element={<MbtiExample />} />
           <Route path="/company" element={<CompanyMain />} />
           <Route path="/company/register" element={<CompanyRegister />} />
+          <Route path="/company/dashboard" element={<CompanyDashboard />} />
         </Routes>
       </Router>
     </div>

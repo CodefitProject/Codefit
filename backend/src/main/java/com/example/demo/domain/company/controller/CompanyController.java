@@ -8,12 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/company")
+@RequestMapping
 @RequiredArgsConstructor
 public class CompanyController {
     private final CompanyService companyService;
 
-    @PostMapping("/register")
+    @PostMapping("/public/company/register")
     public ResponseEntity<String> createCompany(@Valid @ModelAttribute CreateCompanyDto dto) {
         return companyService.createCompany(dto);
     }
