@@ -3,7 +3,8 @@ package com.example.demo.common.security.handler;
 import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.common.security.service.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,9 +30,10 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
                                       Authentication authentication) throws IOException, ServletException {
         
-        User user = (User) authentication.getPrincipal();
-        String username = user.getUsername();
-        String role = user.getRole();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        BaseUser baseUser = customUserDetails.getBaseUser();
+        String username = baseUser.getEmail();
+        String role = baseUser.getUserRole().name();
         
         log.info("로그인 성공 - 사용자: {}, 역할: {}", username, role);
         

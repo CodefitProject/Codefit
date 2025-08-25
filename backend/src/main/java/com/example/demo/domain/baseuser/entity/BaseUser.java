@@ -1,14 +1,19 @@
 package com.example.demo.domain.baseuser.entity;
 import com.example.demo.domain.baseuser.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
 @Table(name = "base_users")
 public class BaseUser {
@@ -26,7 +31,7 @@ public class BaseUser {
     @Column(length = 100)
     private String name;
 
-        @Builder.Default
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createAt = LocalDateTime.now();
 
@@ -39,4 +44,5 @@ public class BaseUser {
     private UserRole userRole; // 일반, 기업, 관리자 등
 
 }
+
 
