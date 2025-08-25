@@ -19,8 +19,26 @@ const Header: React.FC = () => {
     }, []);
 
     const updateHeaderUI = () => {
-        // setUserInfo(user);
-        // setIsLoggedIn(user !== null);
+        // 쿠키에서 사용자 정보 확인
+        const userInfoStr = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('userInfo='))
+            ?.split('=')[1];
+
+        if (userInfoStr) {
+            try {
+                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
+                setUserInfo(parsedUserInfo);
+                setIsLoggedIn(true);
+            } catch (e) {
+                console.error('Header - 사용자 정보 파싱 오류:', e);
+                setUserInfo(null);
+                setIsLoggedIn(false);
+            }
+        } else {
+            setUserInfo(null);
+            setIsLoggedIn(false);
+        }
     };
 
     const handleLogin = () => {
