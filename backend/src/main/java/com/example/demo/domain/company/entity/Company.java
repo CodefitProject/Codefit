@@ -1,5 +1,7 @@
 package com.example.demo.domain.company.entity;
 
+import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.company.enums.CompanyStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,16 +20,11 @@ public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long companyId;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
-    private String name;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "base_user_id", nullable = false, unique = true)
+    private BaseUser baseUser;
 
     @Column(unique = true, nullable = false, name = "business_number")
     private String businessNumber;
@@ -60,21 +57,14 @@ public class Company {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Company(String email, String password, String name, String businessNumber, 
-                   String industry, String empCount, String description, 
-                   String businessCertificatePath, String logoPath) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
+    public Company(BaseUser baseUser, String businessNumber, String industry, String empCount,
+                   String description, String businessCertificatePath, String logoPath) {
+        this.baseUser = baseUser;
         this.businessNumber = businessNumber;
         this.industry = industry;
         this.empCount = empCount;
         this.description = description;
         this.businessCertificatePath = businessCertificatePath;
         this.logoPath = logoPath;
-    }
-
-    public enum CompanyStatus {
-        ACTIVE, INACTIVE, PENDING
     }
 }

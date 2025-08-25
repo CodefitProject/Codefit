@@ -1,9 +1,13 @@
 package com.example.demo.domain.company.service;
 
+import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.baseuser.enums.UserRole;
+import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.company.dto.CompanyInfoDto;
 import com.example.demo.domain.company.dto.CompanyListResponseDto;
 import com.example.demo.domain.company.dto.CreateCompanyDto;
 import com.example.demo.domain.company.entity.Company;
+import com.example.demo.domain.company.enums.CompanyStatus;
 import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +32,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class CompanyService {
+
     private final CompanyRepository companyRepository;
+    private final BaseUserRepository baseUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     
     @Value("${file.upload-dir:uploads}")
@@ -36,7 +42,7 @@ public class CompanyService {
 
     public ResponseEntity<String> createCompany(CreateCompanyDto dto) {
         // 중복 검사
-        if (companyRepository.existsByEmail(dto.email())) {
+        if (companyRepository.existsByBaseUserEmail(dto.email())) {
             throw new BusinessException("이미 등록된 이메일입니다.");
         }
         
@@ -48,11 +54,19 @@ public class CompanyService {
         String businessCertificatePath = saveFile(dto.businessCertificate(), "business_certificates");
         String logoPath = dto.logo() != null ? saveFile(dto.logo(), "logos") : null;
 
-        // Entity 생성 및 저장
-        Company company = Company.builder()
+        // BaseUser 생성 및 저장
+        BaseUser baseUser = BaseUser.builder()
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password())) // 비밀번호 암호화
                 .name(dto.name())
+                .userRole(UserRole.COMPANY) // 일반/기업 구분
+                .build();
+
+        baseUserRepository.save(baseUser); //BaseUser 저장
+
+        // Entity 생성 및 저장
+        Company company = Company.builder()
+                .baseUser(baseUser)
                 .businessNumber(dto.businessNumber())
                 .industry(dto.industry())
                 .empCount(dto.empCount())
@@ -62,7 +76,7 @@ public class CompanyService {
                 .build();
 
         Company savedCompany = companyRepository.save(company);
-        return new ResponseEntity<>("회사 등록이 성공적으로 완료되었습니다. (ID: " + savedCompany.getId() + ")", org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>("회사 등록이 성공적으로 완료되었습니다. (ID: " + savedCompany.getCompanyId() + ")", org.springframework.http.HttpStatus.OK);
     }
 
     private String saveFile(MultipartFile file, String directory) {
@@ -96,7 +110,7 @@ public class CompanyService {
 
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
-        return companyRepository.existsByEmail(email);
+        return companyRepository.existsByBaseUserEmail(email);
     }
 
     @Transactional(readOnly = true)
@@ -107,10 +121,10 @@ public class CompanyService {
     @Transactional(readOnly = true)
     public CompanyListResponseDto getCompaniesForMainPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<Company> companies = companyRepository.findAllByStatusOrderByCreatedAtDesc(Company.CompanyStatus.ACTIVE, pageable);
+        List<Company> companies = companyRepository.findAllByStatusOrderByCreatedAtDesc(CompanyStatus.ACTIVE, pageable);
         
         // 전체 활성 회사 수 조회
-        Long totalCount = companyRepository.countByStatus(Company.CompanyStatus.ACTIVE);
+        Long totalCount = companyRepository.countByStatus(CompanyStatus.ACTIVE);
         
         List<CompanyInfoDto> companyInfoList = companies.stream()
                 .map(CompanyInfoDto::from)

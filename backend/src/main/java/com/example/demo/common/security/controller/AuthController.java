@@ -4,8 +4,9 @@ import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.dto.RefreshTokenRequest;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.baseuser.repository.BaseUserRepository;
+import com.example.demo.common.security.service.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class AuthController {
     
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
-    private final UserRepository userRepository;
+    private final BaseUserRepository baseUserRepository;
     
     // Access Token 갱신
     @PostMapping("/refresh")
@@ -56,24 +57,24 @@ public class AuthController {
         }
         
         // 사용자 정보 조회
-        User user = userRepository.findByUsername(username)
+        BaseUser baseUser = baseUserRepository.findByEmail(username)
                 .orElse(null);
         
-        if (user == null) {
+        if (baseUser == null) {
             log.error("사용자를 찾을 수 없음: {}", username);
             return ResponseEntity.badRequest()
                     .body(createErrorResponse("사용자를 찾을 수 없습니다."));
         }
         
         // 새로운 Access Token 생성
-        String newAccessToken = jwtUtil.generateAccessToken(username, user.getRole());
+        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name());
         
         LoginResponse response = LoginResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(refreshToken)  // 기존 Refresh Token 유지
                 .tokenType("Bearer")
                 .username(username)
-                .role(user.getRole())
+                .role(baseUser.getUserRole().name())
                 .build();
         
         log.info("토큰 갱신 성공 - 사용자: {}", username);
@@ -133,19 +134,19 @@ public class AuthController {
                     .body(createErrorResponse("인증되지 않은 사용자입니다."));
         }
         
-        String username = (String) authentication.getPrincipal();
-        User user = userRepository.findByUsername(username)
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        BaseUser baseUser = baseUserRepository.findByEmail(customUserDetails.getUsername())
                 .orElse(null);
         
-        if (user == null) {
+        if (baseUser == null) {
             return ResponseEntity.badRequest()
                     .body(createErrorResponse("사용자를 찾을 수 없습니다."));
         }
         
         Map<String, Object> response = new HashMap<>();
-        response.put("username", user.getUsername());
-        response.put("role", user.getRole());
-        response.put("enabled", user.isEnabled());
+        response.put("username", baseUser.getEmail());
+        response.put("role", baseUser.getUserRole().name());
+        response.put("enabled", customUserDetails.isEnabled()); // Use customUserDetails.isEnabled()
         
         return ResponseEntity.ok(response);
     }
