@@ -47,22 +47,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         // 응답 헤더에 토큰 추가
         response.setHeader("Authorization", "Bearer " + accessToken);
         
-        // 응답 데이터 구성
-        LoginResponse loginResponse = LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .username(username)
-                .role(role)
-                .build();
-        
-        // JSON 응답
+        // JSON 응답 (토큰 정보는 헤더로 전송)
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        
-        String jsonResponse = objectMapper.writeValueAsString(loginResponse);
-        response.getWriter().write(jsonResponse);
+        response.getWriter().write("{\"message\": \"로그인 성공\"}"); // Simple success message
         
         log.debug("로그인 응답 전송 완료 - 사용자: {}", username);
     }
