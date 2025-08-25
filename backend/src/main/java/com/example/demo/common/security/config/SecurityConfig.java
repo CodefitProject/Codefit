@@ -70,7 +70,7 @@ public class SecurityConfig {
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/loginPro", "/auth/refresh", "/auth/register").permitAll()
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 

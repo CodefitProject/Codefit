@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/common.css';
+import '../styles/MainPage.css';
 import Header from '../components/Header/Header.tsx';
 import Footer from '../components/Footer/Footer.tsx';
 
 interface Company {
-    userId: number;
+    companyId: number;
     name: string;
-    logoFileName?: string;
+    logoPath?: string;
 }
 
 interface JobPosting {
@@ -66,12 +66,23 @@ const MainPage: React.FC = () => {
     };
 
     const loadCompanyList = async () => {
-        // 실제 구현에서는 API 호출
         try {
-            // 빈 배열로 초기화
-            setCompanies([]);
+            const response = await fetch('/api/public/companies?page=0&size=16');
+            if (response.ok) {
+                const data = await response.json();
+                const companiesData = data.companies.map((company: any) => ({
+                    companyId: company.id,
+                    name: company.name,
+                    logoPath: company.logoPath
+                }));
+                setCompanies(companiesData);
+            } else {
+                console.error('회사 목록 로드 실패:', response.status);
+                setCompanies([]);
+            }
         } catch (error) {
             console.error('회사 목록 로드 실패:', error);
+            setCompanies([]);
         }
     };
 
@@ -360,13 +371,13 @@ const MainPage: React.FC = () => {
                         {companies.length > 0 ? (
                             companies.map((company) => (
                                 <div 
-                                    key={company.userId}
+                                    key={company.companyId}
                                     className="company-item"
                                     onClick={() => handleCompanyClick(company)}
                                 >
                                     <img 
                                         className="company-logo"
-                                        src={company.logoFileName ? `/images/company/${company.logoFileName}` : '/images/main/default_company.png'}
+                                        src={company.logoPath ? `/uploads/${company.logoPath}` : '/images/main/default_company.png'}
                                         alt={`${company.name} Logo`}
                                     />
                                     <span className="company-name">{company.name}</span>

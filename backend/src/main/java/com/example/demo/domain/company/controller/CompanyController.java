@@ -1,5 +1,6 @@
 package com.example.demo.domain.company.controller;
 
+import com.example.demo.domain.company.dto.CompanyListResponseDto;
 import com.example.demo.domain.company.dto.CreateCompanyDto;
 import com.example.demo.domain.company.service.CompanyService;
 import jakarta.validation.Valid;
@@ -8,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class CompanyController {
     private final CompanyService companyService;
@@ -16,5 +17,12 @@ public class CompanyController {
     @PostMapping("/public/company/register")
     public ResponseEntity<String> createCompany(@Valid @ModelAttribute CreateCompanyDto dto) {
         return companyService.createCompany(dto);
+    }
+
+    @GetMapping("/public/companies")
+    public ResponseEntity<CompanyListResponseDto> getCompanies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "16") int size) {
+        return ResponseEntity.ok(companyService.getCompaniesForMainPage(page, size));
     }
 }
