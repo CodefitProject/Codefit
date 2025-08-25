@@ -174,7 +174,7 @@ const CompanyRegister: React.FC = () => {
           submitFormData.append('logo', formData.logo);
         }
 
-        const response = await axios.post('/public/company/register', submitFormData);
+        const response = await axios.post('/api/public/company/register', submitFormData);
 
         alert("등록 성공: " + response.data);
         // 성공 시 폼 초기화 또는 리다이렉트

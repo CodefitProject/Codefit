@@ -36,11 +36,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         try {
             LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
             
-            log.debug("로그인 요청 파싱 완료 - 사용자: {}", loginRequest.getUsername());
+            log.debug("로그인 요청 파싱 완료 - 사용자: {}", loginRequest.getEmail());
             
             UsernamePasswordAuthenticationToken authToken = 
                 new UsernamePasswordAuthenticationToken(
-                    loginRequest.getUsername(), 
+                    loginRequest.getEmail(),
                     loginRequest.getPassword()
                 );
             
