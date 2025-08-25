@@ -5,14 +5,14 @@ import lombok.Builder;
 
 @Builder
 public record CompanyInfoDto(
-    Long id,
+    Long userId,
     String name,
     String logoPath
 ) {
     public static CompanyInfoDto from(Company company) {
         return CompanyInfoDto.builder()
-                .id(company.getId())
-                .name(company.getName())
+                .userId(company.getBaseUser().getBaseUserId())
+                .name(company.getBaseUser().getName())
                 .logoPath(company.getLogoPath())
                 .build();
     }

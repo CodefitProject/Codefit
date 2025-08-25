@@ -21,7 +21,7 @@ class AuthService {
     }
   }
 
-  static setUserInfo(userInfo) {
+  static setUserInfo(userInfo){
     document.cookie = `userInfo=${JSON.stringify(userInfo)}`;
   }
 
