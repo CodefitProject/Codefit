@@ -211,12 +211,16 @@
     min-width: 100px;
 }
 
-.btn-back {
+.mbti-wrapper .btn-back {
     background-color: #6c757d;
     color: white;
+    border-radius: 25px;
+    border: none;
+    display: block;
+    text-align: center;
 }
 
-.btn-back:hover {
+.mbti-wrapper .btn-back:hover {
     background-color: #5a6268;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
@@ -233,7 +237,7 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
-.btn-back:active, .btn-home:active {
+.mbti-wrapper .btn-back:active, .btn-home:active {
     transform: translateY(0);
 }
 
@@ -321,7 +325,7 @@
         gap: 15px;
     }
     
-    .btn-back, .btn-home {
+    .mbti-wrapper .btn-back, .btn-home {
         padding: 10px 20px;
         font-size: 14px;
         min-width: 80px;
@@ -363,7 +367,7 @@
         gap: 10px;
     }
     
-    .btn-back, .btn-home {
+    .mbti-wrapper .btn-back, .btn-home {
         padding: 8px 16px;
         font-size: 13px;
         min-width: 70px;

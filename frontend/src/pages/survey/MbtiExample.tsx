@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './MbtiExample.css';
 
-const MbtiExample = () => {
-    const [currentSection, setCurrentSection] = useState(0);
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [touchStartY, setTouchStartY] = useState(0);
-    const [touchEndY, setTouchEndY] = useState(0);
+interface MbtiType {
+    type: string;
+    title: string;
+    description: string;
+    characteristics: string[];
+    image: string;
+}
+
+const MbtiExample: React.FC = () => {
+    const [currentSection, setCurrentSection] = useState<number>(0);
+    const [isAnimating, setIsAnimating] = useState<boolean>(false);
+    const [touchStartY, setTouchStartY] = useState<number>(0);
+    const [touchEndY, setTouchEndY] = useState<number>(0);
 
     // MBTI 타입 데이터
-    const mbtiTypes = [
+    const mbtiTypes: MbtiType[] = [
         { type: "ARTF", title: "설계의 마에스트로", description: "완벽한 아키텍처를 바탕으로 팀과 함께 레거시 시스템을 혁신적인 기능으로 탈바꿈시키는 전략가입니다. 코드 리뷰에서는 구조적 개선점을 날카롭게 지적하지만, 동시에 팀원들의 창의적 아이디어를 하나로 엮어내는 마법을 부립니다.", characteristics: ["시스템 전체를 조망하는 통찰력", "레거시 코드 현대화 전문가", "팀 아키텍처 리딩과 멘토링", "기능 설계와 구현의 완벽한 조화"], image: "/images/mbti/png/ARTF.png" },
         { type: "ARTD", title: "완벽주의 코드 닥터", description: "체계적인 접근으로 기존 코드의 숨겨진 문제점을 찾아내고, 팀과의 협업을 통해 근본적인 해결책을 제시합니다. 버그 리포트를 받으면 단순한 임시방편이 아닌, 시스템 전체의 안정성을 높이는 완전한 치료법을 찾아냅니다.", characteristics: ["근본 원인 분석의 달인", "코드 품질 가디언", "팀 기반 디버깅 프로세스 구축", "예방적 버그 헌팅 시스템"], image: "/images/mbti/png/ARTD.png" },
         { type: "ARSF", title: "고독한 설계 장인", description: "조용한 공간에서 완벽한 설계 문서와 함께 기존 코드를 예술작품으로 승화시키는 장인입니다. 혼자만의 시간 속에서 새로운 기능의 청사진을 그리고, 한 줄 한 줄 정성스럽게 리팩토링하여 아름다운 코드를 만들어냅니다.", characteristics: ["완벽한 아키텍처 설계", "심미적 코드 리팩토링", "독립적 창작 프로세스", "기능과 구조의 우아한 통합"], image: "/images/mbti/png/ARSF.png" },
@@ -28,7 +36,7 @@ const MbtiExample = () => {
     ];
 
     // 배경색 배열
-    const colors = [
+    const colors: string[] = [
         '#f5f5f5', '#fafafa', '#f0f0f0', '#f8f8f8',
         '#f5f5f5', '#fafafa', '#f0f0f0', '#f8f8f8',
         '#f5f5f5', '#fafafa', '#f0f0f0', '#f8f8f8',
@@ -36,7 +44,7 @@ const MbtiExample = () => {
     ];
 
     // 섹션 이동 함수들
-    const goToSection = useCallback((index) => {
+    const goToSection = useCallback((index: number) => {
         if (isAnimating || index === currentSection) return;
         if (index < 0 || index >= mbtiTypes.length) return;
 
@@ -82,7 +90,7 @@ const MbtiExample = () => {
 
     // 이벤트 리스너들
     useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (isAnimating) return;
 
             switch (e.key) {
@@ -109,7 +117,7 @@ const MbtiExample = () => {
             }
         };
 
-        const handleWheel = (e) => {
+        const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
             if (isAnimating) return;
 
@@ -121,7 +129,7 @@ const MbtiExample = () => {
         };
 
         document.addEventListener('keydown', handleKeyDown);
-        const container = document.querySelector('.mbti-container');
+        const container = document.querySelector('.mbti-container') as HTMLElement;
         if (container) {
             container.addEventListener('wheel', handleWheel, { passive: false });
         }
@@ -135,28 +143,28 @@ const MbtiExample = () => {
     }, [isAnimating, nextSection, prevSection, goToSection, mbtiTypes.length]);
 
     // 터치 이벤트
-    const handleTouchStart = (e) => {
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
         setTouchStartY(e.touches[0].clientY);
     };
 
-    const handleTouchEnd = (e) => {
+    const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
         setTouchEndY(e.changedTouches[0].clientY);
         handleSwipe();
     };
 
     // 네비게이션 핸들러
-    const handleBack = () => {
+    const handleBack = (): void => {
         window.history.back();
     };
 
-    const handleHome = () => {
+    const handleHome = (): void => {
         window.location.href = '/';
     };
 
     return (
         <div className="mbti-wrapper" style={{ backgroundColor: colors[currentSection % colors.length] }}>
             <div className="mbti-container" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-                {mbtiTypes.map((mbti, index) => (
+                {mbtiTypes.map((mbti: MbtiType, index: number) => (
                     <div
                         key={mbti.type}
                         className={`mbti-section ${index === currentSection ? 'active' : ''}`}
@@ -168,7 +176,7 @@ const MbtiExample = () => {
                                 <div className="mbti-title">{mbti.title}</div>
                                 <div className="mbti-description">{mbti.description}</div>
                                 <ul className="mbti-characteristics">
-                                    {mbti.characteristics.map((characteristic, idx) => (
+                                    {mbti.characteristics.map((characteristic: string, idx: number) => (
                                         <li key={idx} className="characteristic-item">
                                             {characteristic}
                                         </li>
@@ -180,8 +188,9 @@ const MbtiExample = () => {
                                     className="mbti-image"
                                     src={mbti.image}
                                     alt={`${mbti.type} - ${mbti.title}`}
-                                    onError={(e) => {
-                                        e.target.src = '/images/mbti/default_mbti.png';
+                                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = '/images/mbti/default_mbti.png';
                                     }}
                                 />
                             </div>
@@ -192,7 +201,7 @@ const MbtiExample = () => {
 
             {/* 네비게이션 도트 */}
             <div className="mbti-navigation">
-                {mbtiTypes.map((mbti, index) => (
+                {mbtiTypes.map((mbti: MbtiType, index: number) => (
                     <div
                         key={mbti.type}
                         className={`nav-dot ${index === currentSection ? 'active' : ''}`}
