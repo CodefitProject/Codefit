@@ -4,6 +4,7 @@ import MainPage from './pages/MainPage.tsx';
 import MbtiExample from './pages/survey/MbtiExample.js';
 import CompanyMain from './pages/company/CompanyMain.tsx';
 import CompanyRegister from './pages/company/CompanyRegister.tsx';
+import CompanyDashboard from './pages/company/CompanyDashboard.tsx';
 import PostList from './pages/post/PostList.tsx';
 import PostDetail from './pages/post/PostDetail.tsx';
 import PostCreate from './pages/post/PostCreate.tsx';
@@ -17,6 +18,7 @@ function App() {
           <Route path="/mbti-example" element={<MbtiExample />} />
           <Route path="/company" element={<CompanyMain />} />
           <Route path="/company/register" element={<CompanyRegister />} />
+          <Route path="/company/dashboard" element={<CompanyDashboard />} />
           <Route path="/post" element={<PostList />} />
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />
