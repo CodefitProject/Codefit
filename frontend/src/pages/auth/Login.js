@@ -44,19 +44,22 @@ const Login = ({ onClose }) => {
         password: formData.password
       });
 
-      const elHeader = result.elHeader;
-      const userHeader = result.userHeader;
-
-      if (elHeader && elHeader.resSuc === true) {
-        AuthService.setUserInfo(userHeader);
+      // result now contains { message, accessToken, username, role }
+      if (result && result.message === "로그인 성공" && result.accessToken) {
+        // Store the access token (e.g., in localStorage or a state management solution)
+        // For now, let's just store it in a simple way for demonstration
+        localStorage.setItem('accessToken', result.accessToken);
+        
+        // Store user info (username and role)
+        AuthService.setUserInfo({ username: result.username, role: result.role });
         
         if (onClose) {
           onClose();
         }
 
-        AuthService.redirectByRole(userHeader.role);
+        AuthService.redirectByRole(result.role);
       } else {
-        const errMsg = elHeader && elHeader.errMsg ? elHeader.errMsg : "로그인에 실패했습니다.";
+        const errMsg = result && result.message ? result.message : "로그인에 실패했습니다.";
         alert(errMsg);
       }
     } catch (error) {

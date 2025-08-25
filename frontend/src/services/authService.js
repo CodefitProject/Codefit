@@ -13,8 +13,30 @@ class AuthService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      return result;
+      const authHeader = response.headers.get('Authorization');
+      let accessToken = null;
+      let username = null;
+      let role = null;
+
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        accessToken = authHeader.substring(7);
+        try {
+          const decodedToken = AuthService.decodeJwt(accessToken);
+          username = decodedToken.sub; // 'sub' is typically the subject, often the username/email
+          role = decodedToken.role; // Assuming 'role' is a custom claim in your JWT
+        } catch (e) {
+          console.error('Error decoding JWT token:', e);
+        }
+      }
+
+      const result = await response.json(); // Get the message from the body
+      
+      return {
+        ...result, // Contains { message: "로그인 성공" }
+        accessToken,
+        username,
+        role
+      };
     } catch (error) {
       console.error('Login API error:', error);
       throw error;
@@ -53,6 +75,20 @@ class AuthService {
       window.location.reload();
     } else if (userRole === "COMPANY") {
       window.location.href = "/company/dashboard";
+    }
+  }
+
+  static decodeJwt(token) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Invalid JWT token:', e);
+      throw e;
     }
   }
 }
