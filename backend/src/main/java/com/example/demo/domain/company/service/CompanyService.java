@@ -1,11 +1,15 @@
 package com.example.demo.domain.company.service;
 
+import com.example.demo.domain.company.dto.CompanyInfoDto;
+import com.example.demo.domain.company.dto.CompanyListResponseDto;
 import com.example.demo.domain.company.dto.CreateCompanyDto;
 import com.example.demo.domain.company.entity.Company;
 import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -95,5 +100,23 @@ public class CompanyService {
     @Transactional(readOnly = true)
     public boolean existsByBusinessNumber(String businessNumber) {
         return companyRepository.existsByBusinessNumber(businessNumber);
+    }
+
+    @Transactional(readOnly = true)
+    public CompanyListResponseDto getCompaniesForMainPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Company> companies = companyRepository.findAllByStatusOrderByCreatedAtDesc(Company.CompanyStatus.ACTIVE, pageable);
+        
+        // 전체 활성 회사 수 조회
+        Long totalCount = companyRepository.countByStatus(Company.CompanyStatus.ACTIVE);
+        
+        List<CompanyInfoDto> companyInfoList = companies.stream()
+                .map(CompanyInfoDto::from)
+                .toList();
+        
+        return CompanyListResponseDto.builder()
+                .totalCount(totalCount)
+                .companies(companyInfoList)
+                .build();
     }
 }
