@@ -39,7 +39,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         
         // JWT 토큰 생성
         String accessToken = jwtUtil.generateAccessToken(email, role, baseUserId, name);
-        String refreshToken = jwtUtil.generateRefreshToken(name);
+        String refreshToken = jwtUtil.generateRefreshToken(email);
         
         // Refresh Token을 Redis에 저장
         redisService.saveRefreshToken(email, refreshToken, 604800000L); // 7일
