@@ -174,7 +174,20 @@ const CompanyRegister: React.FC = () => {
           submitFormData.append('logo', formData.logo);
         }
 
-        const response = await axios.post('/api/public/company/register', submitFormData);
+        console.log('Submitting form data:', {
+          email: formData.email,
+          name: formData.name,
+          businessNumber: formData.businessNumber,
+          industry: formData.industry,
+          hasBusinessCertificate: !!formData.businessCertificate,
+          hasLogo: !!formData.logo
+        });
+
+        const response = await axios.post('/api/public/company/register', submitFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
 
         alert("등록 성공: " + response.data);
         // 성공 시 폼 초기화 또는 리다이렉트
