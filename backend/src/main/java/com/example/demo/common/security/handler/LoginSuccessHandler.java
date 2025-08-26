@@ -1,6 +1,5 @@
 package com.example.demo.common.security.handler;
 
-import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
 import com.example.demo.domain.baseuser.entity.BaseUser;
@@ -31,7 +30,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
                                       Authentication authentication) throws IOException, ServletException {
         
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        BaseUser baseUser = customUserDetails.getBaseUser();
+        BaseUser baseUser = customUserDetails.baseUser();
         String username = baseUser.getEmail();
         String role = baseUser.getUserRole().name();
         

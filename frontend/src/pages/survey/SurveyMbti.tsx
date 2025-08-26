@@ -4,7 +4,7 @@ import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import SurveyResult from './SurveyResult.tsx';
 import surveyService from '../../services/surveyService.ts';
-import AuthService from '../../services/authService';
+import AuthService from '../../services/authService.tsx';
 import './SurveyMbti.css';
 import {
     UserInfo,

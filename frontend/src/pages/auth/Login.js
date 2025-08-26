@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import AuthService from "../../services/authService";
+import AuthService from "../../services/authService.tsx";
 
 const Login = ({ onClose }) => {
   const [formData, setFormData] = useState({
