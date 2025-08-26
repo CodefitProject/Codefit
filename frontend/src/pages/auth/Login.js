@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import AuthService from "../../services/authService";
+import AuthService from "../../services/authService.tsx";
 
 const Login = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -44,23 +44,19 @@ const Login = ({ onClose }) => {
         password: formData.password,
       });
 
-      // result now contains { message, accessToken, username, role }
-      if (result && result.message === "로그인 성공" && result.accessToken) {
-        // Store the access token (e.g., in localStorage or a state management solution)
-        // For now, let's just store it in a simple way for demonstration
-        localStorage.setItem("accessToken", result.accessToken);
-
-        // Store user info (username and role)
-        AuthService.setUserInfo({
-          username: result.username,
-          role: result.role,
-        });
-
+      // result now contains { message }
+      if (result && result.message === "로그인 성공") {
+        // 토큰이 이미 AuthService.login()에서 저장됨
+        
         if (onClose) {
           onClose();
         }
 
-        AuthService.redirectByRole(result.role);
+        // 토큰에서 사용자 정보를 가져와서 리다이렉트
+        const userInfo = AuthService.getUserInfo();
+        if (userInfo && userInfo.role) {
+          AuthService.redirectByRole(userInfo.role);
+        }
       } else {
         const errMsg =
           result && result.message ? result.message : "로그인에 실패했습니다.";

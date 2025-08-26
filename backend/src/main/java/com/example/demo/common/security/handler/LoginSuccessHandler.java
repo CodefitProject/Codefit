@@ -1,6 +1,5 @@
 package com.example.demo.common.security.handler;
 
-import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
 import com.example.demo.domain.baseuser.entity.BaseUser;
@@ -31,18 +30,19 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
                                       Authentication authentication) throws IOException, ServletException {
         
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        BaseUser baseUser = customUserDetails.getBaseUser();
-        String username = baseUser.getEmail();
+        BaseUser baseUser = customUserDetails.baseUser();
+        String email = baseUser.getEmail();
         String role = baseUser.getUserRole().name();
-        
-        log.info("로그인 성공 - 사용자: {}, 역할: {}", username, role);
+        long baseUserId = baseUser.getBaseUserId();
+        String name = baseUser.getName();
+        log.info("로그인 성공 - 사용자: {}, 역할: {}", email, role);
         
         // JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(username, role);
-        String refreshToken = jwtUtil.generateRefreshToken(username);
+        String accessToken = jwtUtil.generateAccessToken(email, role, baseUserId, name);
+        String refreshToken = jwtUtil.generateRefreshToken(email);
         
         // Refresh Token을 Redis에 저장
-        redisService.saveRefreshToken(username, refreshToken, 604800000L); // 7일
+        redisService.saveRefreshToken(email, refreshToken, 604800000L); // 7일
         
         // 응답 헤더에 토큰 추가
         response.setHeader("Authorization", "Bearer " + accessToken);
@@ -53,6 +53,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("{\"message\": \"로그인 성공\"}"); // Simple success message
         
-        log.debug("로그인 응답 전송 완료 - 사용자: {}", username);
+        log.debug("로그인 응답 전송 완료 - 사용자: {}", name);
     }
 }
