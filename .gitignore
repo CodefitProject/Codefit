@@ -51,3 +51,6 @@ Codefit(DB).png
 
 ### Mac ###
 .DS_Store
+
+### Backend ###
+backend/src/main/generated/
