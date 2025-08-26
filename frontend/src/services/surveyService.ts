@@ -1,7 +1,7 @@
 // SurveyService - 설문 관련 API 서비스
 // WebSquare XML의 submission 기능을 React fetch API로 대체
 
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 // 설문 응답 데이터 타입
 export interface SurveyAnswer {
@@ -51,12 +51,11 @@ class SurveyService {
      */
     async getQuestions(): Promise<SurveyQuestionsData> {
         try {
-            const response = await fetch(`${API_BASE_URL}/SV0001Questions.pwkjson`, {
-                method: 'POST',
+            const response = await fetch(`${API_BASE_URL}/survey/questions`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({}),
             });
 
             if (!response.ok) {
@@ -83,7 +82,7 @@ class SurveyService {
      */
     async submitSurvey(submitData: SurveySubmitRequest): Promise<AnalysisResult> {
         try {
-            const response = await fetch(`${API_BASE_URL}/SV0001Submit.pwkjson`, {
+            const response = await fetch(`${API_BASE_URL}/survey/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
