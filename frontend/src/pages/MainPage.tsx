@@ -376,9 +376,13 @@ const MainPage: React.FC = () => {
                                     onClick={() => handleCompanyClick(company)}
                                 >
                                     <img 
-                                        className="company-logo"
-                                        src={company.logoPath ? `/uploads/${company.logoPath}` : '/images/main/default_company.png'}
+                                        className="main-company-logo"
+                                        src={company.logoPath || '/images/main/default_company.png'}
                                         alt={`${company.name} Logo`}
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = '/images/main/default_company.png';
+                                        }}
                                     />
                                     <span className="company-name">{company.name}</span>
                                 </div>
