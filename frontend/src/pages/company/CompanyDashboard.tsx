@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './CompanyDashboard.css';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
+import AuthService from '../../services/authService.tsx';
 
 interface JobPosting {
   jobPostingId: string;
@@ -48,8 +49,35 @@ const CompanyDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    initializeDashboard();
+    checkAccess();
   }, []);
+
+  const checkAccess = () => {
+    try {
+      const userInfo = AuthService.getUserInfo();
+      const isLoggedIn = AuthService.isLoggedIn();
+
+      // 로그인하지 않은 경우 메인페이지로 리다이렉트
+      if (!isLoggedIn || !userInfo) {
+        alert('로그인이 필요한 서비스입니다.');
+        window.location.href = '/';
+        return;
+      }
+
+      // USER 권한인 경우 메인페이지로 리다이렉트
+      if (userInfo.role !== 'COMPANY') {
+        alert('기업 회원만 접근 가능한 페이지입니다.');
+        window.location.href = '/';
+        return;
+      }
+
+      // 권한 체크 통과 시 대시보드 초기화
+      initializeDashboard();
+    } catch (error) {
+      console.error('Access check error:', error);
+      window.location.href = '/';
+    }
+  };
 
   const initializeDashboard = () => {
     // 임시 회사 ID 설정 (권한 확인 제거)

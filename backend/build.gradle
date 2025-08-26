@@ -65,23 +65,22 @@ dependencies {
 }
 
 // QueryDSL configuration
-def generated = 'src/main/generated'
+def generated = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
 
 sourceSets {
-    main.java.srcDirs += [ generated ]
+    main.java.srcDirs += [ generated.get().asFile ]
 }
 
-tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file(generated))
-    options.getCompilerArgs().add('-Aquerydsl.generatedAnnotationClass=jakarta.annotation.Generated')
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(generated.get().asFile)
+    options.getCompilerArgs().add("-Aquerydsl.generatedAnnotationClass=jakarta.annotation.Generated")
 }
 
-tasks.named('clean') {
+tasks.named("clean") {
     doLast {
-        file(generated).deleteDir()
+        delete(generated)
     }
 }
-
 tasks.named('test') {
 	useJUnitPlatform()
 }

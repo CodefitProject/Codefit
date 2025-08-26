@@ -88,8 +88,8 @@ class AuthService {
       
       const decodedToken = this.decodeJwt(token);
       return {
-        email: decodedToken.email,
-        name: decodedToken.sub,
+        email: decodedToken.sub,
+        name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
         baseUserId: decodedToken.baseUserId
       };
