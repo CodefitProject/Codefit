@@ -9,6 +9,7 @@ interface LoginResponse {
 }
 
 interface UserInfo {
+  email: string | null;
   name: string | null;
   role:  'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
@@ -18,6 +19,7 @@ interface JwtPayload {
   sub: string;
   role: string;
   baseUserId: string;
+  name: string;
   exp?: number;
   iat?: number;
   [key: string]: any;
@@ -86,7 +88,8 @@ class AuthService {
       
       const decodedToken = this.decodeJwt(token);
       return {
-        name: decodedToken.sub,
+        email: decodedToken.sub,
+        name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
         baseUserId: decodedToken.baseUserId
       };

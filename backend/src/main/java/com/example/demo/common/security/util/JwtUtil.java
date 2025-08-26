@@ -31,14 +31,15 @@ public class JwtUtil {
     /**
      * Access Token 생성
      */
-    public String generateAccessToken(String name, String role, long baseUserId) {
+    public String generateAccessToken(String email, String role, long baseUserId, String name) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + accessTokenExpiration);
         
         return Jwts.builder()
-                .subject(name)
+                .subject(email)
                 .claim("role", role)
                 .claim("baseUserId", baseUserId)
+                .claim("name", name)
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiration)
@@ -49,12 +50,12 @@ public class JwtUtil {
     /**
      * Refresh Token 생성
      */
-    public String generateRefreshToken(String name) {
+    public String generateRefreshToken(String email) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + refreshTokenExpiration);
         
         return Jwts.builder()
-                .subject(name)
+                .subject(email)
                 .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiration)
@@ -63,12 +64,25 @@ public class JwtUtil {
     }
     
     /**
+     * 토큰에서 이메일 추출
+     */
+    public String getEmailFromToken(String token) {
+        try {
+            Claims claims = parseToken(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("토큰에서 이메일 추출 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * 토큰에서 이름 추출
      */
     public String getNameFromToken(String token) {
         try {
             Claims claims = parseToken(token);
-            return claims.getSubject();
+            return claims.get("name", String.class);
         } catch (Exception e) {
             log.error("토큰에서 이름 추출 실패: {}", e.getMessage());
             return null;

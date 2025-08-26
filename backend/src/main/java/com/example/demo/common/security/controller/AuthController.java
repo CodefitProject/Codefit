@@ -67,7 +67,7 @@ public class AuthController {
         }
         
         // 새로운 Access Token 생성
-        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name(), baseUser.getBaseUserId());
+        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name(), baseUser.getBaseUserId(), baseUser.getName());
         
         LoginResponse response = LoginResponse.builder()
                 .accessToken(newAccessToken)

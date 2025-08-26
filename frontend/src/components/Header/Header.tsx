@@ -5,6 +5,7 @@ import Login from '../../pages/auth/Login';
 import AuthService from '../../services/authService.tsx';
 
 type UserInfo = {
+    email: string | null;
     baseUserId: string | null;
     name: string | null;
     role: 'USER' | 'COMPANY' | 'ADMIN';

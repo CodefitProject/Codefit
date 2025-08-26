@@ -31,17 +31,18 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         BaseUser baseUser = customUserDetails.baseUser();
-        String username = baseUser.getEmail();
+        String email = baseUser.getEmail();
         String role = baseUser.getUserRole().name();
         long baseUserId = baseUser.getBaseUserId();
-        log.info("로그인 성공 - 사용자: {}, 역할: {}", username, role);
+        String name = baseUser.getName();
+        log.info("로그인 성공 - 사용자: {}, 역할: {}", email, role);
         
         // JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(username, role, baseUserId);
-        String refreshToken = jwtUtil.generateRefreshToken(username);
+        String accessToken = jwtUtil.generateAccessToken(email, role, baseUserId, name);
+        String refreshToken = jwtUtil.generateRefreshToken(name);
         
         // Refresh Token을 Redis에 저장
-        redisService.saveRefreshToken(username, refreshToken, 604800000L); // 7일
+        redisService.saveRefreshToken(email, refreshToken, 604800000L); // 7일
         
         // 응답 헤더에 토큰 추가
         response.setHeader("Authorization", "Bearer " + accessToken);
@@ -52,6 +53,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("{\"message\": \"로그인 성공\"}"); // Simple success message
         
-        log.debug("로그인 응답 전송 완료 - 사용자: {}", username);
+        log.debug("로그인 응답 전송 완료 - 사용자: {}", name);
     }
 }
