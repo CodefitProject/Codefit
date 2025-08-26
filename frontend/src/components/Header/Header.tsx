@@ -56,9 +56,10 @@ const Header: React.FC = () => {
 
     const handleLogoClick = () => {
         if (userInfo && userInfo.role === "COMPANY") {
-            alert("기업 대시보드로 이동합니다.");
+            window.location.href = "/company/dashboard";
         } else {
-            window.location.reload(); // 메인 페이지로 이동
+            // 비로그인 유저 또는 USER 권한: 메인 페이지로 이동
+            window.location.href = "/";
         }
     };
 
