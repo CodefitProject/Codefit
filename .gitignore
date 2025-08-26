@@ -46,5 +46,8 @@ ui/
 ### Custom
 .cursor/
 .gemini/
-cursor_대화기록.md
+cursor_대화기록*.md
 Codefit(DB).png
+
+### Mac ###
+.DS_Store

@@ -71,6 +71,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/loginPro", "/auth/refresh", "/auth/register").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/codefit/signup/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 

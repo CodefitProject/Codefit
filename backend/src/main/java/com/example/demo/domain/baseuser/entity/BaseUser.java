@@ -20,6 +20,7 @@ public class BaseUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "base_user_id")
     private Long baseUserId;
 
     @Column(nullable = false, length = 100, unique = true)
@@ -32,11 +33,11 @@ public class BaseUser {
     private String name;
 
     @Builder.Default
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private LocalDateTime createAt = LocalDateTime.now();
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime updateAt = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
