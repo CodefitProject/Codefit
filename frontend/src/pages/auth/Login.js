@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
-import './Login.css';
-import AuthService from '../../services/authService';
+import React, { useState } from "react";
+import "./Login.css";
+import AuthService from "../../services/authService";
 
 const Login = ({ onClose }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateForm = () => {
-    if (!formData.email || formData.email.trim() === '') {
-      alert('아이디를 입력해주세요.');
+    if (!formData.email || formData.email.trim() === "") {
+      alert("아이디를 입력해주세요.");
       return false;
     }
 
-    if (!formData.password || formData.password.trim() === '') {
-      alert('비밀번호를 입력해주세요.');
+    if (!formData.password || formData.password.trim() === "") {
+      alert("비밀번호를 입력해주세요.");
       return false;
     }
 
@@ -41,25 +41,29 @@ const Login = ({ onClose }) => {
     try {
       const result = await AuthService.login({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       });
 
       // result now contains { message, accessToken, username, role }
       if (result && result.message === "로그인 성공" && result.accessToken) {
         // Store the access token (e.g., in localStorage or a state management solution)
         // For now, let's just store it in a simple way for demonstration
-        localStorage.setItem('accessToken', result.accessToken);
-        
+        localStorage.setItem("accessToken", result.accessToken);
+
         // Store user info (username and role)
-        AuthService.setUserInfo({ username: result.username, role: result.role });
-        
+        AuthService.setUserInfo({
+          username: result.username,
+          role: result.role,
+        });
+
         if (onClose) {
           onClose();
         }
 
         AuthService.redirectByRole(result.role);
       } else {
-        const errMsg = result && result.message ? result.message : "로그인에 실패했습니다.";
+        const errMsg =
+          result && result.message ? result.message : "로그인에 실패했습니다.";
         alert(errMsg);
       }
     } catch (error) {
@@ -71,10 +75,10 @@ const Login = ({ onClose }) => {
   };
 
   const handleKeyPress = (e, nextField) => {
-    if (e.key === 'Enter') {
-      if (nextField === 'password') {
-        document.getElementById('password-input').focus();
-      } else if (nextField === 'login') {
+    if (e.key === "Enter") {
+      if (nextField === "password") {
+        document.getElementById("password-input").focus();
+      } else if (nextField === "login") {
         handleLogin();
       }
     }
@@ -85,7 +89,7 @@ const Login = ({ onClose }) => {
   };
 
   const handleSignup = () => {
-    window.location.href = "../user/Signup.xml";
+    window.location.href = "/signup";
     if (onClose) {
       onClose();
     }
@@ -107,7 +111,7 @@ const Login = ({ onClose }) => {
           placeholder="아이디를 입력하세요"
           value={formData.email}
           onChange={handleInputChange}
-          onKeyPress={(e) => handleKeyPress(e, 'password')}
+          onKeyPress={(e) => handleKeyPress(e, "password")}
           disabled={isLoading}
         />
       </div>
@@ -123,25 +127,21 @@ const Login = ({ onClose }) => {
             placeholder="비밀번호를 입력하세요"
             value={formData.password}
             onChange={handleInputChange}
-            onKeyPress={(e) => handleKeyPress(e, 'login')}
+            onKeyPress={(e) => handleKeyPress(e, "login")}
             disabled={isLoading}
           />
         </div>
       </div>
 
-      <button
-        className="btn-login2"
-        onClick={handleLogin}
-        disabled={isLoading}
-      >
-        {isLoading ? '로그인 중...' : '로그인'}
+      <button className="btn-login2" onClick={handleLogin} disabled={isLoading}>
+        {isLoading ? "로그인 중..." : "로그인"}
       </button>
 
       <div className="login-links">
         <span className="login-link" onClick={handleForgotPassword}>
           비밀번호 찾기
         </span>
-        <span style={{ color: '#ddd', margin: '0 10px' }}>|</span>
+        <span style={{ color: "#ddd", margin: "0 10px" }}>|</span>
         <span className="login-link" onClick={handleSignup}>
           회원가입
         </span>
