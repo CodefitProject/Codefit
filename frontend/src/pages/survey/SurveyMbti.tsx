@@ -291,7 +291,7 @@ const SurveyMbti: React.FC = () => {
     return (
         <div className="survey-mbti-page">
             <Header />
-            <div className="main-container">
+            <div className="survey-main-container">
                 <div className="content-area">
                     {showResult && analysisResult ? (
                         <SurveyResult 
