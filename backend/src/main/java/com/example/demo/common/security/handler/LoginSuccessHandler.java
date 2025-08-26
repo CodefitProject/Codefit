@@ -33,11 +33,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         BaseUser baseUser = customUserDetails.baseUser();
         String username = baseUser.getEmail();
         String role = baseUser.getUserRole().name();
-        
+        long baseUserId = baseUser.getBaseUserId();
         log.info("로그인 성공 - 사용자: {}, 역할: {}", username, role);
         
         // JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(username, role);
+        String accessToken = jwtUtil.generateAccessToken(username, role, baseUserId);
         String refreshToken = jwtUtil.generateRefreshToken(username);
         
         // Refresh Token을 Redis에 저장

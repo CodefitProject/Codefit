@@ -6,27 +6,41 @@ interface LoginData {
 
 interface LoginResponse {
   message: string;
-  accessToken: string | null;
-  username: string | null;
-  role: string | null;
 }
 
 interface UserInfo {
-  accessToken: string | null;
-  username: string | null;
-  role: string | null;
-  message?: string;
+  name: string | null;
+  role:  'USER' | 'COMPANY' | 'ADMIN';
+  baseUserId: string | null;
 }
 
 interface JwtPayload {
   sub: string;
   role: string;
+  baseUserId: string;
   exp?: number;
   iat?: number;
   [key: string]: any;
 }
 
 class AuthService {
+  static getToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
+  static isLoggedIn(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      const decodedToken = this.decodeJwt(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      return decodedToken.exp ? decodedToken.exp > currentTime : true;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      return false;
+    }
+  }
   static async login(loginData: LoginData): Promise<LoginResponse> {
     try {
       const response = await fetch('/loginPro', {
@@ -43,59 +57,47 @@ class AuthService {
 
       const authHeader = response.headers.get('Authorization');
       let accessToken: string | null = null;
-      let username: string | null = null;
-      let role: string | null = null;
 
       if (authHeader && authHeader.startsWith('Bearer ')) {
         accessToken = authHeader.substring(7);
-        try {
-          const decodedToken = AuthService.decodeJwt(accessToken);
-          username = decodedToken.sub;
-          role = decodedToken.role;
-        } catch (e) {
-          console.error('Error decoding JWT token:', e);
-        }
+        // 토큰을 localStorage에 저장
+        this.setToken(accessToken);
       }
 
       const result = await response.json();
       
-      return {
-        ...result,
-        accessToken,
-        username,
-        role
-      };
+      return result;
     } catch (error) {
       console.error('Login API error:', error);
       throw error;
     }
   }
 
-  static setUserInfo(userInfo: UserInfo): void {
-    document.cookie = `userInfo=${JSON.stringify(userInfo)}`;
+  static setToken(token: string): void {
+    localStorage.setItem('accessToken', token);
   }
 
   static getUserInfo(): UserInfo | null {
-    const cookies = document.cookie.split(';');
-    const userInfoCookie = cookies.find(cookie => 
-      cookie.trim().startsWith('userInfo=')
-    );
-    
-    if (userInfoCookie) {
-      try {
-        const userInfoString = userInfoCookie.split('=')[1];
-        return JSON.parse(userInfoString) as UserInfo;
-      } catch (error) {
-        console.error('Error parsing user info:', error);
+    try {
+      const token = this.getToken();
+      if (!token || !this.isLoggedIn()) {
         return null;
       }
+      
+      const decodedToken = this.decodeJwt(token);
+      return {
+        name: decodedToken.sub,
+        role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
+        baseUserId: decodedToken.baseUserId
+      };
+    } catch (error) {
+      console.error('Error getting user info from token:', error);
+      return null;
     }
-    
-    return null;
   }
 
   static logout(): void {
-    document.cookie = 'userInfo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem('accessToken');
   }
 
   static redirectByRole(userRole: string): void {
