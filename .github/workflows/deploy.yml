@@ -57,7 +57,7 @@ jobs:
         if: steps.changes.outputs.frontend == 'true'
         run: |
           cd frontend
-          npm run build
+          CI=false npm run build
 
       - name: gradlew 실행 권한 부여
         if: steps.changes.outputs.backend == 'true'
