@@ -1,0 +1,121 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [release_ver_*, cd_test]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 21 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 프론트엔드 의존성 설치
+        run: |
+          cd frontend
+          npm ci
+
+      - name: 프론트엔드 테스트 실행
+        run: |
+          cd frontend
+          npm test -- --coverage --watchAll=false
+
+      - name: 프론트엔드 빌드
+        run: |
+          cd frontend
+          npm run build
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x backend/gradlew
+
+      - name: 백엔드 테스트 실행
+        run: |
+          cd backend
+          ./gradlew test
+
+      - name: 백엔드 빌드
+        run: |
+          cd backend
+          ./gradlew build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: |
+      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && github.head_ref == 'cd_test')
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker Buildx 설정
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker 이미지 빌드
+        run: |
+          docker build -t codefit-frontend:${{ github.sha }} ./frontend
+          docker build -t codefit-backend:${{ github.sha }} ./backend
+
+      - name: Docker 이미지 저장
+        run: |
+          docker save codefit-frontend:${{ github.sha }} | gzip > frontend-image.tar.gz
+          docker save codefit-backend:${{ github.sha }} | gzip > backend-image.tar.gz
+
+      - name: EC2로 파일 복사
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "frontend-image.tar.gz,backend-image.tar.gz,docker-compose.yml,scripts/"
+          target: "/home/ubuntu/codefit/"
+
+      - name: EC2에 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/codefit
+            
+            # Docker 이미지 로드
+            docker load < frontend-image.tar.gz
+            docker load < backend-image.tar.gz
+            
+            # docker-compose용 이미지 태그 지정
+            docker tag codefit-frontend:${{ github.sha }} codefit-frontend:latest
+            docker tag codefit-backend:${{ github.sha }} codefit-backend:latest
+            
+            # 기존 컨테이너 중지
+            docker-compose down
+            
+            # 새 컨테이너 시작
+            docker-compose up -d
+            
+            # 오래된 이미지 정리
+            docker image prune -f
+            
+            # 전송된 파일 정리
+            rm -f frontend-image.tar.gz backend-image.tar.gz
+            
+            # 헬스체크
+            sleep 30
+            curl -f http://localhost:8080/health || exit 1
