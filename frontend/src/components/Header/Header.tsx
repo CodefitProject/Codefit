@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import Modal from '../Modal/Modal';
 import Login from '../../pages/auth/Login';
@@ -124,27 +125,27 @@ const Header: React.FC = () => {
                         />
                         {showMenuForRole(userInfo?.role) && (
                             <>
-                                <a 
+                                <Link 
+                                    to="/code-analysis"
                                     className="nav-link" 
-                                    onClick={handleCodeAnalysis}
                                     style={{marginLeft: '20px', fontSize: '16px'}}
                                 >
                                     코드분석
-                                </a>
-                                <a 
+                                </Link>
+                                <Link 
+                                    to="/personality-analysis"
                                     className="nav-link" 
-                                    onClick={handlePersonalityAnalysis}
                                     style={{fontSize: '16px'}}
                                 >
                                     성향분석
-                                </a>
-                                <a 
+                                </Link>
+                                <Link 
+                                    to="/company-browse"
                                     className="nav-link" 
-                                    onClick={handleCompanyBrowse}
                                     style={{fontSize: '16px'}}
                                 >
                                     기업 둘러보기
-                                </a>
+                                </Link>
                             </>
                         )}
                     </div>
