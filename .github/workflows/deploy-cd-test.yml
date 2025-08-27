@@ -51,10 +51,10 @@ jobs:
             sleep 30
             
             # Frontend 헬스체크
-            curl -f http://localhost:3000 || echo "Frontend 헬스체크 실패"
+            curl -f http://localhost:80 || echo "Frontend 헬스체크 실패"
             
             # Backend 헬스체크  
-            curl -f http://localhost:8080/health || echo "Backend 헬스체크 실패"
+            curl -f http://localhost:8080/ || echo "Backend 헬스체크 실패"
             
             # 오래된 이미지 정리
             docker image prune -f
