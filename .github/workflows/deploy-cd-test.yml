@@ -1,131 +1,74 @@
-name: CI - Build and Test
+name: CD - Deploy to EC2
 
 on:
   pull_request:
-    branches: [release_ver_*]
+    branches: [cd_test*]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    outputs:
-      frontend-changed: ${{ steps.changes.outputs.frontend }}
-      backend-changed: ${{ steps.changes.outputs.backend }}
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-
-      - name: 변경된 파일 감지
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            frontend:
-              - 'frontend/**'
-            backend:
-              - 'backend/**'
-
-      - name: 변경사항 확인 로그
-        run: |
-          echo "Frontend changed: ${{ steps.changes.outputs.frontend }}"
-          echo "Backend changed: ${{ steps.changes.outputs.backend }}"
-
-      - name: JDK 21 설정
-        if: steps.changes.outputs.backend == 'true'
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Node.js 설정
-        if: steps.changes.outputs.frontend == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: 프론트엔드 의존성 설치
-        if: steps.changes.outputs.frontend == 'true'
-        run: |
-          cd frontend
-          npm ci
-
-#      - name: 프론트엔드 테스트 실행
-#        if: steps.changes.outputs.frontend == 'true'
-#        run: |
-#          cd frontend
-#          npm test -- --coverage --watchAll=false
-
-      - name: 프론트엔드 빌드
-        if: steps.changes.outputs.frontend == 'true'
-        run: |
-          cd frontend
-          CI=false npm run build
-
-      - name: gradlew 실행 권한 부여
-        if: steps.changes.outputs.backend == 'true'
-        run: chmod +x backend/gradlew
-
-#      - name: 백엔드 테스트 실행
-#        if: steps.changes.outputs.backend == 'true'
-#        run: |
-#          cd backend
-#          ./gradlew test
-
-      - name: 백엔드 빌드
-        if: steps.changes.outputs.backend == 'true'
-        run: |
-          cd backend
-          ./gradlew build
-
-      - name: 프론트엔드 빌드 결과물 저장
-        if: steps.changes.outputs.frontend == 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-build
-          path: frontend/build/
-
-      - name: 백엔드 빌드 결과물 저장
-        if: steps.changes.outputs.backend == 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-build
-          path: backend/build/
-
   deploy:
-    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
+      - name: 최신 release_ver 워크플로우 찾기
+        id: find-workflow
+        run: |
+          # 최근 성공한 release_ver 빌드 찾기
+          WORKFLOW_RUN=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?status=success&per_page=1" | \
+            jq -r '.workflow_runs[0].id')
+          echo "workflow_run_id=$WORKFLOW_RUN" >> $GITHUB_OUTPUT
+
+      - name: 프론트엔드 빌드 결과물 다운로드
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/build/
+          run-id: ${{ steps.find-workflow.outputs.workflow_run_id }}
+        continue-on-error: true
+
+      - name: 백엔드 빌드 결과물 다운로드  
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-build
+          path: backend/build/
+          run-id: ${{ steps.find-workflow.outputs.workflow_run_id }}
+        continue-on-error: true
+
       - name: Docker Buildx 설정
         uses: docker/setup-buildx-action@v3
 
+      - name: 다운로드된 파일 확인
+        run: |
+          echo "프론트엔드 빌드 파일:"
+          ls -la frontend/build/ || echo "프론트엔드 빌드 파일 없음"
+          echo "백엔드 빌드 파일:"  
+          ls -la backend/build/ || echo "백엔드 빌드 파일 없음"
+
       - name: 프론트엔드 Docker 이미지 빌드
-        if: needs.test.outputs.frontend-changed == 'true'
+        if: hashFiles('frontend/build/**') != ''
         run: |
           docker build -t codefit-frontend:${{ github.sha }} ./frontend
 
       - name: 백엔드 Docker 이미지 빌드
-        if: needs.test.outputs.backend-changed == 'true'
+        if: hashFiles('backend/build/**') != ''
         run: |
           docker build -t codefit-backend:${{ github.sha }} ./backend
 
       - name: 프론트엔드 Docker 이미지 저장
-        if: needs.test.outputs.frontend-changed == 'true'
+        if: hashFiles('frontend/build/**') != ''
         run: |
           docker save codefit-frontend:${{ github.sha }} | gzip > frontend-image.tar.gz
 
       - name: 백엔드 Docker 이미지 저장
-        if: needs.test.outputs.backend-changed == 'true'
+        if: hashFiles('backend/build/**') != ''
         run: |
           docker save codefit-backend:${{ github.sha }} | gzip > backend-image.tar.gz
 
       - name: 프론트엔드 파일 EC2로 복사
-        if: needs.test.outputs.frontend-changed == 'true'
+        if: hashFiles('frontend/build/**') != ''
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -135,7 +78,7 @@ jobs:
           target: "/home/ubuntu/codefit/"
 
       - name: 백엔드 파일 EC2로 복사
-        if: needs.test.outputs.backend-changed == 'true'
+        if: hashFiles('backend/build/**') != ''
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -186,7 +129,7 @@ jobs:
             
             # 변경사항이 없으면 전체 서비스 상태 확인
             if [ "$FRONTEND_CHANGED" = false ] && [ "$BACKEND_CHANGED" = false ]; then
-              echo "변경사항이 없습니다. 서비스 상태를 확인합니다."
+              echo "다운로드된 빌드가 없습니다. 기존 이미지로 전체 서비스를 시작합니다."
               docker-compose up -d
             fi
             
