@@ -38,7 +38,7 @@ out/
 
 
 ### properties ###
-*.properties
+application.properties
 
 ### UI folder ###
 ui/

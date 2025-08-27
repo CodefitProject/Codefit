@@ -12,79 +12,13 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
-      - name: 최신 release_ver 워크플로우 찾기
-        id: find-workflow
-        run: |
-          # 최근 성공한 release_ver 빌드 찾기
-          WORKFLOW_RUN=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?status=success&per_page=1" | \
-            jq -r '.workflow_runs[0].id')
-          echo "workflow_run_id=$WORKFLOW_RUN" >> $GITHUB_OUTPUT
-
-      - name: 프론트엔드 빌드 결과물 다운로드
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/build/
-          run-id: ${{ steps.find-workflow.outputs.workflow_run_id }}
-        continue-on-error: true
-
-      - name: 백엔드 빌드 결과물 다운로드  
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: backend/build/
-          run-id: ${{ steps.find-workflow.outputs.workflow_run_id }}
-        continue-on-error: true
-
-      - name: Docker Buildx 설정
-        uses: docker/setup-buildx-action@v3
-
-      - name: 다운로드된 파일 확인
-        run: |
-          echo "프론트엔드 빌드 파일:"
-          ls -la frontend/build/ || echo "프론트엔드 빌드 파일 없음"
-          echo "백엔드 빌드 파일:"  
-          ls -la backend/build/ || echo "백엔드 빌드 파일 없음"
-
-      - name: 프론트엔드 Docker 이미지 빌드
-        if: hashFiles('frontend/build/**') != ''
-        run: |
-          docker build -t codefit-frontend:${{ github.sha }} ./frontend
-
-      - name: 백엔드 Docker 이미지 빌드
-        if: hashFiles('backend/build/**') != ''
-        run: |
-          docker build -t codefit-backend:${{ github.sha }} ./backend
-
-      - name: 프론트엔드 Docker 이미지 저장
-        if: hashFiles('frontend/build/**') != ''
-        run: |
-          docker save codefit-frontend:${{ github.sha }} | gzip > frontend-image.tar.gz
-
-      - name: 백엔드 Docker 이미지 저장
-        if: hashFiles('backend/build/**') != ''
-        run: |
-          docker save codefit-backend:${{ github.sha }} | gzip > backend-image.tar.gz
-
-      - name: 프론트엔드 파일 EC2로 복사
-        if: hashFiles('frontend/build/**') != ''
+      - name: docker-compose.yml 파일 EC2로 복사
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "frontend-image.tar.gz,docker-compose.yml,scripts/"
-          target: "/home/ubuntu/codefit/"
-
-      - name: 백엔드 파일 EC2로 복사
-        if: hashFiles('backend/build/**') != ''
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "backend-image.tar.gz,docker-compose.yml,scripts/"
+          source: "docker-compose.yml,scripts/"
           target: "/home/ubuntu/codefit/"
 
       - name: EC2에 배포
@@ -96,52 +30,31 @@ jobs:
           script: |
             cd /home/ubuntu/codefit
             
-            # 변경된 서비스 추적
-            FRONTEND_CHANGED=false
-            BACKEND_CHANGED=false
+            # Docker Hub에서 최신 이미지 pull
+            echo "Docker Hub에서 최신 이미지를 가져옵니다..."
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest || echo "Frontend 이미지 없음"
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest || echo "Backend 이미지 없음"
             
-            # 프론트엔드 이미지가 있다면 로드 및 재시작
-            if [ -f "frontend-image.tar.gz" ]; then
-              echo "Frontend 이미지 로드 중..."
-              docker load < frontend-image.tar.gz
-              docker tag codefit-frontend:${{ github.sha }} codefit-frontend:latest
-              FRONTEND_CHANGED=true
-            fi
+            # 기존 컨테이너 중지 및 제거
+            docker-compose down
             
-            # 백엔드 이미지가 있다면 로드 및 재시작
-            if [ -f "backend-image.tar.gz" ]; then
-              echo "Backend 이미지 로드 중..."
-              docker load < backend-image.tar.gz
-              docker tag codefit-backend:${{ github.sha }} codefit-backend:latest
-              BACKEND_CHANGED=true
-            fi
+            # 환경변수 설정 후 새로운 컨테이너 시작
+            export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+            docker-compose up -d
             
-            # 변경된 서비스만 개별적으로 재시작
-            if [ "$FRONTEND_CHANGED" = true ]; then
-              echo "Frontend 서비스 재시작 중..."
-              docker-compose up -d --no-deps frontend
-            fi
+            # 컨테이너 상태 확인
+            sleep 10
+            docker-compose ps
             
-            if [ "$BACKEND_CHANGED" = true ]; then
-              echo "Backend 서비스 재시작 중..."
-              docker-compose up -d --no-deps backend
-            fi
+            # 헬스체크
+            echo "서비스 헬스체크 중..."
+            sleep 30
             
-            # 변경사항이 없으면 전체 서비스 상태 확인
-            if [ "$FRONTEND_CHANGED" = false ] && [ "$BACKEND_CHANGED" = false ]; then
-              echo "다운로드된 빌드가 없습니다. 기존 이미지로 전체 서비스를 시작합니다."
-              docker-compose up -d
-            fi
+            # Frontend 헬스체크
+            curl -f http://localhost:3000 || echo "Frontend 헬스체크 실패"
+            
+            # Backend 헬스체크  
+            curl -f http://localhost:8080/health || echo "Backend 헬스체크 실패"
             
             # 오래된 이미지 정리
             docker image prune -f
-            
-            # 전송된 파일 정리
-            rm -f frontend-image.tar.gz backend-image.tar.gz
-            
-            # 헬스체크 (백엔드가 변경된 경우에만)
-            if [ "$BACKEND_CHANGED" = true ]; then
-              echo "Backend 헬스체크 수행 중..."
-              sleep 30
-              curl -f http://localhost:8080/health || exit 1
-            fi
