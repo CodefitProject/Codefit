@@ -22,7 +22,7 @@ jobs:
           echo "workflow_run_id=$WORKFLOW_RUN" >> $GITHUB_OUTPUT
 
       - name: 프론트엔드 빌드 결과물 다운로드
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: frontend/build/
@@ -30,7 +30,7 @@ jobs:
         continue-on-error: true
 
       - name: 백엔드 빌드 결과물 다운로드  
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: backend-build
           path: backend/build/
