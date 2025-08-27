@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import postService from '../../services/postService';
+import AuthService from '../../services/authService.tsx';
 import './PostCreate.css';
 
 interface TechStack {
@@ -23,9 +24,10 @@ interface PostFormData {
 }
 
 interface UserInfo {
-    accountId: string;
-    name: string;
-    role: string;
+    email: string | null;
+    name: string | null;
+    role: 'USER' | 'COMPANY' | 'ADMIN';
+    baseUserId: string | null;
     companyId?: string;
 }
 
@@ -67,29 +69,32 @@ const PostCreate: React.FC = () => {
 
     const checkUserAccess = () => {
         try {
-            const userInfoStr = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('userInfo='))
-                ?.split('=')[1];
+            const userInfo = AuthService.getUserInfo();
+            const isLoggedIn = AuthService.isLoggedIn();
 
-            if (!userInfoStr) {
-                alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-                navigate('/login');
-                return;
-            }
-
-            const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-            
-            if (parsedUserInfo.role !== "COMPANY") {
-                alert("기업 사용자만 접근할 수 있습니다.");
+            // 로그인하지 않은 경우 메인페이지로 리다이렉트
+            if (!isLoggedIn || !userInfo) {
+                alert('로그인이 필요한 서비스입니다.');
                 navigate('/');
                 return;
             }
 
-            setUserInfo(parsedUserInfo);
-        } catch (e) {
-            console.error("사용자 정보 확인 오류:", e);
-            alert("사용자 정보를 확인할 수 없습니다.");
+            // USER 권한인 경우 메인페이지로 리다이렉트
+            if (userInfo.role !== 'COMPANY') {
+                alert('기업 회원만 접근 가능한 페이지입니다.');
+                navigate('/');
+                return;
+            }
+
+            // 임시 companyId 설정 (나중에 백엔드에서 제공되어야 함)
+            const userInfoWithCompanyId = {
+                ...userInfo,
+                companyId: "temp-company-001"
+            };
+
+            setUserInfo(userInfoWithCompanyId);
+        } catch (error) {
+            console.error('Access check error:', error);
             navigate('/');
         }
     };
@@ -293,7 +298,7 @@ const PostCreate: React.FC = () => {
         
         if (!userInfo?.companyId) {
             alert("회사 정보를 확인할 수 없습니다.\n다시 로그인해주세요.");
-            navigate('/login');
+            navigate('/');
             return;
         }
         
