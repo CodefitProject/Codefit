@@ -1,7 +1,7 @@
 // PostService - 공고 관련 API 서비스
 // WebSquare XML의 submission 기능을 React fetch API로 대체
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
 class PostService {
     /**
@@ -13,14 +13,12 @@ class PostService {
      */
     async getPostList(params) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001List.pwkjson`, {
-                method: 'POST',
+            const { pageIndex = 0, pageSize = 16 } = params || {};
+            const response = await fetch(`${API_BASE_URL}/posts?page=${pageIndex}&size=${pageSize}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    postVo: params
-                }),
             });
 
             if (!response.ok) {
@@ -46,14 +44,12 @@ class PostService {
      */
     async getMbtiMatchedPostList(params) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0004List.pwkjson`, {
-                method: 'POST',
+            const { pageIndex = 0, pageSize = 16, userMbti } = params || {};
+            const response = await fetch(`${API_BASE_URL}/posts/mbti-matched?mbtiType=${userMbti}&page=${pageIndex}&size=${pageSize}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    postMatchVo: params
-                }),
             });
 
             if (!response.ok) {
@@ -73,16 +69,17 @@ class PostService {
      * @param {string} jobPostingId - 공고 ID
      * @returns {Promise<Object>} 공고 상세 데이터
      */
-    async getPostDetail(jobPostingId) {
+    async getPostDetail(jobPostingId, userId = null) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001Detail.pwkjson`, {
-                method: 'POST',
+            const url = userId ? 
+                `${API_BASE_URL}/posts/${jobPostingId}?userId=${userId}` : 
+                `${API_BASE_URL}/posts/${jobPostingId}`;
+            
+            const response = await fetch(url, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    postVo: { jobPostingId }
-                }),
             });
 
             if (!response.ok) {
@@ -98,35 +95,45 @@ class PostService {
     }
 
     /**
-     * 공고 등록 (POS0001Ins.pwkjson)
+     * 공고 등록 (/posts)
      * @param {Object} postData - 공고 데이터
-     * @param {File} imageFile - 공고 이미지 파일 (선택사항)
+     * @param {File} imageFile - 공고 이미지 파일 (선택사항, 현재 미지원)
      * @returns {Promise<Object>} 등록 결과
      */
     async createPost(postData, imageFile = null) {
         try {
-            // FormData 생성 (파일 업로드 지원)
-            const formData = new FormData();
+            // companyId를 숫자로 변환
+            const requestData = {
+                ...postData,
+                companyId: parseInt(postData.companyId) || 1 // 임시로 1 사용
+            };
+
+            console.log('공고 등록 요청 데이터:', requestData);
+
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
             
-            // JSON 데이터 추가
-            formData.append('postVo', JSON.stringify(postData));
-            
-            // 이미지 파일이 있으면 추가
-            if (imageFile) {
-                formData.append('jobImage', imageFile);
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch(`${API_BASE_URL}/POS0001Ins.pwkjson`, {
+            const response = await fetch(`${API_BASE_URL}/posts`, {
                 method: 'POST',
-                // FormData 사용 시 Content-Type 헤더를 설정하지 않음 (브라우저가 자동 설정)
-                body: formData,
+                headers: headers,
+                body: JSON.stringify(requestData),
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 등록 오류 응답:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('공고 등록 성공:', data);
             return data;
         } catch (error) {
             console.error('공고 등록 실패:', error);
@@ -198,18 +205,16 @@ class PostService {
      * @param {string} accountId - 지원자 ID
      * @returns {Promise<Object>} 지원 결과
      */
-    async applyToPost(jobPostingId, accountId) {
+    async applyToPost(jobPostingId, userId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001JAPL.pwkjson`, {
+            const response = await fetch(`${API_BASE_URL}/posts/apply`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    jobApplicationVo: {
-                        jobPostingId,
-                        accountId
-                    }
+                    jobPostingId,
+                    userId
                 }),
             });
 
@@ -217,8 +222,7 @@ class PostService {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            return data;
+            return { success: true };
         } catch (error) {
             console.error('공고 지원 실패:', error);
             throw error;
@@ -231,12 +235,11 @@ class PostService {
      */
     async getTechStackList() {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0002List.pwkjson`, {
-                method: 'POST',
+            const response = await fetch(`${API_BASE_URL}/posts/tech-stacks`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({}),
             });
 
             if (!response.ok) {

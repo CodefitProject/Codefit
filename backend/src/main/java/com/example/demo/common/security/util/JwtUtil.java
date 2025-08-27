@@ -108,7 +108,16 @@ public class JwtUtil {
     public String getBaseUserIdFromToken(String token) {
         try {
             Claims claims = parseToken(token);
-            return claims.get("baseUserId", String.class);
+            // baseUserId는 Long으로 저장되므로 Long으로 읽은 후 String으로 변환
+            Object baseUserIdObj = claims.get("baseUserId");
+            if (baseUserIdObj instanceof Long) {
+                return String.valueOf(baseUserIdObj);
+            } else if (baseUserIdObj instanceof Integer) {
+                return String.valueOf(baseUserIdObj);
+            } else if (baseUserIdObj instanceof String) {
+                return (String) baseUserIdObj;
+            }
+            return null;
         } catch (Exception e) {
             log.error("토큰에서 baseUserId 추출 실패: {}", e.getMessage());
             return null;
