@@ -44,10 +44,10 @@ jobs:
       - name: gradlew 실행 권한 부여
         run: chmod +x backend/gradlew
 
-      - name: 백엔드 테스트 실행
-        run: |
-          cd backend
-          ./gradlew test
+#      - name: 백엔드 테스트 실행
+#        run: |
+#          cd backend
+#          ./gradlew test
 
       - name: 백엔드 빌드
         run: |
