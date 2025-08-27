@@ -1,0 +1,375 @@
+/* 전체 컨테이너 */
+.mbti-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    transition: background-color 0.8s ease;
+}
+
+.mbti-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 섹션 스타일 */
+.mbti-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(100vh);
+    transition: all 0.8s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+    visibility: hidden;
+}
+
+.mbti-section.active {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* 섹션 내용 */
+.section-content {
+    max-width: 1200px;
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+    padding: 40px;
+}
+
+/* 왼쪽 정보 영역 */
+.mbti-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mbti-type {
+    font-size: 80px;
+    font-weight: 900;
+    color: #333;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.mbti-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.2;
+}
+
+.mbti-description {
+    font-size: 18px;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 40px;
+    text-align: justify;
+}
+
+.mbti-characteristics {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.characteristic-item {
+    padding: 12px 0;
+    font-size: 16px;
+    color: #777;
+    position: relative;
+    padding-left: 30px;
+}
+
+.characteristic-item:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* 오른쪽 이미지 영역 */
+.mbti-image-container {
+    flex: 0 0 400px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mbti-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.1));
+    transition: transform 0.3s ease;
+}
+
+.mbti-image:hover {
+    transform: scale(1.05);
+}
+
+/* 네비게이션 바 */
+.mbti-navigation {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 10px;
+}
+
+.nav-dot {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-dot:hover {
+    transform: scale(1.1);
+    border-color: #999;
+    background-color: #fff;
+}
+
+.nav-dot.active {
+    background-color: #333;
+    border-color: #333;
+    transform: scale(1.2);
+}
+
+.nav-dot.active .nav-text {
+    color: #fff;
+}
+
+.nav-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #666;
+    transition: color 0.3s ease;
+    text-align: center;
+    line-height: 1;
+}
+
+/* 각 MBTI 타입별 강조 색상 */
+.mbti-section[data-type^="A"] .mbti-type { color: #2196F3; }
+.mbti-section[data-type^="B"] .mbti-type { color: #FF5722; }
+.mbti-section[data-type*="R"] .characteristic-item:before { color: #9C27B0; }
+.mbti-section[data-type*="I"] .characteristic-item:before { color: #00BCD4; }
+.mbti-section[data-type*="T"] .characteristic-item:before { color: #FFC107; }
+.mbti-section[data-type*="S"] .characteristic-item:before { color: #4CAF50; }
+.mbti-section[data-type*="F"] .characteristic-item:before { color: #E91E63; }
+.mbti-section[data-type*="D"] .characteristic-item:before { color: #795548; }
+
+/* 하단 버튼 스타일 */
+.bottom-buttons {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    display: flex;
+    gap: 20px;
+}
+
+.btn-back, .btn-home {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-width: 100px;
+}
+
+.mbti-wrapper .btn-back {
+    background-color: #6c757d;
+    color: white;
+    border-radius: 25px;
+    border: none;
+    display: block;
+    text-align: center;
+}
+
+.mbti-wrapper .btn-back:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.btn-home {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-home:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.mbti-wrapper .btn-back:active, .btn-home:active {
+    transform: translateY(0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+    .section-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+    }
+    
+    .mbti-image-container {
+        flex: none;
+        width: 100%;
+        max-width: 350px;
+        height: 350px;
+    }
+    
+    .mbti-type {
+        font-size: 60px;
+    }
+    
+    .mbti-title {
+        font-size: 28px;
+    }
+    
+    .mbti-description {
+        font-size: 16px;
+        text-align: center;
+    }
+    
+    .mbti-characteristics {
+        text-align: left;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .mbti-navigation {
+        right: 15px;
+        gap: 10px;
+    }
+    
+    .nav-dot {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .nav-text {
+        font-size: 10px;
+    }
+    
+    .section-content {
+        padding: 20px;
+    }
+    
+    .mbti-type {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    
+    .mbti-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .mbti-description {
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+    
+    .characteristic-item {
+        font-size: 14px;
+        padding: 10px 0;
+    }
+    
+    .mbti-image-container {
+        max-width: 280px;
+        height: 280px;
+    }
+
+    .bottom-buttons {
+        bottom: 20px;
+        gap: 15px;
+    }
+    
+    .mbti-wrapper .btn-back, .btn-home {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mbti-navigation {
+        flex-direction: row;
+        flex-wrap: wrap;
+        bottom: 20px;
+        right: 50%;
+        transform: translateX(50%);
+        top: auto;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .nav-dot {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .mbti-type {
+        font-size: 36px;
+    }
+    
+    .mbti-title {
+        font-size: 20px;
+    }
+    
+    .mbti-image-container {
+        max-width: 200px;
+        height: 200px;
+    }
+
+    .bottom-buttons {
+        bottom: 15px;
+        gap: 10px;
+    }
+    
+    .mbti-wrapper .btn-back, .btn-home {
+        padding: 8px 16px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+}

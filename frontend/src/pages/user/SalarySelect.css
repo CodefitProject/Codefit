@@ -1,0 +1,19 @@
+.main-container { background-color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; }
+.content-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; max-width: 600px; margin: 0 auto; }
+.icon-container { width: 80px; height: 80px; background: linear-gradient(135deg, #007bff, #0d6efd); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3); }
+.icon { font-size: 40px; color: white; }
+.main-title { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 40px; line-height: 1.4; }
+.salary-options { width: 100%; max-width: 500px; margin-bottom: 40px; }
+.salary-option { width: 100%; background-color: #ffffff; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px 24px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s ease; text-align: center; font-size: 18px; font-weight: 500; color: #333; position: relative; }
+.salary-option:hover { border-color: #007bff; background-color: #f0f8ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15); }
+.salary-option.selected { border-color: #007bff !important; background-color: #007bff !important; color: white !important; box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3) !important; }
+.salary-option.selected::after { content: "✓"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 24px; font-weight: bold; }
+.info-message { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; color: #007bff; margin-bottom: 40px; padding: 12px 20px; background-color: #f0f8ff; border-radius: 8px; max-width: 500px; }
+.info-icon { font-size: 16px; }
+.button-area { display: flex; gap: 16px; width: 100%; max-width: 500px; }
+.btn-back { flex: 1; background-color: #ffffff; color: #666; border: 2px solid #e0e0e0; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+.btn-back:hover { border-color: #bbb; background-color: #f5f5f5; }
+.btn-next { flex: 2; background-color: #007bff; color: white; border: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+.btn-next:hover { background-color: #0056b3; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); }
+
+
