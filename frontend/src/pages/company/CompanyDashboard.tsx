@@ -3,6 +3,7 @@ import './CompanyDashboard.css';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import AuthService from '../../services/authService.tsx';
+import postService from '../../services/postService';
 
 interface JobPosting {
   jobPostingId: string;
@@ -89,36 +90,26 @@ const CompanyDashboard: React.FC = () => {
   const loadPostList = async (companyId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/posts/company', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          companyId,
-          pageIndex: postVo.pageIndex,
-          pageSize: postVo.pageSize
-        }),
-      });
+      // postService를 사용하여 전체 공고 조회
+      const requestData = {
+        pageIndex: postVo.pageIndex - 1, // Spring Data JPA는 0부터 시작
+        pageSize: postVo.pageSize
+      };
 
-      const data = await response.json();
+      const data = await postService.getPostList(requestData);
+      console.log('기업 대시보드 공고 응답:', data);
       
-      if (data.success) {
-        const allPosts = data.data.postVoList || [];
-        setPostList(allPosts);
+      const allPosts = data.jobPostings || [];
+      
+      // 현재 회사의 공고만 필터링 (임시로 companyId 1 사용)
+      const companyPosts = allPosts.filter((post: any) => 
+        post.companyId === 1 || post.companyId === "1"
+      );
+      
+      setPostList(companyPosts);
         
-        const currentDate = new Date();
-        const activePosts = allPosts.filter((post: JobPosting) => {
-          const expirationDate = post.expiresAt ? new Date(post.expiresAt) : null;
-          return !expirationDate || expirationDate > currentDate;
-        });
-        
-        setFilteredPostList(activePosts);
-        calculateStatistics(allPosts);
-      } else {
-        console.error("공고 목록 조회 에러:", data.message);
-        alert(`에러: ${data.message}`);
-      }
+        calculateStatistics(companyPosts);
+        setFilteredPostList(companyPosts);
     } catch (error) {
       console.error("API 호출 오류:", error);
       alert("공고 목록을 불러오는 중 오류가 발생했습니다.");
@@ -159,7 +150,7 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const handlePostCardClick = (post: JobPosting) => {
-    window.location.href = `/company/posts/${post.jobPostingId}`;
+    window.location.href = `/post/detail/${post.jobPostingId}`;
   };
 
   const handleNewJob = () => {

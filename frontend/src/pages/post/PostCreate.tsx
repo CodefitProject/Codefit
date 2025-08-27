@@ -89,7 +89,7 @@ const PostCreate: React.FC = () => {
             // 임시 companyId 설정 (나중에 백엔드에서 제공되어야 함)
             const userInfoWithCompanyId = {
                 ...userInfo,
-                companyId: "temp-company-001"
+                companyId: "1"  // 숫자 문자열로 설정
             };
 
             setUserInfo(userInfoWithCompanyId);
@@ -102,13 +102,8 @@ const PostCreate: React.FC = () => {
     const loadTechStacks = async () => {
         try {
             const data = await postService.getTechStackList();
-            
-            if (postService.isResponseSuccessful(data)) {
-                setAllTechStacks(data || []);
-            } else {
-                console.error('기술스택 목록 조회 에러:', data.elHeader);
-                alert('기술스택 목록을 불러오는 중 오류가 발생했습니다.');
-            }
+            console.log('기술스택 목록 로드 완료:', data);
+            setAllTechStacks(data || []);
         } catch (error) {
             console.error('기술스택 목록 로드 실패:', error);
             alert('기술스택 목록을 불러올 수 없습니다.');
@@ -305,13 +300,10 @@ const PostCreate: React.FC = () => {
         setIsSubmitting(true);
         
         try {
-            // 날짜 설정
-            const currentDate = new Date();
-            const dateString = currentDate.toISOString().slice(0, 19).replace('T', ' ');
-            
-            const expiryDate = new Date(currentDate);
+            // 만료일 설정 (30일 후)
+            const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + 30);
-            const expiryString = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
+            const expiryString = expiryDate.toISOString(); // ISO 형식 유지
             
             // 기본 데이터 생성
             const postData = {
@@ -324,22 +316,17 @@ const PostCreate: React.FC = () => {
                 workType: formData.workType,
                 selectedTechStackNames: JSON.stringify(formData.selectedTechStacks),
                 preferredDeveloperTypes: JSON.stringify(formData.selectedPersonalities),
-                postedAt: dateString,
-                expiresAt: expiryString,
-                status: "active"
+                expiresAt: expiryString
             };
+            
+            console.log('전송할 공고 데이터:', postData);
             
             // postService를 사용하여 공고 등록
             const result = await postService.createPost(postData, formData.jobImageFile);
             
-            if (postService.isResponseSuccessful(result)) {
-                alert("공고가 성공적으로 등록되었습니다!");
-                navigate('/post');
-            } else {
-                const errorCode = postService.getErrorCode(result);
-                const errorMsg = postService.getErrorMessage(result);
-                alert(`등록 실패\n코드: ${errorCode}\n메시지: ${errorMsg}`);
-            }
+            console.log('공고 등록 응답:', result);
+            alert("공고가 성공적으로 등록되었습니다!");
+            navigate('/post');
         } catch (error) {
             console.error('공고 등록 실패:', error);
             alert('공고 등록 중 오류가 발생했습니다.');

@@ -33,7 +33,7 @@ public record CreateJobPostingRequestDto(
     @NotNull(message = "공고 만료일은 필수입니다")
     LocalDateTime expiresAt,
     
-    List<Long> techStackIds
+    String selectedTechStackNames
 ) {
 }
 

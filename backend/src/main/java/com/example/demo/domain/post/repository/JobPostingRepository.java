@@ -31,9 +31,13 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     List<JobPosting> findByCompanyCompanyIdAndStatusOrderByCreatedAtDesc(Long companyId, String status);
 
     /**
-     * 만료되지 않은 활성 공고 목록 조회
+     * 만료되지 않은 활성 공고 목록 조회 (연관관계 포함)
      */
-    @Query("SELECT jp FROM JobPosting jp WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now ORDER BY jp.createdAt DESC")
+    @Query("SELECT jp FROM JobPosting jp " +
+           "LEFT JOIN FETCH jp.company c " +
+           "LEFT JOIN FETCH c.baseUser bu " +
+           "WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now " +
+           "ORDER BY jp.createdAt DESC")
     Page<JobPosting> findActiveAndNotExpiredJobPostings(@Param("now") LocalDateTime now, Pageable pageable);
 
     /**

@@ -95,35 +95,45 @@ class PostService {
     }
 
     /**
-     * 공고 등록 (POS0001Ins.pwkjson)
+     * 공고 등록 (/posts)
      * @param {Object} postData - 공고 데이터
-     * @param {File} imageFile - 공고 이미지 파일 (선택사항)
+     * @param {File} imageFile - 공고 이미지 파일 (선택사항, 현재 미지원)
      * @returns {Promise<Object>} 등록 결과
      */
     async createPost(postData, imageFile = null) {
         try {
-            // FormData 생성 (파일 업로드 지원)
-            const formData = new FormData();
+            // companyId를 숫자로 변환
+            const requestData = {
+                ...postData,
+                companyId: parseInt(postData.companyId) || 1 // 임시로 1 사용
+            };
+
+            console.log('공고 등록 요청 데이터:', requestData);
+
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
             
-            // JSON 데이터 추가
-            formData.append('postVo', JSON.stringify(postData));
-            
-            // 이미지 파일이 있으면 추가
-            if (imageFile) {
-                formData.append('jobImage', imageFile);
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch(`${API_BASE_URL}/POS0001Ins.pwkjson`, {
+            const response = await fetch(`${API_BASE_URL}/posts`, {
                 method: 'POST',
-                // FormData 사용 시 Content-Type 헤더를 설정하지 않음 (브라우저가 자동 설정)
-                body: formData,
+                headers: headers,
+                body: JSON.stringify(requestData),
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 등록 오류 응답:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('공고 등록 성공:', data);
             return data;
         } catch (error) {
             console.error('공고 등록 실패:', error);
