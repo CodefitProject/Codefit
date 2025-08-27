@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [release_ver_*, cd_test]
+    branches: [release_ver_*, cd_test*]
 
 jobs:
   test:
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
-      (github.event_name == 'pull_request' && github.head_ref == 'cd_test')
+      (github.event_name == 'pull_request' && startsWith(github.head_ref, 'cd_test'))
     
     steps:
       - name: 코드 체크아웃
