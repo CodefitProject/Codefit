@@ -10,6 +10,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 채용 공고 엔티티
@@ -95,6 +97,17 @@ public class JobPosting {
     @Column(name = "job_image_path")
     private String jobImagePath;
 
+    /**
+     * 요구 기술 스택 (다대다 관계)
+     */
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "job_posting_tech_stacks",
+        joinColumns = @JoinColumn(name = "job_posting_id"),
+        inverseJoinColumns = @JoinColumn(name = "tech_stack_id")
+    )
+    private Set<TechStack> techStacks = new HashSet<>();
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -106,7 +119,7 @@ public class JobPosting {
     @Builder
     public JobPosting(Company company, String title, String description, String experienceLevel,
                       String salaryRange, String location, String workType, String preferredDeveloperTypes,
-                      LocalDateTime expiresAt, String jobImagePath) {
+                      LocalDateTime expiresAt, String status, String jobImagePath, Set<TechStack> techStacks) {
         this.company = company;
         this.title = title;
         this.description = description;
@@ -116,8 +129,9 @@ public class JobPosting {
         this.workType = workType;
         this.preferredDeveloperTypes = preferredDeveloperTypes;
         this.expiresAt = expiresAt;
-        this.status = "ACTIVE";
+        this.status = status != null ? status : "ACTIVE";
         this.jobImagePath = jobImagePath;
+        this.techStacks = techStacks != null ? techStacks : new HashSet<>();
     }
 
     /**
@@ -125,7 +139,7 @@ public class JobPosting {
      */
     public void updateJobPosting(String title, String description, String experienceLevel,
                                  String salaryRange, String location, String workType,
-                                 String preferredDeveloperTypes, LocalDateTime expiresAt) {
+                                 String preferredDeveloperTypes, LocalDateTime expiresAt, Set<TechStack> techStacks) {
         this.title = title;
         this.description = description;
         this.experienceLevel = experienceLevel;
@@ -134,6 +148,10 @@ public class JobPosting {
         this.workType = workType;
         this.preferredDeveloperTypes = preferredDeveloperTypes;
         this.expiresAt = expiresAt;
+        this.techStacks.clear();
+        if (techStacks != null) {
+            this.techStacks.addAll(techStacks);
+        }
     }
 
     /**

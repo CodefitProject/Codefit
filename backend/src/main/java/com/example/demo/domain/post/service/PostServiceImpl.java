@@ -18,9 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +44,7 @@ public class PostServiceImpl implements PostService {
     private final JobApplicationRepository jobApplicationRepository;
     private final CompanyRepository companyRepository;
     private final BaseUserRepository baseUserRepository;
+    private final ObjectMapper objectMapper;
     
     @Override
     @Transactional(readOnly = true)
@@ -50,11 +55,23 @@ public class PostServiceImpl implements PostService {
             Page<JobPosting> jobPostingPage = jobPostingRepository.findActiveAndNotExpiredJobPostings(
                     LocalDateTime.now(), pageable);
             
+            log.debug("공고 엔티티 조회 완료 - 총 {}개", jobPostingPage.getTotalElements());
+            log.debug("공고 엔티티 리스트: {}", jobPostingPage.getContent().size());
+            
             List<JobPostingDto> jobPostings = jobPostingPage.getContent().stream()
-                    .map(JobPostingDto::from)
+                    .map(jobPosting -> {
+                        try {
+                            log.debug("DTO 변환 중 - 공고 ID: {}, 제목: {}", jobPosting.getJobPostingId(), jobPosting.getTitle());
+                            return JobPostingDto.from(jobPosting);
+                        } catch (Exception e) {
+                            log.error("DTO 변환 실패 - 공고 ID: {}, 오류: {}", jobPosting.getJobPostingId(), e.getMessage(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
                     .collect(Collectors.toList());
             
-            log.debug("공고 목록 조회 완료 - 총 {}개", jobPostingPage.getTotalElements());
+            log.debug("DTO 변환 완료 - 총 {}개", jobPostings.size());
             
             return JobPostingListResponseDto.builder()
                     .jobPostings(jobPostings)
@@ -150,6 +167,28 @@ public class PostServiceImpl implements PostService {
             Company company = companyRepository.findById(requestDto.companyId())
                     .orElseThrow(() -> new BusinessException("존재하지 않는 회사입니다."));
             
+            // 기술스택 처리
+            Set<TechStack> techStacks = new HashSet<>();
+            if (requestDto.selectedTechStackNames() != null && !requestDto.selectedTechStackNames().trim().isEmpty()) {
+                try {
+                    // JSON 문자열을 List<String>으로 파싱
+                    List<String> techStackNames = objectMapper.readValue(
+                        requestDto.selectedTechStackNames(), 
+                        new TypeReference<List<String>>() {}
+                    );
+                    
+                    // 기술스택 이름으로 엔티티 조회
+                    for (String techStackName : techStackNames) {
+                        techStackRepository.findByTechStackName(techStackName)
+                            .ifPresent(techStacks::add);
+                    }
+                    
+                    log.debug("기술스택 처리 완료 - 총 {}개", techStacks.size());
+                } catch (Exception e) {
+                    log.warn("기술스택 파싱 중 오류 발생: {}", e.getMessage());
+                }
+            }
+            
             // 공고 생성
             JobPosting jobPosting = JobPosting.builder()
                     .company(company)
@@ -161,6 +200,8 @@ public class PostServiceImpl implements PostService {
                     .workType(requestDto.workType())
                     .preferredDeveloperTypes(requestDto.preferredDeveloperTypes())
                     .expiresAt(requestDto.expiresAt())
+                    .status("ACTIVE")
+                    .techStacks(techStacks)
                     .build();
             
             JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
@@ -182,6 +223,28 @@ public class PostServiceImpl implements PostService {
             JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
+            // 기술스택 처리
+            Set<TechStack> techStacks = new HashSet<>();
+            if (requestDto.selectedTechStackNames() != null && !requestDto.selectedTechStackNames().trim().isEmpty()) {
+                try {
+                    // JSON 문자열을 List<String>으로 파싱
+                    List<String> techStackNames = objectMapper.readValue(
+                        requestDto.selectedTechStackNames(), 
+                        new TypeReference<List<String>>() {}
+                    );
+                    
+                    // 기술스택 이름으로 엔티티 조회
+                    for (String techStackName : techStackNames) {
+                        techStackRepository.findByTechStackName(techStackName)
+                            .ifPresent(techStacks::add);
+                    }
+                    
+                    log.debug("기술스택 처리 완료 - 총 {}개", techStacks.size());
+                } catch (Exception e) {
+                    log.warn("기술스택 파싱 중 오류 발생: {}", e.getMessage());
+                }
+            }
+            
             // 공고 정보 업데이트
             jobPosting.updateJobPosting(
                     requestDto.title(),
@@ -191,7 +254,8 @@ public class PostServiceImpl implements PostService {
                     requestDto.location(),
                     requestDto.workType(),
                     requestDto.preferredDeveloperTypes(),
-                    requestDto.expiresAt()
+                    requestDto.expiresAt(),
+                    techStacks
             );
             
             JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
