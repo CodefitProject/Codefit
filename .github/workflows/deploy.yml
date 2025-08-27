@@ -56,11 +56,7 @@ jobs:
 #          cd frontend
 #          npm test -- --coverage --watchAll=false
 
-      - name: 프론트엔드 빌드
-        if: steps.changes.outputs.frontend == 'true'
-        run: |
-          cd frontend
-          CI=false npm run build
+# 프론트엔드 빌드는 Docker 이미지 빌드 시에만 수행 (중복 제거)
 
       - name: gradlew 실행 권한 부여
         if: steps.changes.outputs.backend == 'true'
@@ -99,7 +95,7 @@ jobs:
         if: steps.changes.outputs.frontend == 'true'
         run: |
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }} ./frontend
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest ./frontend
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest
 
@@ -107,7 +103,7 @@ jobs:
         if: steps.changes.outputs.backend == 'true'
         run: |
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }} ./backend
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest ./backend
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest
 
