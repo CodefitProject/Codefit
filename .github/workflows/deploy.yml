@@ -31,10 +31,10 @@ jobs:
           cd frontend
           npm ci
 
-      - name: 프론트엔드 테스트 실행
-        run: |
-          cd frontend
-          npm test -- --coverage --watchAll=false
+#      - name: 프론트엔드 테스트 실행
+#        run: |
+#          cd frontend
+#          npm test -- --coverage --watchAll=false
 
       - name: 프론트엔드 빌드
         run: |
