@@ -1,10 +1,8 @@
-name: Deploy to EC2
+name: CI - Build and Test
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [release_ver_*, cd_test]
+    branches: [release_ver_*]
 
 jobs:
   test:
@@ -25,6 +23,11 @@ jobs:
               - 'frontend/**'
             backend:
               - 'backend/**'
+
+      - name: 변경사항 확인 로그
+        run: |
+          echo "Frontend changed: ${{ steps.changes.outputs.frontend }}"
+          echo "Backend changed: ${{ steps.changes.outputs.backend }}"
 
       - name: JDK 21 설정
         if: steps.changes.outputs.backend == 'true'
@@ -53,11 +56,7 @@ jobs:
 #          cd frontend
 #          npm test -- --coverage --watchAll=false
 
-      - name: 프론트엔드 빌드
-        if: steps.changes.outputs.frontend == 'true'
-        run: |
-          cd frontend
-          CI=false npm run build
+# 프론트엔드 빌드는 Docker 이미지 빌드 시에만 수행 (중복 제거)
 
       - name: gradlew 실행 권한 부여
         if: steps.changes.outputs.backend == 'true'
@@ -75,95 +74,36 @@ jobs:
           cd backend
           ./gradlew build
 
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
-      (github.event_name == 'pull_request' && github.head_ref == 'cd_test')
-    
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
+      - name: Docker Hub 정보 디버깅
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        run: |
+          echo "Username: ${{ secrets.DOCKER_HUB_USERNAME }}"
+          echo "Token exists: ${{ secrets.DOCKER_HUB_TOKEN != '' }}"
+          
+      - name: Docker Hub 로그인
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Docker Buildx 설정
+      - name: Docker Build x 설정
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
         uses: docker/setup-buildx-action@v3
 
-      - name: 프론트엔드 Docker 이미지 빌드
-        if: needs.test.outputs.frontend-changed == 'true'
+      - name: 프론트엔드 Docker 이미지 빌드 및 푸시
+        if: steps.changes.outputs.frontend == 'true'
         run: |
-          docker build -t codefit-frontend:${{ github.sha }} ./frontend
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }} ./frontend
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest
 
-      - name: 백엔드 Docker 이미지 빌드
-        if: needs.test.outputs.backend-changed == 'true'
+      - name: 백엔드 Docker 이미지 빌드 및 푸시
+        if: steps.changes.outputs.backend == 'true'
         run: |
-          docker build -t codefit-backend:${{ github.sha }} ./backend
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }} ./backend
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-backend:latest
 
-      - name: 프론트엔드 Docker 이미지 저장
-        if: needs.test.outputs.frontend-changed == 'true'
-        run: |
-          docker save codefit-frontend:${{ github.sha }} | gzip > frontend-image.tar.gz
-
-      - name: 백엔드 Docker 이미지 저장
-        if: needs.test.outputs.backend-changed == 'true'
-        run: |
-          docker save codefit-backend:${{ github.sha }} | gzip > backend-image.tar.gz
-
-      - name: 프론트엔드 파일 EC2로 복사
-        if: needs.test.outputs.frontend-changed == 'true'
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "frontend-image.tar.gz,docker-compose.yml,scripts/"
-          target: "/home/ubuntu/codefit/"
-
-      - name: 백엔드 파일 EC2로 복사
-        if: needs.test.outputs.backend-changed == 'true'
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "backend-image.tar.gz,docker-compose.yml,scripts/"
-          target: "/home/ubuntu/codefit/"
-
-      - name: EC2에 배포
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/codefit
-            
-            # 프론트엔드 이미지가 있다면 로드
-            if [ -f "frontend-image.tar.gz" ]; then
-              docker load < frontend-image.tar.gz
-              docker tag codefit-frontend:${{ github.sha }} codefit-frontend:latest
-            fi
-            
-            # 백엔드 이미지가 있다면 로드
-            if [ -f "backend-image.tar.gz" ]; then
-              docker load < backend-image.tar.gz
-              docker tag codefit-backend:${{ github.sha }} codefit-backend:latest
-            fi
-            
-            # 기존 컨테이너 중지
-            docker-compose down
-            
-            # 새 컨테이너 시작
-            docker-compose up -d
-            
-            # 오래된 이미지 정리
-            docker image prune -f
-            
-            # 전송된 파일 정리
-            rm -f frontend-image.tar.gz backend-image.tar.gz
-            
-            # 헬스체크 (백엔드가 변경된 경우에만)
-            if [ -f "backend-image.tar.gz" ] || docker ps | grep -q codefit-backend; then
-              sleep 30
-              curl -f http://localhost:8080/health || exit 1
-            fi

@@ -18,7 +18,6 @@ public class CompanyController {
 
     @PostMapping("/public/company/register")
     public ResponseEntity<String> createCompany(@Valid CreateCompanyDto dto) {
-
         return companyService.createCompany(dto);
     }
 
