@@ -34,13 +34,13 @@ public class BaseUser {
     @Column(length = 100)
     private String name;
 
-    @Builder.Default
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
-    private LocalDateTime createAt = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createAt;
 
-    @Builder.Default
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime updateAt = LocalDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updateAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
