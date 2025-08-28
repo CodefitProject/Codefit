@@ -2,7 +2,7 @@ name: CD - Deploy to EC2
 
 on:
   pull_request:
-    branches: [cd_test*]
+    branches: [cd_test_*]
 
 jobs:
   deploy:
@@ -27,7 +27,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-                    script: |
+          script: |
             cd /home/ubuntu/codefit
             
             # Docker Hub에서 최신 이미지 pull
