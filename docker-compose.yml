@@ -6,8 +6,8 @@ services:
     container_name: codefit-backend
     ports:
       - "8080:8080"
-    env_file:
-      - ./.env
+    volumes:
+      - ./application.properties:/app/application.properties
     depends_on:
       - redis
       - mysql
@@ -39,6 +39,9 @@ services:
     container_name: codefit-mysql
     ports:
       - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=codefit
     volumes:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
