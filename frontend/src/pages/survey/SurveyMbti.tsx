@@ -4,7 +4,7 @@ import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import SurveyResult from './SurveyResult.tsx';
 import surveyService from '../../services/surveyService.ts';
-import AuthService from '../../services/authService';
+import AuthService from '../../services/authService.tsx';
 import './SurveyMbti.css';
 import {
     UserInfo,
@@ -291,7 +291,7 @@ const SurveyMbti: React.FC = () => {
     return (
         <div className="survey-mbti-page">
             <Header />
-            <div className="main-container">
+            <div className="survey-main-container">
                 <div className="content-area">
                     {showResult && analysisResult ? (
                         <SurveyResult 

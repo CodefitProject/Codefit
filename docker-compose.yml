@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    image: ${DOCKER_HUB_USERNAME:-default}/codefit-backend:latest
     container_name: codefit-backend
     ports:
       - "8080:8080"
@@ -11,18 +11,12 @@ services:
       - mysql
     networks:
       - codefit-network
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/codefit?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=MyStrongPassword!
-      - SPRING_REDIS_HOST=redis
-      - JWT_SECRET=UoV57Qy9rhdLgPK2uX1JMwZkEfiBA6lOYZmR3HjF8atWDnpCbV4SxGTqsKuNce0y
 
   frontend:
-    build: ./frontend
+    image: ${DOCKER_HUB_USERNAME:-default}/codefit-frontend:latest
     container_name: codefit-frontend
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     networks:
@@ -31,8 +25,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: codefit-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -45,25 +37,9 @@ services:
     container_name: codefit-mysql
     ports:
       - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=MyStrongPassword!
-      - MYSQL_DATABASE=codefit
     volumes:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
-    networks:
-      - codefit-network
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: redis-commander
-    hostname: redis-commander
-    ports:
-      - "8081:8081"
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    depends_on:
-      - redis
     networks:
       - codefit-network
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './CompanyDashboard.css';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
+import AuthService from '../../services/authService.tsx';
+import postService from '../../services/postService';
 
 interface JobPosting {
   jobPostingId: string;
@@ -48,8 +50,35 @@ const CompanyDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    initializeDashboard();
+    checkAccess();
   }, []);
+
+  const checkAccess = () => {
+    try {
+      const userInfo = AuthService.getUserInfo();
+      const isLoggedIn = AuthService.isLoggedIn();
+
+      // 로그인하지 않은 경우 메인페이지로 리다이렉트
+      if (!isLoggedIn || !userInfo) {
+        alert('로그인이 필요한 서비스입니다.');
+        window.location.href = '/';
+        return;
+      }
+
+      // USER 권한인 경우 메인페이지로 리다이렉트
+      if (userInfo.role !== 'COMPANY') {
+        alert('기업 회원만 접근 가능한 페이지입니다.');
+        window.location.href = '/';
+        return;
+      }
+
+      // 권한 체크 통과 시 대시보드 초기화
+      initializeDashboard();
+    } catch (error) {
+      console.error('Access check error:', error);
+      window.location.href = '/';
+    }
+  };
 
   const initializeDashboard = () => {
     // 임시 회사 ID 설정 (권한 확인 제거)
@@ -61,36 +90,26 @@ const CompanyDashboard: React.FC = () => {
   const loadPostList = async (companyId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/posts/company', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          companyId,
-          pageIndex: postVo.pageIndex,
-          pageSize: postVo.pageSize
-        }),
-      });
+      // postService를 사용하여 전체 공고 조회
+      const requestData = {
+        pageIndex: postVo.pageIndex - 1, // Spring Data JPA는 0부터 시작
+        pageSize: postVo.pageSize
+      };
 
-      const data = await response.json();
+      const data = await postService.getPostList(requestData);
+      console.log('기업 대시보드 공고 응답:', data);
       
-      if (data.success) {
-        const allPosts = data.data.postVoList || [];
-        setPostList(allPosts);
+      const allPosts = data.jobPostings || [];
+      
+      // 현재 회사의 공고만 필터링 (임시로 companyId 1 사용)
+      const companyPosts = allPosts.filter((post: any) => 
+        post.companyId === 1 || post.companyId === "1"
+      );
+      
+      setPostList(companyPosts);
         
-        const currentDate = new Date();
-        const activePosts = allPosts.filter((post: JobPosting) => {
-          const expirationDate = post.expiresAt ? new Date(post.expiresAt) : null;
-          return !expirationDate || expirationDate > currentDate;
-        });
-        
-        setFilteredPostList(activePosts);
-        calculateStatistics(allPosts);
-      } else {
-        console.error("공고 목록 조회 에러:", data.message);
-        alert(`에러: ${data.message}`);
-      }
+        calculateStatistics(companyPosts);
+        setFilteredPostList(companyPosts);
     } catch (error) {
       console.error("API 호출 오류:", error);
       alert("공고 목록을 불러오는 중 오류가 발생했습니다.");
@@ -131,7 +150,7 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const handlePostCardClick = (post: JobPosting) => {
-    window.location.href = `/company/posts/${post.jobPostingId}`;
+    window.location.href = `/post/detail/${post.jobPostingId}`;
   };
 
   const handleNewJob = () => {

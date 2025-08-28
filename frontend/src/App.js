@@ -38,6 +38,7 @@ function App() {
           <Route path="/company" element={<CompanyMain />} />
           <Route path="/company/register" element={<CompanyRegister />} />
           <Route path="/company/dashboard" element={<CompanyDashboard />} />
+          <Route path="/company/posts/create" element={<PostCreate />} />
           <Route path="/post" element={<PostList />} />
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />

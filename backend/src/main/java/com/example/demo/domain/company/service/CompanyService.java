@@ -1,5 +1,6 @@
 package com.example.demo.domain.company.service;
 
+import com.example.demo.common.service.S3Service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.enums.UserRole;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
@@ -11,7 +12,7 @@ import com.example.demo.domain.company.enums.CompanyStatus;
 import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,25 +21,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
     private final BaseUserRepository baseUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
+    private final S3Service s3Service;
 
     public ResponseEntity<String> createCompany(CreateCompanyDto dto) {
         // 중복 검사
@@ -50,9 +44,49 @@ public class CompanyService {
             throw new BusinessException("이미 등록된 사업자등록번호입니다.");
         }
 
-        // 파일 저장
-        String businessCertificatePath = saveFile(dto.businessCertificate(), "business_certificates");
-        String logoPath = dto.logo() != null ? saveFile(dto.logo(), "logos") : null;
+        // S3에 파일 업로드
+        String businessCertificatePath = null;
+        String logoPath = null;
+        
+        try {
+            // 사업자등록증 업로드 (필수)
+            if (dto.businessCertificate() != null && !dto.businessCertificate().isEmpty()) {
+                businessCertificatePath = s3Service.uploadFile(dto.businessCertificate(), "business_certificates");
+                log.info("사업자등록증 업로드 성공: {}", businessCertificatePath);
+            } else {
+                throw new BusinessException("사업자등록증은 필수입니다.");
+            }
+            
+            // 로고 업로드 (선택적)
+            if (dto.logo() != null && !dto.logo().isEmpty()) {
+                logoPath = s3Service.uploadFile(dto.logo(), "company_logos");
+                log.info("회사 로고 업로드 성공: {}", logoPath);
+            }
+            
+        } catch (Exception e) {
+            log.error("파일 업로드 중 오류 발생: {}", e.getMessage(), e);
+            
+            // 업로드된 파일이 있다면 삭제 (롤백)
+            if (businessCertificatePath != null) {
+                try {
+                    String fileKey = s3Service.extractFileKeyFromUrl(businessCertificatePath);
+                    s3Service.deleteFile(fileKey);
+                } catch (Exception deleteException) {
+                    log.error("파일 삭제 실패: {}", deleteException.getMessage());
+                }
+            }
+            
+            if (logoPath != null) {
+                try {
+                    String fileKey = s3Service.extractFileKeyFromUrl(logoPath);
+                    s3Service.deleteFile(fileKey);
+                } catch (Exception deleteException) {
+                    log.error("파일 삭제 실패: {}", deleteException.getMessage());
+                }
+            }
+            
+            throw new BusinessException("파일 업로드에 실패했습니다: " + e.getMessage());
+        }
 
         // BaseUser 생성 및 저장
         BaseUser baseUser = BaseUser.builder()
@@ -79,33 +113,32 @@ public class CompanyService {
         return new ResponseEntity<>("회사 등록이 성공적으로 완료되었습니다. (ID: " + savedCompany.getCompanyId() + ")", org.springframework.http.HttpStatus.OK);
     }
 
-    private String saveFile(MultipartFile file, String directory) {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
+    /**
+     * 회사 삭제 시 S3에서 파일도 함께 삭제
+     */
+    @Transactional
+    public void deleteCompanyWithFiles(Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new BusinessException("회사를 찾을 수 없습니다."));
+        
+        // S3에서 파일 삭제
         try {
-            // 업로드 디렉토리 생성
-            Path uploadPath = Paths.get(uploadDir, directory);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+            if (company.getBusinessCertificatePath() != null) {
+                String fileKey = s3Service.extractFileKeyFromUrl(company.getBusinessCertificatePath());
+                s3Service.deleteFile(fileKey);
             }
-
-            // 파일명 생성 (UUID + 원본 확장자)
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null && originalFilename.contains(".") 
-                    ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
-                    : "";
-            String fileName = UUID.randomUUID().toString() + extension;
-
-            // 파일 저장
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            return directory + "/" + fileName;
-        } catch (IOException e) {
-            throw new BusinessException("파일 저장 중 오류가 발생했습니다.");
+            
+            if (company.getLogoPath() != null) {
+                String fileKey = s3Service.extractFileKeyFromUrl(company.getLogoPath());
+                s3Service.deleteFile(fileKey);
+            }
+        } catch (Exception e) {
+            log.error("파일 삭제 실패: {}", e.getMessage());
+            // 파일 삭제 실패는 데이터베이스 삭제를 막지 않음
         }
+        
+        // 데이터베이스에서 삭제
+        companyRepository.delete(company);
     }
 
     @Transactional(readOnly = true)

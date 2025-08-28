@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import postService from '../../services/postService';
+import AuthService from '../../services/authService.tsx';
 import './PostCreate.css';
 
 interface TechStack {
@@ -23,9 +24,10 @@ interface PostFormData {
 }
 
 interface UserInfo {
-    accountId: string;
-    name: string;
-    role: string;
+    email: string | null;
+    name: string | null;
+    role: 'USER' | 'COMPANY' | 'ADMIN';
+    baseUserId: string | null;
     companyId?: string;
 }
 
@@ -67,29 +69,32 @@ const PostCreate: React.FC = () => {
 
     const checkUserAccess = () => {
         try {
-            const userInfoStr = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('userInfo='))
-                ?.split('=')[1];
+            const userInfo = AuthService.getUserInfo();
+            const isLoggedIn = AuthService.isLoggedIn();
 
-            if (!userInfoStr) {
-                alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-                navigate('/login');
-                return;
-            }
-
-            const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-            
-            if (parsedUserInfo.role !== "COMPANY") {
-                alert("기업 사용자만 접근할 수 있습니다.");
+            // 로그인하지 않은 경우 메인페이지로 리다이렉트
+            if (!isLoggedIn || !userInfo) {
+                alert('로그인이 필요한 서비스입니다.');
                 navigate('/');
                 return;
             }
 
-            setUserInfo(parsedUserInfo);
-        } catch (e) {
-            console.error("사용자 정보 확인 오류:", e);
-            alert("사용자 정보를 확인할 수 없습니다.");
+            // USER 권한인 경우 메인페이지로 리다이렉트
+            if (userInfo.role !== 'COMPANY') {
+                alert('기업 회원만 접근 가능한 페이지입니다.');
+                navigate('/');
+                return;
+            }
+
+            // 임시 companyId 설정 (나중에 백엔드에서 제공되어야 함)
+            const userInfoWithCompanyId = {
+                ...userInfo,
+                companyId: "1"  // 숫자 문자열로 설정
+            };
+
+            setUserInfo(userInfoWithCompanyId);
+        } catch (error) {
+            console.error('Access check error:', error);
             navigate('/');
         }
     };
@@ -97,13 +102,8 @@ const PostCreate: React.FC = () => {
     const loadTechStacks = async () => {
         try {
             const data = await postService.getTechStackList();
-            
-            if (postService.isResponseSuccessful(data)) {
-                setAllTechStacks(data || []);
-            } else {
-                console.error('기술스택 목록 조회 에러:', data.elHeader);
-                alert('기술스택 목록을 불러오는 중 오류가 발생했습니다.');
-            }
+            console.log('기술스택 목록 로드 완료:', data);
+            setAllTechStacks(data || []);
         } catch (error) {
             console.error('기술스택 목록 로드 실패:', error);
             alert('기술스택 목록을 불러올 수 없습니다.');
@@ -293,20 +293,17 @@ const PostCreate: React.FC = () => {
         
         if (!userInfo?.companyId) {
             alert("회사 정보를 확인할 수 없습니다.\n다시 로그인해주세요.");
-            navigate('/login');
+            navigate('/');
             return;
         }
         
         setIsSubmitting(true);
         
         try {
-            // 날짜 설정
-            const currentDate = new Date();
-            const dateString = currentDate.toISOString().slice(0, 19).replace('T', ' ');
-            
-            const expiryDate = new Date(currentDate);
+            // 만료일 설정 (30일 후)
+            const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + 30);
-            const expiryString = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
+            const expiryString = expiryDate.toISOString(); // ISO 형식 유지
             
             // 기본 데이터 생성
             const postData = {
@@ -319,22 +316,17 @@ const PostCreate: React.FC = () => {
                 workType: formData.workType,
                 selectedTechStackNames: JSON.stringify(formData.selectedTechStacks),
                 preferredDeveloperTypes: JSON.stringify(formData.selectedPersonalities),
-                postedAt: dateString,
-                expiresAt: expiryString,
-                status: "active"
+                expiresAt: expiryString
             };
+            
+            console.log('전송할 공고 데이터:', postData);
             
             // postService를 사용하여 공고 등록
             const result = await postService.createPost(postData, formData.jobImageFile);
             
-            if (postService.isResponseSuccessful(result)) {
-                alert("공고가 성공적으로 등록되었습니다!");
-                navigate('/post');
-            } else {
-                const errorCode = postService.getErrorCode(result);
-                const errorMsg = postService.getErrorMessage(result);
-                alert(`등록 실패\n코드: ${errorCode}\n메시지: ${errorMsg}`);
-            }
+            console.log('공고 등록 응답:', result);
+            alert("공고가 성공적으로 등록되었습니다!");
+            navigate('/post');
         } catch (error) {
             console.error('공고 등록 실패:', error);
             alert('공고 등록 중 오류가 발생했습니다.');

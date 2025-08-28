@@ -579,13 +579,14 @@ body {
     margin-left: 8px;
 }
 
-/* 회사 로고 */
-.company-logo {
-    width: 30px;
-    height: 30px;
+/* 메인페이지 매칭 참여 기업 로고 */
+.main-company-logo {
+    width: 60px;
+    height: 60px;
     object-fit: contain;
-    border-radius: 3px;
+    border-radius: 8px;
     flex-shrink: 0;
+    background: #ffffff;
 }
 
 /* ==================================================

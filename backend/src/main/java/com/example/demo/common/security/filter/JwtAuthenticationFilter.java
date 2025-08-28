@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             // 토큰 유효성 검증
             if (jwtUtil.validateToken(token) && jwtUtil.isAccessToken(token)) {
-                String username = jwtUtil.getUsernameFromToken(token);
+                String username = jwtUtil.getBaseUserIdFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
                 
                 if (username != null && role != null) {

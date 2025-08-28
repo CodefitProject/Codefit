@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import Modal from '../Modal/Modal';
 import Login from '../../pages/auth/Login';
+import AuthService from '../../services/authService.tsx';
 
-interface UserInfo {
-    accountId: string;
-    name: string;
-    role: 'USER' | 'COMPANY';
+type UserInfo = {
+    email: string | null;
+    baseUserId: string | null;
+    name: string | null;
+    role: 'USER' | 'COMPANY' | 'ADMIN';
 }
 
 const Header: React.FC = () => {
@@ -19,23 +22,19 @@ const Header: React.FC = () => {
     }, []);
 
     const updateHeaderUI = () => {
-        // 쿠키에서 사용자 정보 확인
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-                setUserInfo(parsedUserInfo);
+        try {
+            const userInfo = AuthService.getUserInfo();
+            const isAuthenticated = AuthService.isLoggedIn();
+            
+            if (userInfo && isAuthenticated) {
+                setUserInfo(userInfo);
                 setIsLoggedIn(true);
-            } catch (e) {
-                console.error('Header - 사용자 정보 파싱 오류:', e);
+            } else {
                 setUserInfo(null);
                 setIsLoggedIn(false);
             }
-        } else {
+        } catch (error) {
+            console.error('Header - 사용자 정보 확인 오류:', error);
             setUserInfo(null);
             setIsLoggedIn(false);
         }
@@ -51,22 +50,22 @@ const Header: React.FC = () => {
     };
 
     const handleLogout = () => {
-        // 쿠키 삭제
-        document.cookie = "userInfo=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+        AuthService.logout();
         updateHeaderUI();
         window.location.reload();
     };
 
     const handleLogoClick = () => {
         if (userInfo && userInfo.role === "COMPANY") {
-            alert("기업 대시보드로 이동합니다.");
+            window.location.href = "/company/dashboard";
         } else {
-            window.location.reload(); // 메인 페이지로 이동
+            // 비로그인 유저 또는 USER 권한: 메인 페이지로 이동
+            window.location.href = "/";
         }
     };
 
     const handleCodeAnalysis = () => {
-        if (!userInfo || !userInfo.accountId) {
+        if (!userInfo || !userInfo.baseUserId) {
             alert("로그인이 필요한 서비스입니다.");
             return;
         }
@@ -126,27 +125,27 @@ const Header: React.FC = () => {
                         />
                         {showMenuForRole(userInfo?.role) && (
                             <>
-                                <a 
+                                <Link 
+                                    to="/mbti-example"
                                     className="nav-link" 
-                                    onClick={handleCodeAnalysis}
                                     style={{marginLeft: '20px', fontSize: '16px'}}
                                 >
                                     코드분석
-                                </a>
-                                <a 
+                                </Link>
+                                <Link 
+                                    to="/survey/mbti"
                                     className="nav-link" 
-                                    onClick={handlePersonalityAnalysis}
                                     style={{fontSize: '16px'}}
                                 >
                                     성향분석
-                                </a>
-                                <a 
+                                </Link>
+                                <Link 
+                                    to="/post"
                                     className="nav-link" 
-                                    onClick={handleCompanyBrowse}
                                     style={{fontSize: '16px'}}
                                 >
                                     기업 둘러보기
-                                </a>
+                                </Link>
                             </>
                         )}
                     </div>

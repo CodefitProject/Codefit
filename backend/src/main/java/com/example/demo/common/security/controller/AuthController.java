@@ -41,8 +41,8 @@ public class AuthController {
             return ResponseEntity.badRequest()
                     .body(createErrorResponse("유효하지 않은 Refresh Token입니다."));
         }
-        
-        String username = jwtUtil.getUsernameFromToken(refreshToken);
+
+        String username = jwtUtil.getNameFromToken(refreshToken);
         if (username == null) {
             log.error("Refresh Token에서 사용자명을 추출할 수 없음");
             return ResponseEntity.badRequest()
@@ -67,7 +67,7 @@ public class AuthController {
         }
         
         // 새로운 Access Token 생성
-        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name());
+        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name(), baseUser.getBaseUserId(), baseUser.getName());
         
         LoginResponse response = LoginResponse.builder()
                 .accessToken(newAccessToken)
@@ -91,7 +91,7 @@ public class AuthController {
         }
         
         String accessToken = authHeader.substring(7);
-        String username = jwtUtil.getUsernameFromToken(accessToken);
+        String username = jwtUtil.getNameFromToken(accessToken);
         
         if (username == null) {
             return ResponseEntity.badRequest()

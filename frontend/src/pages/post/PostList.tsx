@@ -76,20 +76,16 @@ const PostList: React.FC = () => {
         setLoading(true);
         try {
             const requestData: PostListParams = {
-                pageIndex: currentPage,
+                pageIndex: currentPage - 1, // Spring Data JPA는 0부터 시작
                 pageSize: pageSize
             };
 
             const data = await postService.getPostList(requestData);
+            console.log('공고 목록 응답:', data);
             
-            if (postService.isResponseSuccessful(data)) {
-                setJobPostings(data.elData?.postVoList || []);
-                setTotalCount(data.elData?.totalCount || 0);
-            } else {
-                console.error('공고 목록 조회 에러:', data.elHeader);
-                setJobPostings([]);
-                setTotalCount(0);
-            }
+            // 표준 REST API 응답 처리
+            setJobPostings(data.jobPostings || []);
+            setTotalCount(data.totalCount || 0);
         } catch (error) {
             console.error('공고 목록 로드 실패:', error);
             setJobPostings([]);
@@ -107,18 +103,18 @@ const PostList: React.FC = () => {
         setLoading(true);
         try {
             const requestData = {
-                pageIndex: currentPage,
+                pageIndex: currentPage - 1, // Spring Data JPA는 0부터 시작
                 pageSize: pageSize,
                 mbtiMatchFilter: mbtiFilter,
                 userMbti: userInfo.mbti
             };
 
             const data = await postService.getMbtiMatchedPostList(requestData);
+            console.log('MBTI 매칭 공고 응답:', data);
             
-            if (postService.isResponseSuccessful(data)) {
-                setJobPostings(data.elData?.postVoList || []);
-                setTotalCount(data.elData?.totalCount || 0);
-            }
+            // 표준 REST API 응답 처리
+            setJobPostings(data.jobPostings || []);
+            setTotalCount(data.totalCount || 0);
         } catch (error) {
             console.error('MBTI 필터링 공고 로드 실패:', error);
         } finally {
@@ -152,8 +148,8 @@ const PostList: React.FC = () => {
         }
     };
 
-    const openPostDetail = (jobPostingId: string) => {
-        if (!jobPostingId || jobPostingId.trim() === "") {
+    const openPostDetail = (jobPostingId: string | number) => {
+        if (!jobPostingId || String(jobPostingId).trim() === "") {
             console.error("공고 ID가 없습니다.");
             alert("선택된 공고의 정보를 찾을 수 없습니다.");
             return;
