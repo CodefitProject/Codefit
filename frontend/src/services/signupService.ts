@@ -1,15 +1,20 @@
 export type EmailCheckResponse = { role: 'AVAILABLE' | 'DUPLICATE' };
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+const BASE = '/codefit/signup';
+
+async function json<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    ...init
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as T;
+}
 
 const signupService = {
   async checkEmailDuplicate(email: string): Promise<EmailCheckResponse> {
-    await delay(200);
-    // 임시 규칙: test로 시작하면 중복, 그 외 사용 가능
-    if (email && email.toLowerCase().startsWith('test')) {
-      return { role: 'DUPLICATE' };
-    }
-    return { role: 'AVAILABLE' };
+    return json<EmailCheckResponse>(`${BASE}/check-email?email=${encodeURIComponent(email)}`);
   },
 
   async register(payload: {
@@ -20,29 +25,30 @@ const signupService = {
     email: string;
     password: string;
     emailConsent: '0' | '1';
-  }): Promise<{ success: boolean }> {
-    await delay(200);
-    return { success: true };
+  }): Promise<{ success: boolean; baseUserId: number }>
+  {
+    return json(`${BASE}/register`, { method: 'POST', body: JSON.stringify(payload) });
   },
 
-  async updateLocation(locationsCsv: string): Promise<{ success: boolean }> {
-    await delay(150);
-    return { success: true };
+  async updateLocation(locationsCsv: string): Promise<{ success: boolean } & { baseUserId?: number }> {
+    // baseUserId는 현재 로그인/세션 없으므로 프론트 저장값에서 사용하도록 확장 여지
+    const baseUserId = Number(localStorage.getItem('signup_base_user_id') || '0');
+    return json(`${BASE}/location`, { method: 'POST', body: JSON.stringify({ baseUserId, locationsCsv }) });
   },
 
   async updateSalary(selected: string): Promise<{ success: boolean }> {
-    await delay(150);
-    return { success: true };
+    const baseUserId = Number(localStorage.getItem('signup_base_user_id') || '0');
+    return json(`${BASE}/salary`, { method: 'POST', body: JSON.stringify({ baseUserId, selectedSalary: selected }) });
   },
 
   async updateCareer(payload: { career: string; careerType: 'freshman' | 'experienced'; careerPeriod?: string }): Promise<{ success: boolean }> {
-    await delay(150);
-    return { success: true };
+    const baseUserId = Number(localStorage.getItem('signup_base_user_id') || '0');
+    return json(`${BASE}/career`, { method: 'POST', body: JSON.stringify({ baseUserId, career: payload.career }) });
   },
 
   async updateAdditionalInfo(payload: { bio: string; profileImageName?: string }): Promise<{ success: boolean }> {
-    await delay(150);
-    return { success: true };
+    const baseUserId = Number(localStorage.getItem('signup_base_user_id') || '0');
+    return json(`${BASE}/additional`, { method: 'POST', body: JSON.stringify({ baseUserId, ...payload }) });
   }
 };
 

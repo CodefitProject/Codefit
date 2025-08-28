@@ -129,6 +129,11 @@ const Signup: React.FC = () => {
         emailConsent: dma_register_request.emailConsent as '0' | '1'
       });
       if (res.success) {
+        try {
+          if (res.baseUserId) {
+            localStorage.setItem('signup_base_user_id', String(res.baseUserId));
+          }
+        } catch {}
         window.location.href = '/signup/complete';
       } else {
         alert('회원가입 처리 중 오류가 발생했습니다.');
