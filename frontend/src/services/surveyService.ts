@@ -1,7 +1,7 @@
 // SurveyService - 설문 관련 API 서비스
 // WebSquare XML의 submission 기능을 React fetch API로 대체
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 // 설문 응답 데이터 타입
 export interface SurveyAnswer {
