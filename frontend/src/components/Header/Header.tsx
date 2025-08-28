@@ -126,21 +126,21 @@ const Header: React.FC = () => {
                         {showMenuForRole(userInfo?.role) && (
                             <>
                                 <Link 
-                                    to="/code-analysis"
+                                    to="/mbti-example"
                                     className="nav-link" 
                                     style={{marginLeft: '20px', fontSize: '16px'}}
                                 >
                                     코드분석
                                 </Link>
                                 <Link 
-                                    to="/personality-analysis"
+                                    to="/survey/mbti"
                                     className="nav-link" 
                                     style={{fontSize: '16px'}}
                                 >
                                     성향분석
                                 </Link>
                                 <Link 
-                                    to="/company-browse"
+                                    to="/post"
                                     className="nav-link" 
                                     style={{fontSize: '16px'}}
                                 >
