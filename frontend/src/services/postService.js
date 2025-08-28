@@ -177,22 +177,29 @@ class PostService {
      */
     async deletePost(jobPostingId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001Del.pwkjson`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    postVo: { jobPostingId }
-                }),
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            console.log('공고 삭제 요청 - ID:', jobPostingId);
+
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'DELETE',
+                headers: headers,
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            return data;
+            console.log('공고 삭제 성공');
+            return { success: true };
         } catch (error) {
             console.error('공고 삭제 실패:', error);
             throw error;
@@ -207,21 +214,34 @@ class PostService {
      */
     async applyToPost(jobPostingId, userId) {
         try {
+            const requestData = {
+                jobPostingId: parseInt(jobPostingId),
+                userId: parseInt(userId)
+            };
+
+            console.log('공고 지원 요청 데이터:', requestData);
+
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_BASE_URL}/posts/apply`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    jobPostingId,
-                    userId
-                }),
+                headers: headers,
+                body: JSON.stringify(requestData),
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            console.log('공고 지원 성공');
             return { success: true };
         } catch (error) {
             console.error('공고 지원 실패:', error);

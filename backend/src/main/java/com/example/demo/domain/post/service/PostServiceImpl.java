@@ -120,7 +120,8 @@ public class PostServiceImpl implements PostService {
         log.debug("공고 상세 조회 - 공고 ID: {}, 사용자 ID: {}", jobPostingId, userId);
         
         try {
-            JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+            // 기술스택을 포함하여 조회
+            JobPosting jobPosting = jobPostingRepository.findByIdWithTechStacks(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
             JobPostingDto dto = JobPostingDto.from(jobPosting);
@@ -146,6 +147,7 @@ public class PostServiceImpl implements PostService {
                         .logoPath(dto.logoPath())
                         .createdAt(dto.createdAt())
                         .isApplied(isApplied)
+                        .selectedTechStackNames(dto.selectedTechStackNames()) // 기술스택 정보 유지
                         .build();
             }
             
