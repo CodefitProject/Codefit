@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,13 +36,13 @@ public class BaseUser {
     @Column(length = 100)
     private String name;
 
-    @Builder.Default
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
-    private LocalDateTime createAt = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createAt;
 
-    @Builder.Default
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime updateAt = LocalDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updateAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
