@@ -377,11 +377,12 @@ const MainPage: React.FC = () => {
                                 >
                                     <img 
                                         className="main-company-logo"
-                                        src={company.logoPath || '/images/main/default_company.png'}
+                                        src={company.logoPath || '/images/default/default_company.png'}
                                         alt={`${company.name} Logo`}
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
-                                            target.src = '/images/main/default_company.png';
+                                            target.onerror = null; // Prevent infinite loop
+                                            target.src = '/images/default/default_company.png';
                                         }}
                                     />
                                     <span className="company-name">{company.name}</span>
