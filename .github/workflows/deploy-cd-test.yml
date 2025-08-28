@@ -38,9 +38,8 @@ jobs:
             # 기존 컨테이너 중지 및 제거
             docker-compose down
             
-            # 환경변수 설정 후 새로운 컨테이너 시작
+            # 환경변수 설정
             export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-            export JWT_SECRET=${{ secrets.JWT_SECRET }}
             docker-compose up -d
             
             # 컨테이너 상태 확인
