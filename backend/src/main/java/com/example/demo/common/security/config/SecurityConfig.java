@@ -72,6 +72,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/loginPro", "/auth/refresh", "/auth/register").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/codefit/signup/**").permitAll()
                         .requestMatchers("/api/posts/tech-stacks").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/mbti-matched").permitAll()
