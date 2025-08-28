@@ -40,6 +40,7 @@ jobs:
             
             # 환경변수 설정 후 새로운 컨테이너 시작
             export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+            export JWT_SECRET=${{ secrets.JWT_SECRET }}
             docker-compose up -d
             
             # 컨테이너 상태 확인
