@@ -30,6 +30,9 @@ jobs:
           script: |
             cd /home/ubuntu/codefit
             
+            # Create application.properties from secret
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./application.properties
+
             # Docker Hub에서 최신 이미지 pull
             echo "Docker Hub에서 최신 이미지를 가져옵니다..."
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/codefit-frontend:latest || echo "Frontend 이미지 없음"
@@ -37,17 +40,6 @@ jobs:
             
             # 기존 컨테이너 중지 및 제거
             docker-compose down
-            
-            # .env 파일 생성 (JWT 설정)
-            echo "Creating .env file for JWT settings..."
-            cat <<EOF > ./.env
-            jwt.secret=${{ secrets.JWT_SECRET }}
-            jwt.access-token-expiration-ms=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_MS }}
-            jwt.refresh-token-expiration-ms=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION_MS }}
-            EOF
-
-            # 환경변수 설정
-            export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
             
             # 새로운 컨테이너 시작
             docker-compose up -d
