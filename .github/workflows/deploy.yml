@@ -21,8 +21,12 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - 'docker-compose.yml'
+              - '.github/workflows/**'
             backend:
               - 'backend/**'
+              - 'docker-compose.yml'
+              - '.github/workflows/**'
 
       - name: 변경사항 확인 로그
         run: |
