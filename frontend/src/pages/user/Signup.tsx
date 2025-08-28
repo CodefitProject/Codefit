@@ -24,7 +24,7 @@ const emptyMap: SignupKoreanMap = {
   비밀번호: '',
   비밀번호확인: '',
   이메일수신동의: 'false',
-  이메일인증여부: 'true'
+  이메일인증여부: 'false'
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -182,11 +182,11 @@ const Signup: React.FC = () => {
             <div className="form-group">
               <label className="form-label required">이메일</label>
               <div className="email-input-group">
-                <input className="form-input" placeholder="이메일 입력" value={dma_signup.이메일} onChange={(e) => setField('이메일', e.target.value)} />
+                <input className="form-input" placeholder="이메일 입력" value={dma_signup.이메일} onChange={(e) => setSignup(prev => ({ ...prev, 이메일: e.target.value, 이메일인증여부: 'false' }))} />
                 <button type="button" className="btn-verify" onClick={handleEmailVerify}>중복확인</button>
               </div>
               {dma_signup.이메일인증여부 === 'true' && (
-                <div className="verify-success" id="verify_success">✓ 이메일 인증이 완료되었습니다.</div>
+                <div className="verify-success" id="verify_success">✓ 이메일 중복 확인이 완료되었습니다.</div>
               )}
             </div>
 
