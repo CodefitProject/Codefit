@@ -538,8 +538,6 @@ const PostDetail: React.FC = () => {
                     </section>
                 </main>
             </div>
-
-            <Footer style={{ marginTop: 'auto', flexShrink: 0 }} />
         </div>
     );
 };

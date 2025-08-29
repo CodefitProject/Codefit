@@ -142,27 +142,39 @@ class PostService {
     }
 
     /**
-     * 공고 수정 (POS0001Upd.pwkjson)
+     * 공고 수정 (PUT /posts/{id})
+     * @param {string} jobPostingId - 수정할 공고 ID
      * @param {Object} postData - 수정할 공고 데이터
      * @returns {Promise<Object>} 수정 결과
      */
-    async updatePost(postData) {
+    async updatePost(jobPostingId, postData) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001Upd.pwkjson`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    postVo: postData
-                }),
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            console.log('공고 수정 요청 - ID:', jobPostingId, '데이터:', postData);
+
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(postData),
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 수정 오류 응답:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('공고 수정 성공:', data);
             return data;
         } catch (error) {
             console.error('공고 수정 실패:', error);
