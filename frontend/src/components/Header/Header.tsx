@@ -1,44 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 import Modal from '../Modal/Modal';
 import Login from '../../pages/auth/Login';
 import AuthService from '../../services/authService.tsx';
-
-type UserInfo = {
-    email: string | null;
-    baseUserId: string | null;
-    name: string | null;
-    role: 'USER' | 'COMPANY' | 'ADMIN';
-}
+import { useAuth } from '../../hooks/useAuth.ts';
 
 const Header: React.FC = () => {
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const { userInfo, isLoggedIn, checkAuthStatus } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
-
-    useEffect(() => {
-        updateHeaderUI();
-    }, []);
-
-    const updateHeaderUI = () => {
-        try {
-            const userInfo = AuthService.getUserInfo();
-            const isAuthenticated = AuthService.isLoggedIn();
-            
-            if (userInfo && isAuthenticated) {
-                setUserInfo(userInfo);
-                setIsLoggedIn(true);
-            } else {
-                setUserInfo(null);
-                setIsLoggedIn(false);
-            }
-        } catch (error) {
-            console.error('Header - 사용자 정보 확인 오류:', error);
-            setUserInfo(null);
-            setIsLoggedIn(false);
-        }
-    };
 
     const handleLogin = () => {
         setShowLoginModal(true);
@@ -46,12 +16,12 @@ const Header: React.FC = () => {
 
     const handleCloseLoginModal = () => {
         setShowLoginModal(false);
-        updateHeaderUI(); // 로그인 후 헤더 UI 업데이트
+        checkAuthStatus(); // 로그인 후 헤더 UI 업데이트
     };
 
     const handleLogout = () => {
         AuthService.logout();
-        updateHeaderUI();
+        checkAuthStatus();
         window.location.reload();
     };
 
