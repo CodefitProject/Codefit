@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 import Modal from '../Modal/Modal';
 import Login from '../../pages/auth/Login';
@@ -7,6 +7,7 @@ import AuthService from '../../services/authService.tsx';
 import { useAuth } from '../../hooks/useAuth.ts';
 
 const Header: React.FC = () => {
+    const navigate = useNavigate();
     const { userInfo, isLoggedIn, checkAuthStatus } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
@@ -71,7 +72,10 @@ const Header: React.FC = () => {
     };
 
     const handleUserDetailClick = () => {
-        alert("사용자 상세 페이지로 이동합니다.");
+        if (userInfo && userInfo.role === 'USER') {
+            navigate('/user/detail');
+        }
+        // USER가 아닌 다른 역할은 아무 동작도 하지 않거나, 다른 페이지로 이동시킬 수 있습니다.
     };
 
     const showMenuForRole = (role: string | undefined) => {
