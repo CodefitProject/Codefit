@@ -1,11 +1,13 @@
 import React from 'react';
 import { useUserDetailData } from '../../hooks/useUserDetailData.ts';
+import { useProgress } from '../../hooks/useProgress.ts';
 import ActionCardsFrame from './ActionCardsFrame.tsx';
 import ResultFrame from './ResultFrame.tsx';
 import './UserProfile.css';
 
 const UserProfile: React.FC = () => {
     const { userInfo, isLoading } = useUserDetailData();
+    const { isMbtiDone, isCodeDone, isAllComplete, progressPercentage } = useProgress(userInfo);
 
     if (isLoading) {
         return <div>로딩중...</div>;
@@ -14,10 +16,6 @@ const UserProfile: React.FC = () => {
     if (!userInfo) {
         return <div>사용자 정보를 불러올 수 없습니다.</div>;
     }
-
-    const isMbtiDone = userInfo.isMbtiChecked === 1;
-    const isCodeDone = userInfo.isCodeChecked === 1;
-    const isAllComplete = isMbtiDone && isCodeDone;
 
     const handleUserUpdate = () => {
         // 사용자 정보 수정 페이지로 이동
@@ -30,7 +28,7 @@ const UserProfile: React.FC = () => {
             <section className="info-grid">
                 <div className="profile-info">
                     <div className="profile-avatar">
-                        <img src="/images/default_user.png" alt="프로필" style={{width: '80px', height: '80px'}} />
+                        <img src="/images/default/default_user.png" alt="프로필" style={{width: '80px', height: '80px'}} />
                     </div>
                     <div className="profile-details">
                         <div className="profile-name">
@@ -89,7 +87,16 @@ const UserProfile: React.FC = () => {
 
                 {/* 동적 콘텐츠 렌더링 */}
                 <div className="content-frame">
-                    {isAllComplete ? <ResultFrame /> : <ActionCardsFrame />}
+                    {isAllComplete ? (
+                        <ResultFrame userInfo={userInfo} />
+                    ) : (
+                        <ActionCardsFrame 
+                            userInfo={userInfo}
+                            isMbtiDone={isMbtiDone}
+                            isCodeDone={isCodeDone}
+                            progressPercentage={progressPercentage}
+                        />
+                    )}
                 </div>
             </section>
         </>
