@@ -66,7 +66,7 @@ const UserDetail: React.FC = () => {
     return (
         <>
             <Header />
-            <div className="main-container">
+            <div className="user-detail-container">
                 <Sidebar userInfo={mockUserInfo} />
                 <main className="main-content">
                     <Outlet /> {/* 중첩된 라우트의 컴포넌트가 여기에 렌더링됩니다. */}
