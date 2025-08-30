@@ -12,6 +12,7 @@ export interface UserDetailInfo {
     bio: string;
     isMbtiChecked: number; // 0: 미완료, 1: 완료
     isCodeChecked: number; // 0: 미완료, 1: 완료
+    mbtiType?: string; // MBTI 타입 코드 (예: 'BITF')
 }
 
 export const useUserDetailData = () => {
@@ -31,8 +32,9 @@ export const useUserDetailData = () => {
                 yearSalary: 5000,
                 email: 'codekim@example.com',
                 bio: 'React와 TypeScript를 사용하여 사용자 친화적인 웹 서비스를 만드는 것을 좋아합니다. 새로운 기술을 배우고 적용하는 것에 즐거움을 느낍니다.',
-                isMbtiChecked: 0, 
+                isMbtiChecked: 1, 
                 isCodeChecked: 1,
+                mbtiType: 'BITF',
             };
             setUserInfo(mockUserInfo);
             setIsLoading(false);
