@@ -256,98 +256,39 @@ const PostDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div 
-                className="post-detail-main-wrap"
-                style={{
-                    width: '100%',
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: '#ffffff',
-                    fontFamily: '"Malgun Gothic", "맑은 고딕", sans-serif'
-                }}
-            >
+            <div className="post-detail-main-wrap">
                 <Header />
-                <div 
-                    className="container"
-                    style={{
-                        flex: '1 0 auto',
-                        maxWidth: '1060px',
-                        width: '100%',
-                        margin: '0 auto',
-                        backgroundColor: 'white',
-                        padding: '0 min(30px, 4vw)'
-                    }}
-                >
-                    <div className="loading-content">
-                        <div className="loading-spinner"></div>
-                        공고 정보를 불러오는 중...
-                    </div>
+                <div className="container">
+                    <main className="main-content">
+                        <div className="loading-content">
+                            <div className="loading-spinner"></div>
+                            공고 정보를 불러오는 중...
+                        </div>
+                    </main>
                 </div>
-
             </div>
         );
     }
 
     if (!jobPosting) {
         return (
-            <div 
-                className="post-detail-main-wrap"
-                style={{
-                    width: '100%',
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: '#ffffff',
-                    fontFamily: '"Malgun Gothic", "맑은 고딕", sans-serif'
-                }}
-            >
+            <div className="post-detail-main-wrap">
                 <Header />
-                <div 
-                    className="container"
-                    style={{
-                        flex: '1 0 auto',
-                        maxWidth: '1060px',
-                        width: '100%',
-                        margin: '0 auto',
-                        backgroundColor: 'white',
-                        padding: '0 min(30px, 4vw)'
-                    }}
-                >
-                    <div className="empty-content">
-                        공고 정보를 찾을 수 없습니다.
-                    </div>
+                <div className="container">
+                    <main className="main-content">
+                        <div className="empty-content">
+                            공고 정보를 찾을 수 없습니다.
+                        </div>
+                    </main>
                 </div>
-
             </div>
         );
     }
 
     return (
-        <div 
-            className="post-detail-main-wrap"
-            style={{
-                width: '100%',
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: '#ffffff',
-                fontFamily: '"Malgun Gothic", "맑은 고딕", sans-serif'
-            }}
-        >
+        <div className="post-detail-main-wrap">
             <Header />
-            
-            <div 
-                className="container"
-                style={{
-                    flex: '1 0 auto',
-                    maxWidth: '1060px',
-                    width: '100%',
-                    margin: '0 auto',
-                    backgroundColor: 'white',
-                    padding: '0 min(30px, 4vw)'
-                }}
-            >
+            <div className="container">
                 <main className="main-content">
                     {/* 뒤로가기 버튼 */}
                     <section className="back-section">
@@ -361,7 +302,16 @@ const PostDetail: React.FC = () => {
                     <section className="company-images">
                         <div className="image-gallery">
                             <div className="main-image">
-                                {jobPosting.jobImageFileName ? (
+                                {jobPosting.jobImagePath ? (
+                                    <img 
+                                        src={jobPosting.jobImagePath}
+                                        alt={`${jobPosting.title} 공고 이미지`}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/images/default/default_company.png';
+                                        }}
+                                    />
+                                ) : jobPosting.jobImageFileName ? (
                                     <img 
                                         src={`/images/company/${jobPosting.jobImageFileName}`}
                                         alt={`${jobPosting.title} 이미지`}

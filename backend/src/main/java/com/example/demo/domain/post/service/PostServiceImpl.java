@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.service;
 
+import com.example.demo.common.service.S3Service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.company.entity.Company;
@@ -45,6 +46,7 @@ public class PostServiceImpl implements PostService {
     private final CompanyRepository companyRepository;
     private final BaseUserRepository baseUserRepository;
     private final ObjectMapper objectMapper;
+    private final S3Service s3Service;
     
     @Override
     @Transactional(readOnly = true)
@@ -191,6 +193,18 @@ public class PostServiceImpl implements PostService {
                 }
             }
             
+            // 이미지 업로드 처리
+            String jobImagePath = null;
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                try {
+                    jobImagePath = s3Service.uploadFile(requestDto.jobImageFile(), "job_images");
+                    log.info("공고 이미지 업로드 성공: {}", jobImagePath);
+                } catch (Exception e) {
+                    log.warn("공고 이미지 업로드 실패: {}", e.getMessage());
+                    // 이미지 업로드 실패는 공고 등록을 중단시키지 않음
+                }
+            }
+            
             // 공고 생성
             JobPosting jobPosting = JobPosting.builder()
                     .company(company)
@@ -203,6 +217,7 @@ public class PostServiceImpl implements PostService {
                     .preferredDeveloperTypes(requestDto.preferredDeveloperTypes())
                     .expiresAt(requestDto.expiresAt())
                     .status("ACTIVE")
+                    .jobImagePath(jobImagePath)
                     .techStacks(techStacks)
                     .build();
             
@@ -247,6 +262,29 @@ public class PostServiceImpl implements PostService {
                 }
             }
             
+            // 이미지 업로드 처리
+            String jobImagePath = jobPosting.getJobImagePath(); // 기존 이미지 경로 유지
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                try {
+                    // 기존 이미지가 있다면 삭제
+                    if (jobImagePath != null) {
+                        try {
+                            String fileKey = s3Service.extractFileKeyFromUrl(jobImagePath);
+                            s3Service.deleteFile(fileKey);
+                        } catch (Exception e) {
+                            log.warn("기존 이미지 삭제 실패: {}", e.getMessage());
+                        }
+                    }
+                    
+                    // 새 이미지 업로드
+                    jobImagePath = s3Service.uploadFile(requestDto.jobImageFile(), "job_images");
+                    log.info("공고 이미지 업로드 성공: {}", jobImagePath);
+                } catch (Exception e) {
+                    log.warn("공고 이미지 업로드 실패: {}", e.getMessage());
+                    // 이미지 업로드 실패는 공고 수정을 중단시키지 않음
+                }
+            }
+            
             // 공고 정보 업데이트
             jobPosting.updateJobPosting(
                     requestDto.title(),
@@ -259,6 +297,11 @@ public class PostServiceImpl implements PostService {
                     requestDto.expiresAt(),
                     techStacks
             );
+            
+            // 이미지 경로 업데이트
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                jobPosting.updateJobImagePath(jobImagePath);
+            }
             
             JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
             log.debug("공고 수정 완료 - ID: {}", updatedJobPosting.getJobPostingId());

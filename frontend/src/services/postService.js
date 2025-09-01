@@ -318,6 +318,115 @@ class PostService {
         }
         return 'NO_RESPONSE';
     }
+
+    /**
+     * 공고 등록
+     * @param {Object} postData - 공고 데이터
+     * @param {File} imageFile - 이미지 파일 (선택사항)
+     * @returns {Promise<Object>} 등록된 공고 데이터
+     */
+    async createPost(postData, imageFile) {
+        try {
+            const token = localStorage.getItem('accessToken');
+            
+            // FormData 생성 (이미지 업로드를 위해)
+            const formData = new FormData();
+            
+            // 공고 데이터 추가
+            Object.keys(postData).forEach(key => {
+                if (postData[key] !== null && postData[key] !== undefined) {
+                    formData.append(key, postData[key]);
+                }
+            });
+            
+            // 이미지 파일 추가
+            if (imageFile) {
+                formData.append('jobImageFile', imageFile);
+            }
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            console.log('공고 등록 요청 - 데이터:', postData);
+            
+            const response = await fetch(`${API_BASE_URL}/posts`, {
+                method: 'POST',
+                headers: headers,
+                body: formData, // FormData 사용
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 등록 오류 응답:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('공고 등록 성공:', data);
+            return data;
+            
+        } catch (error) {
+            console.error('공고 등록 실패:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 공고 수정
+     * @param {string} jobPostingId - 공고 ID
+     * @param {Object} postData - 수정할 공고 데이터
+     * @param {File} imageFile - 이미지 파일 (선택사항)
+     * @returns {Promise<Object>} 수정된 공고 데이터
+     */
+    async updatePost(jobPostingId, postData, imageFile) {
+        try {
+            const token = localStorage.getItem('accessToken');
+            
+            // FormData 생성 (이미지 업로드를 위해)
+            const formData = new FormData();
+            
+            // 공고 데이터 추가
+            Object.keys(postData).forEach(key => {
+                if (postData[key] !== null && postData[key] !== undefined) {
+                    formData.append(key, postData[key]);
+                }
+            });
+            
+            // 이미지 파일 추가
+            if (imageFile) {
+                formData.append('jobImageFile', imageFile);
+            }
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            console.log('공고 수정 요청 - ID:', jobPostingId, '데이터:', postData);
+            
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'PUT',
+                headers: headers,
+                body: formData, // FormData 사용
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 수정 오류 응답:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('공고 수정 성공:', data);
+            return data;
+            
+        } catch (error) {
+            console.error('공고 수정 실패:', error);
+            throw error;
+        }
+    }
 }
 
 // 싱글톤 인스턴스 생성 및 내보내기

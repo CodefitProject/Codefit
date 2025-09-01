@@ -4,7 +4,7 @@ import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import postService from '../../services/postService';
 import AuthService from '../../services/authService.tsx';
-import './PostCreate.css'; // PostCreate 스타일 재사용
+import './PostEdit.css';
 
 interface TechStack {
     techStackId: string;
@@ -125,6 +125,11 @@ const PostEdit: React.FC = () => {
             }
             
             // 기존 데이터를 폼에 채우기
+            console.log('=== 백엔드에서 받은 데이터 ===');
+            console.log('selectedTechStackNames:', response.selectedTechStackNames);
+            console.log('preferredDeveloperTypes:', response.preferredDeveloperTypes);
+            console.log('preferredDeveloperTypes 타입:', typeof response.preferredDeveloperTypes);
+            
             // expiresAt을 input[type="datetime-local"] 형식으로 변환
             let expiresAtValue = '';
             if (response.expiresAt) {
@@ -133,6 +138,87 @@ const PostEdit: React.FC = () => {
                 expiresAtValue = date.toISOString().slice(0, 16);
             }
             
+            // 기술스택 파싱 - 중복 JSON.stringify 문제 해결
+            let parsedTechStacks = [];
+            if (response.selectedTechStackNames) {
+                try {
+                    let data = response.selectedTechStackNames;
+                    
+                    // 여러 번 JSON.stringify된 경우를 처리
+                    while (typeof data === 'string' && (data.startsWith('[') || data.startsWith('"['))) {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (e) {
+                            break;
+                        }
+                    }
+                    
+                    if (Array.isArray(data)) {
+                        parsedTechStacks = data
+                            .map(item => String(item).replace(/["\[\]\\]/g, '').trim())
+                            .filter(item => item);
+                    } else if (typeof data === 'string') {
+                        if (data.includes(',')) {
+                            parsedTechStacks = data
+                                .split(',')
+                                .map(s => s.replace(/["\[\]\\]/g, '').trim())
+                                .filter(s => s);
+                        } else if (data.trim()) {
+                            const cleaned = data.replace(/["\[\]\\]/g, '').trim();
+                            if (cleaned) {
+                                parsedTechStacks = [cleaned];
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('기술스택 파싱 오류:', e);
+                    parsedTechStacks = response.selectedTechStackNames.split(',').map(s => s.trim());
+                }
+            }
+            
+            // 성향 파싱 - 중복 JSON.stringify 문제 해결
+            let parsedPersonalities = [];
+            if (response.preferredDeveloperTypes) {
+                try {
+                    let data = response.preferredDeveloperTypes;
+                    
+                    // 여러 번 JSON.stringify된 경우를 처리
+                    while (typeof data === 'string' && (data.startsWith('[') || data.startsWith('"['))) {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (e) {
+                            break;
+                        }
+                    }
+                    
+                    if (Array.isArray(data)) {
+                        parsedPersonalities = data
+                            .map(item => String(item).replace(/["\[\]\\]/g, '').trim())
+                            .filter(item => item && /^[A-Z]{4}$/.test(item));
+                    } else if (typeof data === 'string') {
+                        if (data.includes(',')) {
+                            parsedPersonalities = data
+                                .split(',')
+                                .map(s => s.replace(/["\[\]\\]/g, '').trim())
+                                .filter(s => s && /^[A-Z]{4}$/.test(s));
+                        } else {
+                            const cleaned = data.replace(/["\[\]\\]/g, '').trim();
+                            if (cleaned && /^[A-Z]{4}$/.test(cleaned)) {
+                                parsedPersonalities = [cleaned];
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('성향 파싱 오류:', e);
+                    // 최후의 수단: 정규표현식으로 성향 추출
+                    const matches = response.preferredDeveloperTypes.match(/[A-Z]{4}/g);
+                    parsedPersonalities = matches ? [...new Set(matches)] : [];
+                }
+            }
+            
+            console.log('파싱된 기술스택:', parsedTechStacks);
+            console.log('파싱된 성향:', parsedPersonalities);
+            
             setFormData({
                 title: response.title || '',
                 location: response.location || '',
@@ -140,8 +226,8 @@ const PostEdit: React.FC = () => {
                 experienceLevel: response.experienceLevel || '',
                 salaryRange: response.salaryRange || '',
                 description: response.description || '',
-                selectedTechStacks: response.selectedTechStackNames ? response.selectedTechStackNames.split(',').map(s => s.trim()) : [],
-                selectedPersonalities: response.preferredDeveloperTypes ? response.preferredDeveloperTypes.split(',').map(s => s.trim()) : [],
+                selectedTechStacks: parsedTechStacks,
+                selectedPersonalities: parsedPersonalities,
                 expiresAt: expiresAtValue,
             });
             
@@ -228,6 +314,18 @@ const PostEdit: React.FC = () => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('파일 크기는 5MB 이하여야 합니다.');
+                return;
+            }
+            
+            // 파일 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
             setFormData(prev => ({
                 ...prev,
                 jobImageFile: file
@@ -312,7 +410,7 @@ const PostEdit: React.FC = () => {
 
             console.log('공고 수정 데이터:', submitData);
 
-            const response = await postService.updatePost(jobPostingId, submitData);
+            const response = await postService.updatePost(jobPostingId, submitData, formData.jobImageFile);
             console.log('공고 수정 성공:', response);
             
             alert('공고가 성공적으로 수정되었습니다!');
@@ -328,10 +426,11 @@ const PostEdit: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="post-create-main-wrap" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="post-edit-page">
                 <Header />
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div>공고 데이터를 불러오는 중...</div>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p className="loading-text">공고 정보를 불러오는 중...</p>
                 </div>
                 <Footer style={{ marginTop: 'auto', flexShrink: 0 }} />
             </div>
@@ -339,21 +438,16 @@ const PostEdit: React.FC = () => {
     }
 
     return (
-        <div className="post-create-main-wrap" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="post-edit-page">
             <Header />
             
-            <div className="container" style={{ flex: 1 }}>
-                <main className="main-content">
-                    <section className="back-section">
-                        <button className="btn-back" onClick={() => navigate(-1)}>
-                            ← 뒤로가기
-                        </button>
-                    </section>
-
-                    <section className="form-section">
-                        <h1 className="form-title">공고 수정하기</h1>
+            <div className="post-edit-container">
+                <div className="post-edit-header">
+                    <h1 className="post-edit-title">공고 수정하기</h1>
+                    <p className="post-edit-subtitle">채용 공고 정보를 수정해주세요</p>
+                </div>
                         
-                        <form className="post-form" onSubmit={handleSubmit}>
+                <form className="post-edit-form" onSubmit={handleSubmit}>
                             {/* 공고 제목 */}
                             <div className="form-group">
                                 <label htmlFor="title" className="form-label">공고 제목 *</label>
@@ -489,20 +583,20 @@ const PostEdit: React.FC = () => {
                             {/* 기술스택 선택 */}
                             <div className="form-group">
                                 <label className="form-label">요구 기술스택 *</label>
-                                <div className="tech-stack-input-container">
+                                <div className="techstack-input-container">
                                     <input
                                         type="text"
-                                        className="form-input"
+                                        className="techstack-input"
                                         value={techStackInput}
                                         onChange={handleTechStackInputChange}
                                         placeholder="기술스택을 검색해보세요 (예: React, Java, Python)"
                                     />
                                     {showSuggestions && techStackSuggestions.length > 0 && (
-                                        <div className="tech-stack-suggestions">
+                                        <div className="techstack-suggestions">
                                             {techStackSuggestions.map((suggestion, index) => (
                                                 <div
                                                     key={index}
-                                                    className="tech-stack-suggestion"
+                                                    className="suggestion-item"
                                                     onClick={() => addTechStack(suggestion)}
                                                 >
                                                     {suggestion}
@@ -512,33 +606,41 @@ const PostEdit: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                {formData.selectedTechStacks.length > 0 && (
-                                    <div className="selected-tech-stacks">
-                                        {formData.selectedTechStacks.map((techStack, index) => (
-                                            <span key={index} className="tech-stack-tag">
+                                <div className={`techstack-grid ${formData.selectedTechStacks.length === 0 ? 'empty' : ''}`}>
+                                    {formData.selectedTechStacks.length === 0 ? (
+                                        <div className="empty-message">
+                                            선택된 기술스택이 없습니다.<br />
+                                            위에서 기술스택을 검색하여 추가해주세요.
+                                        </div>
+                                    ) : (
+                                        formData.selectedTechStacks.map((techStack, index) => (
+                                            <span key={index} className="techstack-tag">
                                                 {techStack}
                                                 <button
                                                     type="button"
-                                                    className="tech-stack-remove"
+                                                    className="techstack-remove-btn"
                                                     onClick={() => removeTechStack(techStack)}
                                                 >
                                                     ×
                                                 </button>
                                             </span>
-                                        ))}
-                                    </div>
-                                )}
+                                        ))
+                                    )}
+                                </div>
                             </div>
 
                             {/* 선호 개발자 성향 선택 */}
                             <div className="form-group">
                                 <label className="form-label">선호 개발자 성향 * (최대 {maxPersonalities}개)</label>
+                                <div className="personality-counter">
+                                    {formData.selectedPersonalities.length}/{maxPersonalities}
+                                </div>
                                 <div className="personality-grid">
                                     {allPersonalities.map((personality) => (
                                         <button
                                             key={personality}
                                             type="button"
-                                            className={`personality-button ${formData.selectedPersonalities.includes(personality) ? 'selected' : ''}`}
+                                            className={`personality-btn ${formData.selectedPersonalities.includes(personality) ? 'selected' : ''}`}
                                             onClick={() => togglePersonality(personality)}
                                             disabled={!formData.selectedPersonalities.includes(personality) && formData.selectedPersonalities.length >= maxPersonalities}
                                         >
@@ -547,7 +649,7 @@ const PostEdit: React.FC = () => {
                                     ))}
                                 </div>
                                 {formData.selectedPersonalities.length > 0 && (
-                                    <div className="selected-personalities">
+                                    <div className="form-help-text">
                                         선택된 성향: {formData.selectedPersonalities.join(', ')}
                                     </div>
                                 )}
@@ -561,15 +663,20 @@ const PostEdit: React.FC = () => {
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
                                     accept="image/*"
-                                    className="form-file-input"
+                                    className="form-input"
                                 />
+                                {formData.jobImageFile && (
+                                    <div className="form-help-text">
+                                        선택된 파일: {formData.jobImageFile.name}
+                                    </div>
+                                )}
                                 <p className="form-help-text">
-                                    * 이미지 업로드는 현재 지원되지 않습니다.
+                                    공고에 표시될 대표 이미지를 업로드해주세요. (JPG, PNG 등)
                                 </p>
                             </div>
 
                             {/* 버튼 그룹 */}
-                            <div className="form-actions">
+                            <div className="button-container">
                                 <button
                                     type="button"
                                     className="btn-cancel"
@@ -579,15 +686,13 @@ const PostEdit: React.FC = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn-submit"
+                                    className="btn-primary"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? '수정 중...' : '공고 수정'}
                                 </button>
                             </div>
-                        </form>
-                    </section>
-                </main>
+                </form>
             </div>
 
             <Footer style={{ marginTop: 'auto', flexShrink: 0 }} />

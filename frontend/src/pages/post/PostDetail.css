@@ -3,8 +3,11 @@
 /* PostDetail 메인 래퍼 - 푸터 없이 간단한 구조 */
 .post-detail-main-wrap {
     width: 100%;
+    min-height: 100vh;
     background-color: #ffffff;
     font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 .post-detail-main-wrap .container {
@@ -18,6 +21,8 @@
 .post-detail-main-wrap .main-content {
     padding: 0;
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
 }
 
 

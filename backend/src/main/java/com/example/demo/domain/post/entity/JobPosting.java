@@ -153,6 +153,13 @@ public class JobPosting {
             this.techStacks.addAll(techStacks);
         }
     }
+    
+    /**
+     * 공고 이미지 경로 업데이트
+     */
+    public void updateJobImagePath(String jobImagePath) {
+        this.jobImagePath = jobImagePath;
+    }
 
     /**
      * 공고 비활성화
