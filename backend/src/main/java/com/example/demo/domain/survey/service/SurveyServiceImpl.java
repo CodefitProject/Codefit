@@ -87,8 +87,8 @@ public class SurveyServiceImpl implements SurveyService {
             // 축 순서를 보장하기 위한 LinkedHashMap 사용
             Map<String, List<SurveyQuestionDto>> groupedQuestions = new LinkedHashMap<>();
             
-            // 축 순서를 명시적으로 초기화 (B_A -> R_I -> S_T -> D_F)
-            String[] axisOrder = {"B_A", "R_I", "S_T", "D_F"};
+            // 축 순서를 명시적으로 초기화 (B/A -> R/I -> S/T -> D/F)
+            String[] axisOrder = {"B/A", "R/I", "S/T", "D/F"};
             for (String axis : axisOrder) {
                 groupedQuestions.put(axis, new ArrayList<>());
             }
@@ -208,7 +208,7 @@ public class SurveyServiceImpl implements SurveyService {
         Map<String, List<Double>> axisScores = new HashMap<>();
         
         // 축별 점수 리스트 초기화
-        for (String axis : new String[]{"B_A", "R_I", "S_T", "D_F"}) {
+        for (String axis : new String[]{"B/A", "R/I", "S/T", "D/F"}) {
             axisScores.put(axis, new ArrayList<>());
         }
         
@@ -226,18 +226,18 @@ public class SurveyServiceImpl implements SurveyService {
             
             // 축별 점수 배정 (질문 ID 기반)
             if (questionId >= 1 && questionId <= 5) {
-                axisScores.get("B_A").add(questionScore);
+                axisScores.get("B/A").add(questionScore);
             } else if (questionId >= 6 && questionId <= 10) {
-                axisScores.get("R_I").add(questionScore);
+                axisScores.get("R/I").add(questionScore);
             } else if (questionId >= 11 && questionId <= 15) {
-                axisScores.get("S_T").add(questionScore);
+                axisScores.get("S/T").add(questionScore);
             } else if (questionId >= 16 && questionId <= 20) {
-                axisScores.get("D_F").add(questionScore);
+                axisScores.get("D/F").add(questionScore);
             }
         }
         
         // 축별 점수 합계 계산
-        for (String axis : new String[]{"B_A", "R_I", "S_T", "D_F"}) {
+        for (String axis : new String[]{"B/A", "R/I", "S/T", "D/F"}) {
             List<Double> scoreList = axisScores.get(axis);
             if (!scoreList.isEmpty()) {
                 double totalScore = scoreList.stream().mapToDouble(Double::doubleValue).sum();
@@ -265,19 +265,19 @@ public class SurveyServiceImpl implements SurveyService {
         double codeCollabScore = 0.0;
         
         // B/A 축 계산 (+값: Architect, -값: Builder)
-        double surveyBA = surveyScores.getOrDefault("B_A", 0.0);
+        double surveyBA = surveyScores.getOrDefault("B/A", 0.0);
         double finalBA = (surveyBA * WEIGHT_BA_SURVEY) + (codeStyleScore * WEIGHT_BA_CODE);
         
         // R/I 축 계산 (+값: Innovate, -값: Refactor)  
-        double surveyRI = surveyScores.getOrDefault("R_I", 0.0);
+        double surveyRI = surveyScores.getOrDefault("R/I", 0.0);
         double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (0.0 * WEIGHT_RI_CODE);
         
         // S/T 축 계산 (+값: Team, -값: Solo)
-        double surveyST = surveyScores.getOrDefault("S_T", 0.0);
+        double surveyST = surveyScores.getOrDefault("S/T", 0.0);
         double finalST = (surveyST * WEIGHT_ST_SURVEY) + (codeCollabScore * WEIGHT_ST_CODE);
         
         // D/F 축 계산 (+값: Feature, -값: Debug)
-        double surveyDF = surveyScores.getOrDefault("D_F", 0.0);
+        double surveyDF = surveyScores.getOrDefault("D/F", 0.0);
         double finalDF = (surveyDF * WEIGHT_DF_SURVEY) + (0.0 * WEIGHT_DF_CODE);
         
         log.debug("최종 계산 점수 - BA: {}, RI: {}, ST: {}, DF: {}", finalBA, finalRI, finalST, finalDF);

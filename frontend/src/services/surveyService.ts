@@ -1,6 +1,8 @@
 // SurveyService - 설문 관련 API 서비스
 // WebSquare XML의 submission 기능을 React fetch API로 대체
 
+import AuthService from './authService.tsx';
+
 const API_BASE_URL = '/api';
 
 // 설문 응답 데이터 타입
@@ -51,11 +53,18 @@ class SurveyService {
      */
     async getQuestions(): Promise<SurveyQuestionsData> {
         try {
+            const token = AuthService.getToken();
+            const headers: { [key: string]: string } = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`${API_BASE_URL}/survey/questions`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
             });
 
             if (!response.ok) {
@@ -82,11 +91,18 @@ class SurveyService {
      */
     async submitSurvey(submitData: SurveySubmitRequest): Promise<AnalysisResult> {
         try {
+            const token = AuthService.getToken();
+            const headers: { [key: string]: string } = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`${API_BASE_URL}/survey/submit`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
                 body: JSON.stringify(submitData),
             });
 
@@ -136,10 +152,10 @@ class SurveyService {
      */
     static getAxisDisplayName(axis: string): string {
         const names: { [key: string]: string } = {
-            'B_A': 'Builder vs Architect',
-            'R_I': 'Innovate vs Refactor', 
-            'S_T': 'Solo vs Team',
-            'D_F': 'Debug vs Feature'
+            'B/A': 'Builder vs Architect',
+            'R/I': 'Innovate vs Refactor', 
+            'S/T': 'Solo vs Team',
+            'D/F': 'Debug vs Feature'
         };
         return names[axis] || axis;
     }
