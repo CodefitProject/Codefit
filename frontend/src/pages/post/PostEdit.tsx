@@ -305,8 +305,8 @@ const PostEdit: React.FC = () => {
                 salaryRange: formData.salaryRange,
                 location: formData.location,
                 workType: formData.workType,
-                selectedTechStackNames: formData.selectedTechStacks.join(', '),
-                preferredDeveloperTypes: formData.selectedPersonalities.join(', '),
+                selectedTechStackNames: JSON.stringify(formData.selectedTechStacks),
+                preferredDeveloperTypes: JSON.stringify(formData.selectedPersonalities),
                 expiresAt: expiresAtISO
             };
 
