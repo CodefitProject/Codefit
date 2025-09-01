@@ -9,7 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
@@ -25,6 +28,30 @@ import java.util.List;
 public class PostController {
     
     private final PostService postService;
+    
+    /**
+     * 날짜 문자열을 LocalDateTime으로 변환
+     * ISO 8601 형식과 datetime-local 형식 모두 지원
+     */
+    private LocalDateTime parseDateTime(String dateTimeStr) {
+        try {
+            // ISO 8601 형식 (Z 포함) 처리: 2025-10-01T22:54:33.167Z
+            if (dateTimeStr.endsWith("Z")) {
+                return ZonedDateTime.parse(dateTimeStr).toLocalDateTime();
+            }
+            // ISO 8601 형식 (타임존 포함) 처리: 2025-10-01T22:54:33.167+09:00
+            else if (dateTimeStr.contains("+") || dateTimeStr.lastIndexOf("-") > 10) {
+                return ZonedDateTime.parse(dateTimeStr).toLocalDateTime();
+            }
+            // datetime-local 형식 처리: 2025-10-01T22:54
+            else {
+                return LocalDateTime.parse(dateTimeStr);
+            }
+        } catch (Exception e) {
+            log.error("날짜 파싱 실패: {}", dateTimeStr, e);
+            throw new IllegalArgumentException("잘못된 날짜 형식입니다: " + dateTimeStr);
+        }
+    }
     
     /**
      * 공고 목록 조회 (페이징)
@@ -88,14 +115,49 @@ public class PostController {
     /**
      * 공고 등록
      * 
-     * @param requestDto 공고 등록 요청 데이터
+     * @param companyId 회사 ID
+     * @param title 공고 제목
+     * @param description 공고 설명
+     * @param experienceLevel 경력 수준
+     * @param salaryRange 급여 범위
+     * @param location 근무 위치
+     * @param workType 근무 형태
+     * @param preferredDeveloperTypes 선호 개발자 성향
+     * @param expiresAt 공고 만료일
+     * @param selectedTechStackNames 선택된 기술스택
+     * @param jobImageFile 공고 이미지 파일
      * @return 등록된 공고 정보
      */
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<JobPostingDto> createJobPosting(
-            @Valid @RequestBody CreateJobPostingRequestDto requestDto) {
+            @RequestParam Long companyId,
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam(required = false) String experienceLevel,
+            @RequestParam(required = false) String salaryRange,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String workType,
+            @RequestParam(required = false) String preferredDeveloperTypes,
+            @RequestParam String expiresAt,
+            @RequestParam(required = false) String selectedTechStackNames,
+            @RequestParam(required = false) MultipartFile jobImageFile) {
         
-        log.debug("공고 등록 요청 - 회사 ID: {}, 제목: {}", requestDto.companyId(), requestDto.title());
+        log.debug("공고 등록 요청 - 회사 ID: {}, 제목: {}", companyId, title);
+        
+        // DTO 생성
+        CreateJobPostingRequestDto requestDto = CreateJobPostingRequestDto.builder()
+                .companyId(companyId)
+                .title(title)
+                .description(description)
+                .experienceLevel(experienceLevel)
+                .salaryRange(salaryRange)
+                .location(location)
+                .workType(workType)
+                .preferredDeveloperTypes(preferredDeveloperTypes)
+                .expiresAt(parseDateTime(expiresAt))
+                .selectedTechStackNames(selectedTechStackNames)
+                .jobImageFile(jobImageFile)
+                .build();
         
         JobPostingDto response = postService.createJobPosting(requestDto);
         log.debug("공고 등록 완료 - ID: {}", response.jobPostingId());
@@ -107,15 +169,50 @@ public class PostController {
      * 공고 수정
      * 
      * @param jobPostingId 공고 ID
-     * @param requestDto 수정 요청 데이터
+     * @param companyId 회사 ID
+     * @param title 공고 제목
+     * @param description 공고 설명
+     * @param experienceLevel 경력 수준
+     * @param salaryRange 급여 범위
+     * @param location 근무 위치
+     * @param workType 근무 형태
+     * @param preferredDeveloperTypes 선호 개발자 성향
+     * @param expiresAt 공고 만료일
+     * @param selectedTechStackNames 선택된 기술스택
+     * @param jobImageFile 공고 이미지 파일
      * @return 수정된 공고 정보
      */
-    @PutMapping("/{jobPostingId}")
+    @PutMapping(value = "/{jobPostingId}", consumes = "multipart/form-data")
     public ResponseEntity<JobPostingDto> updateJobPosting(
             @PathVariable Long jobPostingId,
-            @Valid @RequestBody CreateJobPostingRequestDto requestDto) {
+            @RequestParam Long companyId,
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam(required = false) String experienceLevel,
+            @RequestParam(required = false) String salaryRange,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String workType,
+            @RequestParam(required = false) String preferredDeveloperTypes,
+            @RequestParam String expiresAt,
+            @RequestParam(required = false) String selectedTechStackNames,
+            @RequestParam(required = false) MultipartFile jobImageFile) {
         
         log.debug("공고 수정 요청 - 공고 ID: {}", jobPostingId);
+        
+        // DTO 생성
+        CreateJobPostingRequestDto requestDto = CreateJobPostingRequestDto.builder()
+                .companyId(companyId)
+                .title(title)
+                .description(description)
+                .experienceLevel(experienceLevel)
+                .salaryRange(salaryRange)
+                .location(location)
+                .workType(workType)
+                .preferredDeveloperTypes(preferredDeveloperTypes)
+                .expiresAt(parseDateTime(expiresAt))
+                .selectedTechStackNames(selectedTechStackNames)
+                .jobImageFile(jobImageFile)
+                .build();
         
         JobPostingDto response = postService.updateJobPosting(jobPostingId, requestDto);
         log.debug("공고 수정 완료 - ID: {}", response.jobPostingId());
