@@ -44,8 +44,7 @@ const Login = ({ onClose }) => {
         password: formData.password,
       });
 
-      // result now contains { message }
-      if (result && result.message === "로그인 성공") {
+      if (result && result.accessToken) {
         // 토큰이 이미 AuthService.login()에서 저장됨
         
         if (onClose) {
@@ -58,9 +57,7 @@ const Login = ({ onClose }) => {
           AuthService.redirectByRole(userInfo.role);
         }
       } else {
-        const errMsg =
-          result && result.message ? result.message : "로그인에 실패했습니다.";
-        alert(errMsg);
+        alert("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
       }
     } catch (error) {
       console.error("로그인 처리 중 예외 발생:", error);

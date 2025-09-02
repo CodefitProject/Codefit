@@ -29,30 +29,21 @@ export const useCodeAnalysis = () => {
       
       // 파일들을 FormData에 추가
       files.forEach((fileItem, index) => {
-        formData.append(`files`, fileItem.file);
-        
-        // 파일 타입에 따라 분류
-        const fileName = fileItem.file.name.toLowerCase();
-        if (fileName.includes('controller')) {
-          formData.append('controllerFile', fileItem.file);
-          formData.append('controllerFileName', fileItem.file.name);
-        } else if (fileName.includes('service')) {
-          formData.append('serviceFile', fileItem.file);
-          formData.append('serviceFileName', fileItem.file.name);
-        } else if (fileName.includes('repository') || fileName.includes('repo')) {
-          formData.append('repositoryFile', fileItem.file);
-          formData.append('repositoryFileName', fileItem.file.name);
-        } else if (fileName.includes('model') || fileName.includes('entity')) {
-          formData.append('modelFile', fileItem.file);
-          formData.append('modelFileName', fileItem.file.name);
-        }
+        formData.append('files', fileItem.file);
       });
 
-      // API 호출 (원본 XML의 엔드포인트 사용)
-      const response = await fetch('/InsWebApp/CA0001Analyze.pwkjson', {
+      // localStorage에서 accessToken 가져오기
+      const accessToken = localStorage.getItem('accessToken');
+      
+      // API 호출
+      const response = await fetch('/api/private/code_analysis', {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: {
+          ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }),
+          // FormData 사용 시 Content-Type을 설정하지 않으면 브라우저가 자동으로 설정
+        }
       });
 
       if (!response.ok) {
@@ -62,8 +53,8 @@ export const useCodeAnalysis = () => {
       const data = await response.json();
 
       // 응답 데이터 검증
-      if (data.elHeader && data.elHeader.resSuc === false) {
-        throw new Error(data.elHeader.resMsg || '서버에서 오류가 발생했습니다.');
+      if (!data.success && data.message) {
+        throw new Error(data.message);
       }
 
       // 결과 설정
