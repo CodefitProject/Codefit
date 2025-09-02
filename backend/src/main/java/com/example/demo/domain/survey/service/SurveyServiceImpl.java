@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 설문 관련 서비스 구현체
@@ -87,8 +86,8 @@ public class SurveyServiceImpl implements SurveyService {
             // 축 순서를 보장하기 위한 LinkedHashMap 사용
             Map<String, List<SurveyQuestionDto>> groupedQuestions = new LinkedHashMap<>();
             
-            // 축 순서를 명시적으로 초기화 (B_A -> R_I -> S_T -> D_F)
-            String[] axisOrder = {"B_A", "R_I", "S_T", "D_F"};
+            // 축 순서를 명시적으로 초기화 (B/A -> R/I -> S/T -> D/F)
+            String[] axisOrder = {"B/A", "R/I", "S/T", "D/F"};
             for (String axis : axisOrder) {
                 groupedQuestions.put(axis, new ArrayList<>());
             }
@@ -142,16 +141,48 @@ public class SurveyServiceImpl implements SurveyService {
             Map<String, Object> codeScores = new HashMap<>();
             // TODO: 코드 분석 결과가 구현되면 여기서 조회
             
-            // 5. 최종 MBTI 타입 계산
-            MbtiResult result = calculateFinalMbtiType(surveyScores, codeScores, user);
+            // 5. 기존 MBTI 결과 확인
+            MbtiResult existingResult = mbtiResultRepository.findByUserBaseUserId(requestDto.userId())
+                    .orElse(null);
             
-            // 6. 답변 분석 수행
+            // 6. 최종 MBTI 타입 계산
+            Map<String, Double> finalScores = calculateFinalScores(surveyScores, codeScores);
+            String finalTypeCode = calculateTypeCode(finalScores);
+            String typeName = TYPE_NAMES.getOrDefault(finalTypeCode, "알 수 없는 유형");
+            String typeDescription = generateTypeDescription(finalTypeCode);
+            
+            // 7. 답변 분석 수행
             String analysisResults = analyzeAnswers(requestDto.answers());
-            result.updateAnalysisDetails(analysisResults, "", "");
             
-            // 7. 결과 저장
-            MbtiResult savedResult = mbtiResultRepository.save(result);
-            log.debug("MBTI 결과 저장 완료 - 타입: {}", savedResult.getTypeCode());
+            MbtiResult savedResult;
+            if (existingResult != null) {
+                // 기존 결과 업데이트
+                existingResult.updateMbtiResult(
+                    finalTypeCode, typeName, typeDescription,
+                    finalScores.get("B/A"), finalScores.get("R/I"), 
+                    finalScores.get("S/T"), finalScores.get("D/F")
+                );
+                existingResult.updateAnalysisDetails(analysisResults, "", "");
+                savedResult = mbtiResultRepository.save(existingResult);
+                log.debug("기존 MBTI 결과 업데이트 완료 - 타입: {}", savedResult.getTypeCode());
+            } else {
+                // 새 결과 생성
+                MbtiResult newResult = MbtiResult.builder()
+                        .user(user)
+                        .typeCode(finalTypeCode)
+                        .typeName(typeName)
+                        .typeDescription(typeDescription)
+                        .abScore(finalScores.get("B/A"))
+                        .riScore(finalScores.get("R/I"))
+                        .stScore(finalScores.get("S/T"))
+                        .dfScore(finalScores.get("D/F"))
+                        .isMbtiChecked(true)
+                        .isCodeChecked(false)
+                        .build();
+                newResult.updateAnalysisDetails(analysisResults, "", "");
+                savedResult = mbtiResultRepository.save(newResult);
+                log.debug("새 MBTI 결과 저장 완료 - 타입: {}", savedResult.getTypeCode());
+            }
             
             return MbtiCalculationResultDto.from(savedResult);
             
@@ -208,7 +239,7 @@ public class SurveyServiceImpl implements SurveyService {
         Map<String, List<Double>> axisScores = new HashMap<>();
         
         // 축별 점수 리스트 초기화
-        for (String axis : new String[]{"B_A", "R_I", "S_T", "D_F"}) {
+        for (String axis : new String[]{"B/A", "R/I", "S/T", "D/F"}) {
             axisScores.put(axis, new ArrayList<>());
         }
         
@@ -226,18 +257,18 @@ public class SurveyServiceImpl implements SurveyService {
             
             // 축별 점수 배정 (질문 ID 기반)
             if (questionId >= 1 && questionId <= 5) {
-                axisScores.get("B_A").add(questionScore);
+                axisScores.get("B/A").add(questionScore);
             } else if (questionId >= 6 && questionId <= 10) {
-                axisScores.get("R_I").add(questionScore);
+                axisScores.get("R/I").add(questionScore);
             } else if (questionId >= 11 && questionId <= 15) {
-                axisScores.get("S_T").add(questionScore);
+                axisScores.get("S/T").add(questionScore);
             } else if (questionId >= 16 && questionId <= 20) {
-                axisScores.get("D_F").add(questionScore);
+                axisScores.get("D/F").add(questionScore);
             }
         }
         
         // 축별 점수 합계 계산
-        for (String axis : new String[]{"B_A", "R_I", "S_T", "D_F"}) {
+        for (String axis : new String[]{"B/A", "R/I", "S/T", "D/F"}) {
             List<Double> scoreList = axisScores.get(axis);
             if (!scoreList.isEmpty()) {
                 double totalScore = scoreList.stream().mapToDouble(Double::doubleValue).sum();
@@ -254,59 +285,56 @@ public class SurveyServiceImpl implements SurveyService {
     }
     
     /**
-     * 가중치를 적용하여 최종 MBTI 타입 계산
+     * 가중치를 적용하여 최종 점수 계산
      */
-    private MbtiResult calculateFinalMbtiType(Map<String, Double> surveyScores, 
-                                              Map<String, Object> codeScores, 
-                                              BaseUser user) {
+    private Map<String, Double> calculateFinalScores(Map<String, Double> surveyScores, 
+                                                     Map<String, Object> codeScores) {
         
         // 코드 분석 점수 추출 (현재는 기본값 사용)
         double codeStyleScore = 0.0;
         double codeCollabScore = 0.0;
         
         // B/A 축 계산 (+값: Architect, -값: Builder)
-        double surveyBA = surveyScores.getOrDefault("B_A", 0.0);
+        double surveyBA = surveyScores.getOrDefault("B/A", 0.0);
         double finalBA = (surveyBA * WEIGHT_BA_SURVEY) + (codeStyleScore * WEIGHT_BA_CODE);
         
         // R/I 축 계산 (+값: Innovate, -값: Refactor)  
-        double surveyRI = surveyScores.getOrDefault("R_I", 0.0);
+        double surveyRI = surveyScores.getOrDefault("R/I", 0.0);
         double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (0.0 * WEIGHT_RI_CODE);
         
         // S/T 축 계산 (+값: Team, -값: Solo)
-        double surveyST = surveyScores.getOrDefault("S_T", 0.0);
+        double surveyST = surveyScores.getOrDefault("S/T", 0.0);
         double finalST = (surveyST * WEIGHT_ST_SURVEY) + (codeCollabScore * WEIGHT_ST_CODE);
         
         // D/F 축 계산 (+값: Feature, -값: Debug)
-        double surveyDF = surveyScores.getOrDefault("D_F", 0.0);
+        double surveyDF = surveyScores.getOrDefault("D/F", 0.0);
         double finalDF = (surveyDF * WEIGHT_DF_SURVEY) + (0.0 * WEIGHT_DF_CODE);
         
         log.debug("최종 계산 점수 - BA: {}, RI: {}, ST: {}, DF: {}", finalBA, finalRI, finalST, finalDF);
         
-        // 타입 코드 결정 (0점 기준으로 분류)
+        Map<String, Double> finalScores = new HashMap<>();
+        finalScores.put("B/A", finalBA);
+        finalScores.put("R/I", finalRI);
+        finalScores.put("S/T", finalST);
+        finalScores.put("D/F", finalDF);
+        
+        return finalScores;
+    }
+    
+    /**
+     * 점수를 기반으로 MBTI 타입 코드 계산
+     */
+    private String calculateTypeCode(Map<String, Double> finalScores) {
         StringBuilder typeCode = new StringBuilder();
-        typeCode.append(finalBA >= 0 ? "A" : "B");  // +: Architect, -: Builder
-        typeCode.append(finalRI >= 0 ? "R" : "I");  // +: Refactor, -: Innovate
-        typeCode.append(finalST >= 0 ? "T" : "S");  // +: Team, -: Solo
-        typeCode.append(finalDF >= 0 ? "F" : "D");  // +: Feature, -: Debug
+        typeCode.append(finalScores.get("B/A") >= 0 ? "A" : "B");  // +: Architect, -: Builder
+        typeCode.append(finalScores.get("R/I") >= 0 ? "R" : "I");  // +: Refactor, -: Innovate  
+        typeCode.append(finalScores.get("S/T") >= 0 ? "T" : "S");  // +: Team, -: Solo
+        typeCode.append(finalScores.get("D/F") >= 0 ? "F" : "D");  // +: Feature, -: Debug
         
         String finalTypeCode = typeCode.toString();
-        String typeName = TYPE_NAMES.getOrDefault(finalTypeCode, "알 수 없는 유형");
-        String typeDescription = generateTypeDescription(finalTypeCode);
-        
         log.debug("최종 결정된 타입: {}", finalTypeCode);
         
-        return MbtiResult.builder()
-                .user(user)
-                .typeCode(finalTypeCode)
-                .typeName(typeName)
-                .typeDescription(typeDescription)
-                .abScore(finalBA)
-                .riScore(finalRI)
-                .stScore(finalST)
-                .dfScore(finalDF)
-                .isMbtiChecked(true)
-                .isCodeChecked(false)
-                .build();
+        return finalTypeCode;
     }
     
     /**

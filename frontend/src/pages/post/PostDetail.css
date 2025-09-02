@@ -1,31 +1,31 @@
 /* PostDetail 컴포넌트 전용 CSS */
 
-/* 기본 설정 */
-* {
-    box-sizing: border-box;
-}
-
-/* 메인페이지와 동일한 기본 스타일 */
-.main-wrap {
+/* PostDetail 메인 래퍼 - 푸터 없이 간단한 구조 */
+.post-detail-main-wrap {
     width: 100%;
+    min-height: 100vh;
     background-color: #ffffff;
     font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
-/* 공고 상세 페이지 - 완전 반응형 컨테이너 */
-.container {
+.post-detail-main-wrap .container {
     max-width: 1060px;
     width: 100%;
     margin: 0 auto;
     background-color: white;
-    min-height: 100vh;
     padding: 0 min(30px, 4vw);
 }
 
-.main-content {
+.post-detail-main-wrap .main-content {
     padding: 0;
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
 }
+
+
 
 /* 뒤로가기 버튼 */
 .back-section {

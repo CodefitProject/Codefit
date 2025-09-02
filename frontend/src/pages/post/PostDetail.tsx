@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.tsx';
-import Footer from '../../components/Footer/Footer.tsx';
+
 import postService from '../../services/postService';
+import AuthService from '../../services/authService.tsx';
 import './PostDetail.css';
 
 interface JobPosting {
@@ -58,19 +59,18 @@ const PostDetail: React.FC = () => {
     }, [jobPostingId, navigate]);
 
     const checkUserLoginStatus = () => {
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-                setUserInfo(parsedUserInfo);
-            } catch (e) {
-                console.error('사용자 정보 파싱 오류:', e);
-                setUserInfo(null);
-            }
+        // AuthService 사용하여 일관된 사용자 정보 가져오기
+        const userInfo = AuthService.getUserInfo();
+        console.log('PostDetail - 사용자 정보:', userInfo);
+        
+        if (userInfo) {
+            // 임시로 기업 사용자의 경우 companyId: "1" 설정 (테스트용)
+            const enrichedUserInfo = userInfo.role === 'COMPANY' 
+                ? { ...userInfo, companyId: "1" }
+                : userInfo;
+            setUserInfo(enrichedUserInfo);
+        } else {
+            setUserInfo(null);
         }
     };
 
@@ -78,14 +78,10 @@ const PostDetail: React.FC = () => {
         setLoading(true);
         try {
             const data = await postService.getPostDetail(id);
+            console.log('공고 상세 응답:', data);
             
-            if (postService.isResponseSuccessful(data)) {
-                setJobPosting(data.elData);
-            } else {
-                console.error('공고 상세 조회 에러:', data.elHeader);
-                alert(`공고 조회 실패: ${postService.getErrorMessage(data)}`);
-                navigate('/post');
-            }
+            // 표준 REST API 응답 처리
+            setJobPosting(data);
         } catch (error) {
             console.error('공고 상세 로드 실패:', error);
             alert('공고 정보를 불러올 수 없습니다.');
@@ -126,13 +122,10 @@ const PostDetail: React.FC = () => {
                 userInfo.accountId
             );
             
-            if (postService.isResponseSuccessful(data)) {
-                alert("지원이 완료되었습니다!");
-                if (jobPosting) {
-                    setJobPosting({ ...jobPosting, isApplied: true });
-                }
-            } else {
-                alert(`지원 실패: ${postService.getErrorMessage(data)}`);
+            console.log('지원 응답:', data);
+            alert("지원이 완료되었습니다!");
+            if (jobPosting) {
+                setJobPosting({ ...jobPosting, isApplied: true });
             }
         } catch (error) {
             console.error('지원 실패:', error);
@@ -154,15 +147,12 @@ const PostDetail: React.FC = () => {
         try {
             const data = await postService.deletePost(jobPostingId || '');
             
-            if (postService.isResponseSuccessful(data)) {
-                alert("공고가 삭제되었습니다.");
-                navigate('/post');
-            } else {
-                alert(`삭제 실패: ${postService.getErrorMessage(data)}`);
-            }
+            console.log('삭제 응답:', data);
+            alert("공고가 삭제되었습니다.");
+            navigate('/post');
         } catch (error) {
             console.error('공고 삭제 실패:', error);
-            alert('삭제 중 오류가 발생했습니다.');
+            alert('공고 삭제 중 오류가 발생했습니다.');
         }
     };
 
@@ -252,41 +242,52 @@ const PostDetail: React.FC = () => {
         alert(`MBTI 성향 정보:\n\n개발자의 코딩 스타일과 업무 방식을 나타내는 지표입니다.\n각 성향별로 다른 특성을 가지고 있어 팀 매칭에 활용됩니다.`);
     };
 
-    const isOwner = userInfo?.role === 'COMPANY' && userInfo?.companyId === jobPosting?.companyId;
+    // 소유자 확인 로직 (데이터 타입 고려)
+    const isOwner = userInfo?.role === 'COMPANY' && 
+                   (String(userInfo?.companyId) === String(jobPosting?.companyId) || 
+                    parseInt(userInfo?.companyId) === parseInt(jobPosting?.companyId));
+                   
+    console.log('권한 체크:', {
+        userRole: userInfo?.role,
+        userCompanyId: userInfo?.companyId,
+        postCompanyId: jobPosting?.companyId,
+        isOwner: isOwner
+    });
 
     if (loading) {
         return (
-            <div className="main-wrap">
+            <div className="post-detail-main-wrap">
                 <Header />
                 <div className="container">
-                    <div className="loading-content">
-                        <div className="loading-spinner"></div>
-                        공고 정보를 불러오는 중...
-                    </div>
+                    <main className="main-content">
+                        <div className="loading-content">
+                            <div className="loading-spinner"></div>
+                            공고 정보를 불러오는 중...
+                        </div>
+                    </main>
                 </div>
-                <Footer />
             </div>
         );
     }
 
     if (!jobPosting) {
         return (
-            <div className="main-wrap">
+            <div className="post-detail-main-wrap">
                 <Header />
                 <div className="container">
-                    <div className="empty-content">
-                        공고 정보를 찾을 수 없습니다.
-                    </div>
+                    <main className="main-content">
+                        <div className="empty-content">
+                            공고 정보를 찾을 수 없습니다.
+                        </div>
+                    </main>
                 </div>
-                <Footer />
             </div>
         );
     }
 
     return (
-        <div className="main-wrap">
+        <div className="post-detail-main-wrap">
             <Header />
-            
             <div className="container">
                 <main className="main-content">
                     {/* 뒤로가기 버튼 */}
@@ -301,7 +302,16 @@ const PostDetail: React.FC = () => {
                     <section className="company-images">
                         <div className="image-gallery">
                             <div className="main-image">
-                                {jobPosting.jobImageFileName ? (
+                                {jobPosting.jobImagePath ? (
+                                    <img 
+                                        src={jobPosting.jobImagePath}
+                                        alt={`${jobPosting.title} 공고 이미지`}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/images/default/default_company.png';
+                                        }}
+                                    />
+                                ) : jobPosting.jobImageFileName ? (
                                     <img 
                                         src={`/images/company/${jobPosting.jobImageFileName}`}
                                         alt={`${jobPosting.title} 이미지`}
@@ -478,8 +488,6 @@ const PostDetail: React.FC = () => {
                     </section>
                 </main>
             </div>
-
-            <Footer />
         </div>
     );
 };

@@ -142,27 +142,39 @@ class PostService {
     }
 
     /**
-     * 공고 수정 (POS0001Upd.pwkjson)
+     * 공고 수정 (PUT /posts/{id})
+     * @param {string} jobPostingId - 수정할 공고 ID
      * @param {Object} postData - 수정할 공고 데이터
      * @returns {Promise<Object>} 수정 결과
      */
-    async updatePost(postData) {
+    async updatePost(jobPostingId, postData) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001Upd.pwkjson`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    postVo: postData
-                }),
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            console.log('공고 수정 요청 - ID:', jobPostingId, '데이터:', postData);
+
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(postData),
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 수정 오류 응답:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('공고 수정 성공:', data);
             return data;
         } catch (error) {
             console.error('공고 수정 실패:', error);
@@ -177,22 +189,29 @@ class PostService {
      */
     async deletePost(jobPostingId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/POS0001Del.pwkjson`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    postVo: { jobPostingId }
-                }),
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            console.log('공고 삭제 요청 - ID:', jobPostingId);
+
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'DELETE',
+                headers: headers,
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            return data;
+            console.log('공고 삭제 성공');
+            return { success: true };
         } catch (error) {
             console.error('공고 삭제 실패:', error);
             throw error;
@@ -207,21 +226,34 @@ class PostService {
      */
     async applyToPost(jobPostingId, userId) {
         try {
+            const requestData = {
+                jobPostingId: parseInt(jobPostingId),
+                userId: parseInt(userId)
+            };
+
+            console.log('공고 지원 요청 데이터:', requestData);
+
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_BASE_URL}/posts/apply`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    jobPostingId,
-                    userId
-                }),
+                headers: headers,
+                body: JSON.stringify(requestData),
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            console.log('공고 지원 성공');
             return { success: true };
         } catch (error) {
             console.error('공고 지원 실패:', error);
@@ -285,6 +317,115 @@ class PostService {
             return response.elHeader.resCode || 'UNKNOWN';
         }
         return 'NO_RESPONSE';
+    }
+
+    /**
+     * 공고 등록
+     * @param {Object} postData - 공고 데이터
+     * @param {File} imageFile - 이미지 파일 (선택사항)
+     * @returns {Promise<Object>} 등록된 공고 데이터
+     */
+    async createPost(postData, imageFile) {
+        try {
+            const token = localStorage.getItem('accessToken');
+            
+            // FormData 생성 (이미지 업로드를 위해)
+            const formData = new FormData();
+            
+            // 공고 데이터 추가
+            Object.keys(postData).forEach(key => {
+                if (postData[key] !== null && postData[key] !== undefined) {
+                    formData.append(key, postData[key]);
+                }
+            });
+            
+            // 이미지 파일 추가
+            if (imageFile) {
+                formData.append('jobImageFile', imageFile);
+            }
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            console.log('공고 등록 요청 - 데이터:', postData);
+            
+            const response = await fetch(`${API_BASE_URL}/posts`, {
+                method: 'POST',
+                headers: headers,
+                body: formData, // FormData 사용
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 등록 오류 응답:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('공고 등록 성공:', data);
+            return data;
+            
+        } catch (error) {
+            console.error('공고 등록 실패:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 공고 수정
+     * @param {string} jobPostingId - 공고 ID
+     * @param {Object} postData - 수정할 공고 데이터
+     * @param {File} imageFile - 이미지 파일 (선택사항)
+     * @returns {Promise<Object>} 수정된 공고 데이터
+     */
+    async updatePost(jobPostingId, postData, imageFile) {
+        try {
+            const token = localStorage.getItem('accessToken');
+            
+            // FormData 생성 (이미지 업로드를 위해)
+            const formData = new FormData();
+            
+            // 공고 데이터 추가
+            Object.keys(postData).forEach(key => {
+                if (postData[key] !== null && postData[key] !== undefined) {
+                    formData.append(key, postData[key]);
+                }
+            });
+            
+            // 이미지 파일 추가
+            if (imageFile) {
+                formData.append('jobImageFile', imageFile);
+            }
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            console.log('공고 수정 요청 - ID:', jobPostingId, '데이터:', postData);
+            
+            const response = await fetch(`${API_BASE_URL}/posts/${jobPostingId}`, {
+                method: 'PUT',
+                headers: headers,
+                body: formData, // FormData 사용
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('공고 수정 오류 응답:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('공고 수정 성공:', data);
+            return data;
+            
+        } catch (error) {
+            console.error('공고 수정 실패:', error);
+            throw error;
+        }
     }
 }
 

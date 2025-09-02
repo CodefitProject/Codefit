@@ -13,6 +13,7 @@ interface UserInfo {
   name: string | null;
   role:  'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
+  accountId: string | null;
 }
 
 interface JwtPayload {
@@ -79,6 +80,11 @@ class AuthService {
     localStorage.setItem('accessToken', token);
   }
 
+  static setUserInfo(userInfo: UserInfo): void {
+    // JWT 토큰에서 사용자 정보를 가져오므로 별도 저장은 하지 않음
+    // 필요시 추가 구현 가능
+  }
+
   static getUserInfo(): UserInfo | null {
     try {
       const token = this.getToken();
@@ -91,7 +97,8 @@ class AuthService {
         email: decodedToken.sub,
         name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
-        baseUserId: decodedToken.baseUserId
+        baseUserId: decodedToken.baseUserId,
+        accountId: decodedToken.baseUserId // accountId는 baseUserId와 동일하게 사용
       };
     } catch (error) {
       console.error('Error getting user info from token:', error);
