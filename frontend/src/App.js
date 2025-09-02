@@ -17,6 +17,7 @@ import CareerInput from "./pages/user/CareerInput.tsx";
 import ProfileAdditional from "./pages/user/ProfileAdditional.tsx";
 import ProfileComplete from "./pages/user/ProfileComplete.tsx";
 import UserDetailRoutes from "./pages/user/UserDetail.tsx";
+import CodeAnalysisMain from "./pages/codeanalysis/CodeAnalysisMain.tsx";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/post" element={<PostList />} />
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />
+          <Route path="/codeanalysis" element={<CodeAnalysisMain />} />
           <Route path="/user/detail/*" element={<UserDetailRoutes />} />
         </Routes>
       </Router>

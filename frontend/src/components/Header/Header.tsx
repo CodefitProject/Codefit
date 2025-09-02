@@ -36,17 +36,17 @@ const Header: React.FC = () => {
     };
 
     const handleCodeAnalysis = () => {
-        if (!userInfo || !userInfo.baseUserId) {
-            alert("로그인이 필요한 서비스입니다.");
-            return;
-        }
+        // if (!userInfo || !userInfo.baseUserId) {
+        //     alert("로그인이 필요한 서비스입니다.");
+        //     return;
+        // }
         
-        if (userInfo.role === "COMPANY") {
-            alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.");
-            return;
-        }
+        // if (userInfo.role === "COMPANY") {
+        //     alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.");
+        //     return;
+        // }
         
-        alert("코드분석 페이지로 이동합니다.");
+        navigate("/codeanalysis");
     };
 
     const handlePersonalityAnalysis = () => {
@@ -99,13 +99,13 @@ const Header: React.FC = () => {
                         />
                         {showMenuForRole(userInfo?.role) && (
                             <>
-                                <Link 
-                                    to="/mbti-example"
+                                <span 
+                                    onClick={handleCodeAnalysis}
                                     className="nav-link" 
-                                    style={{marginLeft: '20px', fontSize: '16px'}}
+                                    style={{marginLeft: '20px', fontSize: '16px', cursor: 'pointer'}}
                                 >
                                     코드분석
-                                </Link>
+                                </span>
                                 <Link 
                                     to="/survey/mbti"
                                     className="nav-link" 
