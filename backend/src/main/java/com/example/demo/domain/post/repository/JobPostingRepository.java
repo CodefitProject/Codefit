@@ -65,12 +65,13 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     int updateExpiredJobPostings(@Param("now") LocalDateTime now);
 
     /**
-     * 기술스택을 포함하여 공고 상세 조회
+     * 기술스택을 포함하여 공고 상세 조회 (중간테이블 사용)
      */
     @Query("SELECT jp FROM JobPosting jp " +
            "LEFT JOIN FETCH jp.company c " +
            "LEFT JOIN FETCH c.baseUser bu " +
-           "LEFT JOIN FETCH jp.techStacks ts " +
+           "LEFT JOIN FETCH jp.jobPostingTechStacks jpts " +
+           "LEFT JOIN FETCH jpts.techStack ts " +
            "WHERE jp.jobPostingId = :jobPostingId")
     Optional<JobPosting> findByIdWithTechStacks(@Param("jobPostingId") Long jobPostingId);
 }

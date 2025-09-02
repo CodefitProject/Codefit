@@ -98,15 +98,10 @@ public class JobPosting {
     private String jobImagePath;
 
     /**
-     * 요구 기술 스택 (다대다 관계)
+     * 요구 기술 스택 (일대다 관계 - 중간테이블 사용)
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "job_posting_tech_stacks",
-        joinColumns = @JoinColumn(name = "job_posting_id"),
-        inverseJoinColumns = @JoinColumn(name = "tech_stack_id")
-    )
-    private Set<TechStack> techStacks = new HashSet<>();
+    @OneToMany(mappedBy = "jobPosting", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<JobPostingTechStack> jobPostingTechStacks = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -119,7 +114,7 @@ public class JobPosting {
     @Builder
     public JobPosting(Company company, String title, String description, String experienceLevel,
                       String salaryRange, String location, String workType, String preferredDeveloperTypes,
-                      LocalDateTime expiresAt, String status, String jobImagePath, Set<TechStack> techStacks) {
+                      LocalDateTime expiresAt, String status, String jobImagePath) {
         this.company = company;
         this.title = title;
         this.description = description;
@@ -131,7 +126,7 @@ public class JobPosting {
         this.expiresAt = expiresAt;
         this.status = status != null ? status : "ACTIVE";
         this.jobImagePath = jobImagePath;
-        this.techStacks = techStacks != null ? techStacks : new HashSet<>();
+        this.jobPostingTechStacks = new HashSet<>();
     }
 
     /**
@@ -139,7 +134,7 @@ public class JobPosting {
      */
     public void updateJobPosting(String title, String description, String experienceLevel,
                                  String salaryRange, String location, String workType,
-                                 String preferredDeveloperTypes, LocalDateTime expiresAt, Set<TechStack> techStacks) {
+                                 String preferredDeveloperTypes, LocalDateTime expiresAt) {
         this.title = title;
         this.description = description;
         this.experienceLevel = experienceLevel;
@@ -148,10 +143,33 @@ public class JobPosting {
         this.workType = workType;
         this.preferredDeveloperTypes = preferredDeveloperTypes;
         this.expiresAt = expiresAt;
-        this.techStacks.clear();
-        if (techStacks != null) {
-            this.techStacks.addAll(techStacks);
-        }
+    }
+
+    /**
+     * 기술 스택 추가
+     */
+    public void addTechStack(TechStack techStack) {
+        JobPostingTechStack jobPostingTechStack = JobPostingTechStack.builder()
+                .jobPosting(this)
+                .techStack(techStack)
+                .build();
+        this.jobPostingTechStacks.add(jobPostingTechStack);
+    }
+
+    /**
+     * 모든 기술 스택 제거
+     */
+    public void clearTechStacks() {
+        this.jobPostingTechStacks.clear();
+    }
+
+    /**
+     * 기술 스택 목록 조회 (편의 메서드)
+     */
+    public Set<TechStack> getTechStacks() {
+        return this.jobPostingTechStacks.stream()
+                .map(JobPostingTechStack::getTechStack)
+                .collect(java.util.stream.Collectors.toSet());
     }
     
     /**

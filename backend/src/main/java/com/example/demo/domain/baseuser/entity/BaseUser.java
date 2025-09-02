@@ -49,16 +49,38 @@ public class BaseUser {
     private UserRole userRole; // 일반, 기업, 관리자 등
 
     /**
-     * 사용자 보유 기술 스택 (다대다 관계)
+     * 사용자 보유 기술 스택 (일대다 관계 - 중간테이블 사용)
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "base_user_tech_stacks",
-        joinColumns = @JoinColumn(name = "base_user_id"),
-        inverseJoinColumns = @JoinColumn(name = "tech_stack_id")
-    )
+    @OneToMany(mappedBy = "baseUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<com.example.demo.domain.post.entity.TechStack> techStacks = new HashSet<>();
+    private Set<BaseUserTechStack> baseUserTechStacks = new HashSet<>();
+
+    /**
+     * 기술 스택 추가
+     */
+    public void addTechStack(com.example.demo.domain.post.entity.TechStack techStack) {
+        BaseUserTechStack baseUserTechStack = BaseUserTechStack.builder()
+                .baseUser(this)
+                .techStack(techStack)
+                .build();
+        this.baseUserTechStacks.add(baseUserTechStack);
+    }
+
+    /**
+     * 모든 기술 스택 제거
+     */
+    public void clearTechStacks() {
+        this.baseUserTechStacks.clear();
+    }
+
+    /**
+     * 기술 스택 목록 조회 (편의 메서드)
+     */
+    public Set<com.example.demo.domain.post.entity.TechStack> getTechStacks() {
+        return this.baseUserTechStacks.stream()
+                .map(BaseUserTechStack::getTechStack)
+                .collect(java.util.stream.Collectors.toSet());
+    }
 
 }
 
