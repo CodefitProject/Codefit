@@ -16,10 +16,11 @@ import java.io.IOException;
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     
-    public LoginFilter(AuthenticationManager authenticationManager) {
+    public LoginFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
         super(authenticationManager);
+        this.objectMapper = objectMapper;
         setFilterProcessesUrl("/loginPro");
     }
     

@@ -39,7 +39,7 @@
     background: linear-gradient(145deg, #fff8f8, #ffffff);
 }
 
-.card-icon {
+.action-card .card-icon {
     margin-bottom: 16px;
     display: flex;
     align-items: center;
@@ -60,7 +60,7 @@
     background: linear-gradient(145deg, #ffeaea, #ffcccc);
 }
 
-.card-icon-image {
+.action-card .card-icon-image {
     width: 60px;
     height: 60px;
     object-fit: contain;

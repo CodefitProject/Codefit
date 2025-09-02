@@ -5,6 +5,7 @@ import com.example.demo.common.security.filter.LoginFilter;
 import com.example.demo.common.security.handler.LoginFailureHandler;
 import com.example.demo.common.security.handler.LoginSuccessHandler;
 import com.example.demo.common.security.service.CustomUserDetailsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,17 +47,17 @@ public class SecurityConfig {
     }
     
     @Bean
-    public LoginFilter loginFilter(AuthenticationManager authenticationManager) {
-        LoginFilter filter = new LoginFilter(authenticationManager);
+    public LoginFilter loginFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
+        LoginFilter filter = new LoginFilter(authenticationManager, objectMapper);
         filter.setAuthenticationSuccessHandler(loginSuccessHandler);
         filter.setAuthenticationFailureHandler(loginFailureHandler);
         return filter;
     }
     
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager, ObjectMapper objectMapper) throws Exception {
         
-        LoginFilter loginFilter = loginFilter(authenticationManager);
+        LoginFilter loginFilter = loginFilter(authenticationManager, objectMapper);
         
         http
                 // CSRF 비활성화
