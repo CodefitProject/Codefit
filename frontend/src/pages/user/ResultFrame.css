@@ -1,0 +1,160 @@
+.result-frame-container {
+    width: 100%;
+    padding: 20px;
+}
+
+.result-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.result-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.mbti-result-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.mbti-result-image {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.mbti-result-content {
+    text-align: center;
+}
+
+.mbti-type-code {
+    font-size: 32px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.mbti-type-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.mbti-type-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    max-width: 400px;
+}
+
+.completion-summary {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.user-greeting {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.completion-status {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-item.completed {
+    border-left: 4px solid #28a745;
+}
+
+.status-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.result-message {
+    font-size: 16px;
+    color: #28a745;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .result-frame-container {
+        padding: 15px;
+    }
+    
+    .mbti-result-card {
+        padding: 20px;
+    }
+    
+    .mbti-result-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .mbti-type-code {
+        font-size: 28px;
+    }
+    
+    .mbti-type-name {
+        font-size: 18px;
+    }
+    
+    .completion-summary {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mbti-result-card {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .mbti-result-image {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .mbti-type-code {
+        font-size: 24px;
+    }
+    
+    .mbti-type-name {
+        font-size: 16px;
+    }
+    
+    .mbti-type-desc {
+        font-size: 13px;
+    }
+}

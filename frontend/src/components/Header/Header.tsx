@@ -1,44 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 import Modal from '../Modal/Modal';
 import Login from '../../pages/auth/Login';
 import AuthService from '../../services/authService.tsx';
-
-type UserInfo = {
-    email: string | null;
-    baseUserId: string | null;
-    name: string | null;
-    role: 'USER' | 'COMPANY' | 'ADMIN';
-}
+import { useAuth } from '../../hooks/useAuth.ts';
 
 const Header: React.FC = () => {
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const { userInfo, isLoggedIn, checkAuthStatus } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
-
-    useEffect(() => {
-        updateHeaderUI();
-    }, []);
-
-    const updateHeaderUI = () => {
-        try {
-            const userInfo = AuthService.getUserInfo();
-            const isAuthenticated = AuthService.isLoggedIn();
-            
-            if (userInfo && isAuthenticated) {
-                setUserInfo(userInfo);
-                setIsLoggedIn(true);
-            } else {
-                setUserInfo(null);
-                setIsLoggedIn(false);
-            }
-        } catch (error) {
-            console.error('Header - 사용자 정보 확인 오류:', error);
-            setUserInfo(null);
-            setIsLoggedIn(false);
-        }
-    };
 
     const handleLogin = () => {
         setShowLoginModal(true);
@@ -46,12 +17,12 @@ const Header: React.FC = () => {
 
     const handleCloseLoginModal = () => {
         setShowLoginModal(false);
-        updateHeaderUI(); // 로그인 후 헤더 UI 업데이트
+        checkAuthStatus(); // 로그인 후 헤더 UI 업데이트
     };
 
     const handleLogout = () => {
         AuthService.logout();
-        updateHeaderUI();
+        checkAuthStatus();
         window.location.reload();
     };
 
@@ -71,11 +42,11 @@ const Header: React.FC = () => {
         }
         
         if (userInfo.role === "COMPANY") {
-            alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.");
+            alert("코드 분석은 개인 사용자만 이용 가능합니다.");
             return;
         }
         
-        alert("코드분석 페이지로 이동합니다.");
+        navigate("/codeanalysis");
     };
 
     const handlePersonalityAnalysis = () => {
@@ -101,7 +72,10 @@ const Header: React.FC = () => {
     };
 
     const handleUserDetailClick = () => {
-        alert("사용자 상세 페이지로 이동합니다.");
+        if (userInfo && userInfo.role === 'USER') {
+            navigate('/user/detail');
+        }
+        // USER가 아닌 다른 역할은 아무 동작도 하지 않거나, 다른 페이지로 이동시킬 수 있습니다.
     };
 
     const showMenuForRole = (role: string | undefined) => {
@@ -125,13 +99,13 @@ const Header: React.FC = () => {
                         />
                         {showMenuForRole(userInfo?.role) && (
                             <>
-                                <Link 
-                                    to="/mbti-example"
+                                <span 
+                                    onClick={handleCodeAnalysis}
                                     className="nav-link" 
-                                    style={{marginLeft: '20px', fontSize: '16px'}}
+                                    style={{marginLeft: '20px', fontSize: '16px', cursor: 'pointer'}}
                                 >
                                     코드분석
-                                </Link>
+                                </span>
                                 <Link 
                                     to="/survey/mbti"
                                     className="nav-link" 

@@ -1,5 +1,6 @@
 package com.example.demo.common.security.handler;
 
+import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
 import com.example.demo.domain.baseuser.entity.BaseUser;
@@ -23,7 +24,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
@@ -46,12 +47,22 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         
         // 응답 헤더에 토큰 추가
         response.setHeader("Authorization", "Bearer " + accessToken);
-        
-        // JSON 응답 (토큰 정보는 헤더로 전송)
+        response.setHeader("X-Refresh-Token", refreshToken);
+
+        // JSON 응답
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"message\": \"로그인 성공\"}"); // Simple success message
+
+        LoginResponse loginResponse = LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .username(email)
+                .role(role)
+                .build();
+
+        response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
         
         log.debug("로그인 응답 전송 완료 - 사용자: {}", name);
     }
