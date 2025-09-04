@@ -36,15 +36,15 @@ const Header: React.FC = () => {
     };
 
     const handleCodeAnalysis = () => {
-        if (!userInfo || !userInfo.baseUserId) {
-            alert("로그인이 필요한 서비스입니다.");
-            return;
-        }
+        // if (!userInfo || !userInfo.baseUserId) {
+        //     alert("로그인이 필요한 서비스입니다.");
+        //     return;
+        // }
         
-        if (userInfo.role === "COMPANY") {
-            alert("코드 분석은 개인 사용자만 이용 가능합니다.");
-            return;
-        }
+        // if (userInfo.role === "COMPANY") {
+        //     alert("코드 분석은 개인 사용자만 이용 가능합니다.");
+        //     return;
+        // }
         
         navigate("/codeanalysis");
     };

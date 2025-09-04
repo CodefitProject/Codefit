@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -25,28 +26,8 @@ public class CodeAnalysisController {
     @PostMapping
     public ResponseEntity<CodeAnalysisResponseDto> analyzeCode(
             @RequestParam("files") List<MultipartFile> files,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        return codeAnalysisService.analyzeCodeWithResponse(userDetails, files);
-    }
+            @AuthenticationPrincipal CustomUserDetails userDetails){
 
-    /**
-     * 사용자의 코드 분석 히스토리 조회
-     */
-    @GetMapping("/history")
-    public ResponseEntity<List<CodeAnalysis>> getAnalysisHistory(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        return codeAnalysisService.getAnalysisHistoryWithResponse(userDetails);
-    }
-
-    /**
-     * 사용자의 최신 분석 결과 조회
-     */
-    @GetMapping("/latest")
-    public ResponseEntity<CodeAnalysis> getLatestAnalysis(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        return codeAnalysisService.getLatestAnalysisWithResponse(userDetails);
-    }
+        return ResponseEntity.ok(codeAnalysisService.analyzeCode(userDetails.baseUser().getBaseUserId(), files));
+      }
 }

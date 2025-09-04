@@ -37,7 +37,7 @@ public class CodeAnalysis {
     @Column(name = "developer_preference_score")
     private Integer developerPreferenceScore;
 
-    @Column(name = "comment")
+    @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
 
     @Column(name = "confidence_score", precision = 3, scale = 2)
