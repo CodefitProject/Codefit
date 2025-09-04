@@ -7,23 +7,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
-/**
- * 비동기 처리를 위한 설정 클래스
- * SMTP 이메일 전송 등의 비동기 작업을 위한 설정을 제공합니다.
- * 
- * @author system
- * @since 2025.01
- * @author : 김지훈
- */
+// 비동기 작업을 위한 설정
 @Configuration
 @EnableAsync
 public class AsyncConfig {
 
-    /**
-     * 이메일 전송용 비동기 처리 Executor
-     * 
-     * @return ThreadPoolTaskExecutor
-     */
+    //이메일 전송용 비동기 처리 Executor
     @Bean(name = "emailTaskExecutor")
     public Executor emailTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -52,11 +41,7 @@ public class AsyncConfig {
         return executor;
     }
     
-    /**
-     * 일반적인 비동기 작업용 Executor
-     * 
-     * @return ThreadPoolTaskExecutor
-     */
+    //일반적인 비동기 작업용 Executor
     @Bean(name = "generalTaskExecutor")
     public Executor generalTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

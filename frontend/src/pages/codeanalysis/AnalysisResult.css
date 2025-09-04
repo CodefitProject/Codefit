@@ -1,0 +1,271 @@
+.analysis-result-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.result-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.result-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.result-date {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.analysis-info-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.developer-type-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.developer-type-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #007bff;
+  margin: 0;
+  flex: 1;
+}
+
+.type-code-badge {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.type-description {
+  margin-bottom: 32px;
+}
+
+.type-description p {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.7;
+  margin: 0;
+  text-align: justify;
+}
+
+.characteristics-section {
+  margin-bottom: 32px;
+}
+
+.characteristics-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.characteristics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.characteristic-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.check-icon {
+  color: #4CAF50;
+  font-weight: bold;
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.scores-section {
+  margin-bottom: 32px;
+}
+
+.score-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.score-label {
+  font-weight: 600;
+  color: #333;
+  min-width: 140px;
+  font-size: 14px;
+}
+
+.score-bar {
+  flex: 1;
+  height: 24px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.3s ease;
+}
+
+.score-fill.development-style {
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.score-fill.preference {
+  background: linear-gradient(90deg, #007bff, #6610f2);
+}
+
+.score-fill.confidence {
+  background: linear-gradient(90deg, #fd7e14, #e74c3c);
+}
+
+.score-value {
+  position: absolute;
+  right: 12px;
+  font-weight: 600;
+  color: #333;
+  font-size: 12px;
+}
+
+.comment-section {
+  margin-bottom: 32px;
+}
+
+.comment-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.analysis-comment {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.analysis-meta {
+  display: flex;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
+}
+
+.meta-value {
+  color: #333;
+  font-size: 14px;
+}
+
+.error-section {
+  max-width: 600px;
+  margin: 100px auto;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-section h2 {
+  color: #e74c3c;
+  margin-bottom: 16px;
+}
+
+.error-section p {
+  color: #666;
+  font-size: 16px;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .result-content {
+    padding: 20px 16px;
+  }
+  
+  .analysis-info-card {
+    padding: 24px;
+  }
+  
+  .developer-type-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .developer-type-title {
+    font-size: 24px;
+  }
+  
+  .score-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .score-label {
+    min-width: auto;
+  }
+  
+  .score-bar {
+    width: 100%;
+  }
+  
+  .analysis-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

@@ -19,6 +19,7 @@ import ProfileAdditional from "./pages/user/ProfileAdditional.tsx";
 import ProfileComplete from "./pages/user/ProfileComplete.tsx";
 import UserDetailRoutes from "./pages/user/UserDetail.tsx";
 import CodeAnalysisMain from "./pages/codeanalysis/CodeAnalysisMain.tsx";
+import AnalysisResult from "./pages/codeanalysis/AnalysisResult.tsx";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />
           <Route path="/codeanalysis" element={<CodeAnalysisMain />} />
+          <Route path="/analysis-result/:analysisId" element={<AnalysisResult />} />
           <Route path="/user/detail/*" element={<UserDetailRoutes />} />
           <Route path="/post/edit/:jobPostingId" element={<PostEdit />} />
         </Routes>
