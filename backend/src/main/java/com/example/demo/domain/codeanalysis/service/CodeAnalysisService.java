@@ -1,6 +1,7 @@
 package com.example.demo.domain.codeanalysis.service;
 
 import com.example.demo.domain.codeanalysis.dto.CodeAnalysisResponseDto;
+import com.example.demo.domain.codeanalysis.dto.CodeAnalysisCompleteDto;
 import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
 import com.example.demo.global.exception.GeminiException;
 import com.example.demo.domain.codeanalysis.repository.CodeAnalysisRepository;
@@ -27,9 +28,9 @@ public class CodeAnalysisService {
     private final ObjectMapper objectMapper;
     private final GeminiService geminiService;
 
-    //코드 분석 메인 메서드
+    //코드 분석 메인 메서드 - ID만 반환
     @Transactional
-    public CodeAnalysisResponseDto analyzeCode(Long userId, List<MultipartFile> files) {
+    public CodeAnalysisCompleteDto analyzeCode(Long baseUserId, List<MultipartFile> files) {
         // 1. 업로드된 코드 파일들을 하나의 문자열로 결합
         StringBuilder codeContent = new StringBuilder();
         for (MultipartFile file : files) {
@@ -57,7 +58,7 @@ public class CodeAnalysisService {
                 objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
         } catch (JsonProcessingException e) {
             log.error("Gemini AI 응답 JSON 파싱 실패: {}", analysisResultJson, e);
-            return createPartialSuccessResponse(userId, analysisResultJson);
+            return createPartialSuccessResponse(baseUserId, analysisResultJson);
         }
 
         // Gemini 응답에서 실제 분석 값 추출
@@ -70,7 +71,7 @@ public class CodeAnalysisService {
 
         // 4. 코드 분석 엔티티 생성
         CodeAnalysis codeAnalysis = CodeAnalysis.builder()
-                .userId(userId)
+                .baseUserId(baseUserId)
                 .analysisResult(analysisResultJson)
                 .typeCode(typeCode)
                 .developmentStyleScore(developmentStyleScore)
@@ -82,28 +83,17 @@ public class CodeAnalysisService {
         // 5. 분석 결과를 데이터베이스에 저장
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
 
-        // 6. 성공 응답 DTO 생성 및 반환
-        return new CodeAnalysisResponseDto(
+        // 6. 완료 응답 DTO 생성 및 반환 (ID만 포함)
+        return new CodeAnalysisCompleteDto(
                 savedAnalysis.getAnalysisId(),
-                savedAnalysis.getUserId(),
-                savedAnalysis.getTypeCode(),
-                "적응형 지능형",
-                "Gemini AI를 활용한 코드 분석",
-                savedAnalysis.getDevelopmentStyleScore(),
-                savedAnalysis.getDeveloperPreferenceScore(),
-                savedAnalysis.getConfidenceScore(),
-                "자동_감지",
-                savedAnalysis.getAnalysisResult(),
-                savedAnalysis.getComment(),
-                savedAnalysis.getCreatedAt(),
                 true,
                 "코드 분석이 성공적으로 완료되었습니다."
         );
     }
 
-    private CodeAnalysisResponseDto createPartialSuccessResponse(Long userId, String analysisResultJson) {
+    private CodeAnalysisCompleteDto createPartialSuccessResponse(Long baseUserId, String analysisResultJson) {
         CodeAnalysis codeAnalysis = CodeAnalysis.builder()
-                .userId(userId)
+                .baseUserId(baseUserId)
                 .analysisResult(analysisResultJson)
                 .typeCode("AI")
                 .developmentStyleScore(0)
@@ -114,21 +104,67 @@ public class CodeAnalysisService {
 
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
 
-        return new CodeAnalysisResponseDto(
+        return new CodeAnalysisCompleteDto(
                 savedAnalysis.getAnalysisId(),
-                savedAnalysis.getUserId(),
-                savedAnalysis.getTypeCode(),
-                "적응형 지능형",
-                "Gemini AI를 활용한 코드 분석",
-                savedAnalysis.getDevelopmentStyleScore(),
-                savedAnalysis.getDeveloperPreferenceScore(),
-                savedAnalysis.getConfidenceScore(),
-                "자동_감지",
-                savedAnalysis.getAnalysisResult(),
-                savedAnalysis.getComment(),
-                savedAnalysis.getCreatedAt(),
                 false,
                 "코드 분석은 완료되었으나 결과 파싱 중 오류가 발생했습니다."
+        );
+    }
+
+    /**
+     * 분석 ID로 코드 분석 결과 조회
+     */
+    @Transactional(readOnly = true)
+    public CodeAnalysisResponseDto getAnalysisResult(Long analysisId) {
+        CodeAnalysis analysis = codeAnalysisRepository.findByAnalysisId(analysisId)
+                .orElseThrow(() -> new GeminiException("분석 결과를 찾을 수 없습니다. ID: " + analysisId));
+
+        return new CodeAnalysisResponseDto(
+                analysis.getAnalysisId(),
+                analysis.getBaseUserId(),
+                analysis.getTypeCode(),
+                "적응형 지능형", // 고정값 (프론트에서 타입별 이름 처리)
+                "Gemini AI를 활용한 코드 분석",
+                analysis.getDevelopmentStyleScore(),
+                analysis.getDeveloperPreferenceScore(),
+                analysis.getConfidenceScore(),
+                "자동_감지",
+                analysis.getAnalysisResult(),
+                analysis.getComment(),
+                analysis.getCreatedAt(),
+                true,
+                "분석 결과 조회 완료"
+        );
+    }
+
+    /**
+     * 사용자 ID와 분석 ID로 코드 분석 결과 조회 (보안 강화)
+     */
+    @Transactional(readOnly = true)
+    public CodeAnalysisResponseDto getAnalysisResultByUser(Long analysisId, Long baseUserId) {
+        log.info("분석 결과 조회 시도 - analysisId: {}, baseUserId: {}", analysisId, baseUserId);
+        
+        CodeAnalysis analysis = codeAnalysisRepository.findByAnalysisIdAndBaseUserId(analysisId, baseUserId)
+                .orElseThrow(() -> {
+                    log.error("분석 결과 조회 실패 - analysisId: {}, baseUserId: {}", analysisId, baseUserId);
+                    return new GeminiException("분석 결과를 찾을 수 없거나 접근 권한이 없습니다.");
+                });
+
+        return new CodeAnalysisResponseDto(
+                analysis.getAnalysisId(),
+                analysis.getBaseUserId(),
+                analysis.getTypeCode(),
+                "적응형 지능형",
+                "Gemini AI를 활용한 코드 분석",
+                analysis.getDevelopmentStyleScore(),
+                analysis.getDeveloperPreferenceScore(),
+                analysis.getConfidenceScore(),
+                "자동_감지",
+                analysis.getAnalysisResult(),
+                analysis.getComment(),
+                analysis.getCreatedAt(),
+                true,
+                "분석 결과 조회 완료"
         );
     }
 }

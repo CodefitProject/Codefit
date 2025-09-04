@@ -1,23 +1,21 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface UploadedFile {
   name: string;
   file: File;
 }
 
-interface CodeAnalysisResult {
-  typeCode: string;
-  typeName: string;
-  typeDesc: string;
-  developmentStyleScore: number;
-  developerPreferenceScore: number;
-  confidenceScore: number;
-  language: string;
+interface CodeAnalysisCompleteResponse {
+  analysisId: number;
+  success: boolean;
+  message: string;
 }
 
 export const useCodeAnalysis = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<CodeAnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<CodeAnalysisCompleteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const analyzeCode = async (files: UploadedFile[]) => {
@@ -59,6 +57,18 @@ export const useCodeAnalysis = () => {
 
       // 결과 설정
       setAnalysisResult(data);
+      
+      // 디버깅용 로그
+      console.log('백엔드 응답 데이터:', data);
+      
+      // 분석 성공 시 결과 페이지로 이동
+      if (data.success && data.analysisId) {
+        console.log('페이지 이동 실행:', `/analysis-result/${data.analysisId}`);
+        navigate(`/analysis-result/${data.analysisId}`);
+      } else {
+        console.log('페이지 이동 조건 실패:', { success: data.success, analysisId: data.analysisId });
+      }
+      
       return data;
 
     } catch (err) {

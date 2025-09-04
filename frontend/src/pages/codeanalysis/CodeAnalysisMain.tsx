@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useCodeAnalysis } from '../../hooks/useCodeAnalysis.ts';
 import Header from '../../components/Header/Header.tsx';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 import './CodeAnalysisMain.css';
 
 interface UploadedFile {
@@ -49,6 +50,15 @@ const CodeAnalysisMain: React.FC = () => {
   return (
     <div className="code-analysis-container">
       <Header />
+      
+      {/* Loading Overlay */}
+      {isLoading && (
+        <LoadingSpinner 
+          message="코드 분석 중입니다..."
+          overlay={true}
+          size="large"
+        />
+      )}
 
       {/* Main Content */}
       <div className="main-content">

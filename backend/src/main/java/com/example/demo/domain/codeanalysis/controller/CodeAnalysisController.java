@@ -1,6 +1,7 @@
 package com.example.demo.domain.codeanalysis.controller;
 
 import com.example.demo.common.security.service.CustomUserDetails;
+import com.example.demo.domain.codeanalysis.dto.CodeAnalysisCompleteDto;
 import com.example.demo.domain.codeanalysis.dto.CodeAnalysisResponseDto;
 import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
 import com.example.demo.domain.codeanalysis.service.CodeAnalysisService;
@@ -20,14 +21,29 @@ public class CodeAnalysisController {
 
     private final CodeAnalysisService codeAnalysisService;
 
-    /**
-     * 코드 분석 요청
-     */
+    //코드 분석 요청
     @PostMapping
-    public ResponseEntity<CodeAnalysisResponseDto> analyzeCode(
+    public ResponseEntity<CodeAnalysisCompleteDto> analyzeCode(
             @RequestParam("files") List<MultipartFile> files,
             @AuthenticationPrincipal CustomUserDetails userDetails){
 
-        return ResponseEntity.ok(codeAnalysisService.analyzeCode(userDetails.baseUser().getBaseUserId(), files));
+        Long baseUserId = userDetails.baseUser().getBaseUserId();
+        System.out.println("=== 컨트롤러에서 받은 baseUserId: " + baseUserId);
+        System.out.println("=== CustomUserDetails: " + userDetails);
+        System.out.println("=== BaseUser: " + userDetails.baseUser());
+        
+        return ResponseEntity.ok(codeAnalysisService.analyzeCode(baseUserId, files));
       }
+
+    //분석 결과 조회
+    @GetMapping("/{analysisId}")
+    public ResponseEntity<CodeAnalysisResponseDto> getAnalysisResultSecure(
+            @PathVariable Long analysisId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        
+        return ResponseEntity.ok(codeAnalysisService.getAnalysisResultByUser(
+            analysisId, 
+            userDetails.baseUser().getBaseUserId()
+        ));
+    }
 }
