@@ -34,14 +34,14 @@ const SurveyMbti: React.FC = () => {
 
     // 축 정보 정의
     const axisNames: { [key: string]: AxisInfo } = {
-        'B_A': { name: 'Builder vs Architect', desc: '개발 스타일' },
-        'R_I': { name: 'Innovate vs Refactor', desc: '기술 성향' },
-        'S_T': { name: 'Solo vs Team', desc: '협업 방식' },
-        'D_F': { name: 'Debug vs Feature', desc: '작업 선호' }
+        'B/A': { name: 'Builder vs Architect', desc: '개발 스타일' },
+        'R/I': { name: 'Innovate vs Refactor', desc: '기술 성향' },
+        'S/T': { name: 'Solo vs Team', desc: '협업 방식' },
+        'D/F': { name: 'Debug vs Feature', desc: '작업 선호' }
     };
 
     // 축 순서
-    const axisOrder = ['B_A', 'R_I', 'S_T', 'D_F'];
+    const axisOrder = ['B/A', 'R/I', 'S/T', 'D/F'];
 
     // 사용자 정보 확인 및 권한 체크
     const checkUserPermission = useCallback((): boolean => {

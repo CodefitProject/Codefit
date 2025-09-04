@@ -1,140 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './MainPage.css';
 import Header from '../components/Header/Header.tsx';
 import Footer from '../components/Footer/Footer.tsx';
+import { useUserAuthAndInfo } from '../hooks/useUserAuthAndInfo.ts';
+import { useCompanies } from '../hooks/useCompanies.ts';
+import { useJobPostings } from '../hooks/useJobPostings.ts';
 
+// 컴포넌트 외부로 이동하거나, 각 훅에서 타입을 export하여 사용할 수 있습니다.
 interface Company {
     companyId: number;
     name: string;
     logoPath?: string;
 }
 
-interface JobPosting {
-    jobPostingId: string;
-    name: string;
-    location: string;
-    experienceLevel: string;
-    preferredDeveloperTypes: string[];
-    jobImageFileName?: string;
-}
-
-interface UserInfo {
-    accountId: string;
-    name: string;
-    isMbtiChecked?: boolean;
-    isCodeChecked?: boolean;
-    matchingProposalCount?: number;
-    applicationStatusCount?: number;
-}
-
 const MainPage: React.FC = () => {
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [companies, setCompanies] = useState<Company[]>([]);
-    const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-    const [profileCompletion, setProfileCompletion] = useState<number>(0);
-
-    useEffect(() => {
-        console.log("메인 페이지가 로드되었습니다.");
-        
-        // 쿠키에서 사용자 정보 확인
-        checkUserLoginStatus();
-        
-        // 데이터 로딩
-        loadCompanyList();
-        loadJobPostings();
-    }, []);
-
-    const checkUserLoginStatus = () => {
-        // 실제 구현에서는 쿠키나 세션에서 사용자 정보 확인
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-                setUserInfo(parsedUserInfo);
-                setIsLoggedIn(true);
-                loadUserMatchingInfo(parsedUserInfo.accountId);
-            } catch (e) {
-                console.error('사용자 정보 파싱 오류:', e);
-                setIsLoggedIn(false);
-            }
-        }
-    };
-
-    const loadCompanyList = async () => {
-        try {
-            const response = await fetch('/api/public/companies?page=0&size=16');
-            if (response.ok) {
-                const data = await response.json();
-                const companiesData = data.companies.map((company: any) => ({
-                    companyId: company.id,
-                    name: company.name,
-                    logoPath: company.logoPath
-                }));
-                setCompanies(companiesData);
-            } else {
-                console.error('회사 목록 로드 실패:', response.status);
-                setCompanies([]);
-            }
-        } catch (error) {
-            console.error('회사 목록 로드 실패:', error);
-            setCompanies([]);
-        }
-    };
-
-    const loadJobPostings = async () => {
-        // 실제 구현에서는 API 호출
-        try {
-            // 빈 배열로 초기화
-            setJobPostings([]);
-        } catch (error) {
-            console.error('채용 공고 로드 실패:', error);
-        }
-    };
-
-    const loadUserMatchingInfo = async (accountId: string) => {
-        // 실제 구현에서는 API 호출
-        try {
-            // Mock data
-            const mockData = {
-                isMbtiChecked: true,
-                isCodeChecked: false,
-                matchingProposalCount: 3,
-                applicationStatusCount: 5
-            };
-            
-            if (userInfo) {
-                setUserInfo({ ...userInfo, ...mockData });
-                updateProfileCompletion(mockData.isMbtiChecked, mockData.isCodeChecked);
-            }
-        } catch (error) {
-            console.error('매칭 정보 로드 실패:', error);
-        }
-    };
-
-    const updateProfileCompletion = (mbtiChecked: boolean, codeChecked: boolean) => {
-        let completeCount = 0;
-        if (mbtiChecked) completeCount++;
-        if (codeChecked) completeCount++;
-        const totalTasks = 2;
-        const completionPercentage = (completeCount / totalTasks) * 100;
-        setProfileCompletion(completionPercentage);
-    };
+    const { userInfo, isLoggedIn, profileCompletion } = useUserAuthAndInfo();
+    const { companies } = useCompanies();
+    const { jobPostings } = useJobPostings();
 
     // Event Handlers
-    const handleLogoClick = () => window.location.reload();
-    
     const handleMainLoginClick = () => {
-        // 실제 구현에서는 로그인 팝업 열기
+        // Header의 로그인 버튼 클릭과 동일한 동작을 하도록 위임할 수 있습니다.
+        // 혹은 Header의 로그인 모달을 여는 함수를 props로 받아 실행할 수 있습니다.
         alert("로그인 화면으로 이동합니다.");
     };
     
     const handleCard1Click = () => {
-        // MBTI 예제 페이지로 이동
         window.location.href = '/mbti-example';
     };
     
@@ -143,7 +34,6 @@ const MainPage: React.FC = () => {
             alert("로그인 후 이용해주세요.");
             return;
         }
-        // 개발자 성향분석 페이지로 이동
         window.location.href = "/survey/mbti";
     };
     
@@ -152,12 +42,10 @@ const MainPage: React.FC = () => {
             alert("로그인 후 이용해주세요.");
             return;
         }
-        // 코드분석 페이지로 이동
         alert("코드분석 페이지로 이동합니다.");
     };
     
     const handleJobPostingClick = (jobPostingId: string) => {
-        // 채용 공고 상세 페이지로 이동
         console.log(`채용 공고 ${jobPostingId} 클릭`);
         alert(`채용 공고 상세 페이지로 이동합니다. (ID: ${jobPostingId})`);
     };
@@ -169,13 +57,11 @@ const MainPage: React.FC = () => {
     
     const handleMatchingProposalClick = () => {
         if (!isLoggedIn) return;
-        // UserDetail 페이지의 매칭 제안으로 이동
         alert("매칭 제안 페이지로 이동합니다.");
     };
     
     const handleApplicationStatusClick = () => {
         if (!isLoggedIn) return;
-        // UserDetail 페이지의 지원 현황으로 이동
         alert("지원 현황 페이지로 이동합니다.");
     };
     

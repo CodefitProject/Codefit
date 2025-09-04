@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 채용 공고 리포지토리
@@ -62,5 +63,16 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
      */
     @Query("UPDATE JobPosting jp SET jp.status = 'EXPIRED' WHERE jp.expiresAt <= :now AND jp.status = 'ACTIVE'")
     int updateExpiredJobPostings(@Param("now") LocalDateTime now);
+
+    /**
+     * 기술스택을 포함하여 공고 상세 조회 (중간테이블 사용)
+     */
+    @Query("SELECT jp FROM JobPosting jp " +
+           "LEFT JOIN FETCH jp.company c " +
+           "LEFT JOIN FETCH c.baseUser bu " +
+           "LEFT JOIN FETCH jp.jobPostingTechStacks jpts " +
+           "LEFT JOIN FETCH jpts.techStack ts " +
+           "WHERE jp.jobPostingId = :jobPostingId")
+    Optional<JobPosting> findByIdWithTechStacks(@Param("jobPostingId") Long jobPostingId);
 }
 

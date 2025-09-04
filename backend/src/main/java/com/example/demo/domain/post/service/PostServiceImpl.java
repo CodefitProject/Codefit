@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.service;
 
+import com.example.demo.common.service.S3Service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.company.entity.Company;
@@ -7,9 +8,11 @@ import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.domain.post.dto.*;
 import com.example.demo.domain.post.entity.JobApplication;
 import com.example.demo.domain.post.entity.JobPosting;
+import com.example.demo.domain.post.entity.JobPostingTechStack;
 import com.example.demo.domain.post.entity.TechStack;
 import com.example.demo.domain.post.repository.JobApplicationRepository;
 import com.example.demo.domain.post.repository.JobPostingRepository;
+import com.example.demo.domain.post.repository.JobPostingTechStackRepository;
 import com.example.demo.domain.post.repository.TechStackRepository;
 import com.example.demo.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,10 +42,12 @@ public class PostServiceImpl implements PostService {
     
     private final JobPostingRepository jobPostingRepository;
     private final TechStackRepository techStackRepository;
+    private final JobPostingTechStackRepository jobPostingTechStackRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final CompanyRepository companyRepository;
     private final BaseUserRepository baseUserRepository;
     private final ObjectMapper objectMapper;
+    private final S3Service s3Service;
     
     @Override
     @Transactional(readOnly = true)
@@ -120,7 +123,8 @@ public class PostServiceImpl implements PostService {
         log.debug("공고 상세 조회 - 공고 ID: {}, 사용자 ID: {}", jobPostingId, userId);
         
         try {
-            JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+            // 기술스택을 포함하여 조회
+            JobPosting jobPosting = jobPostingRepository.findByIdWithTechStacks(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
             JobPostingDto dto = JobPostingDto.from(jobPosting);
@@ -146,6 +150,7 @@ public class PostServiceImpl implements PostService {
                         .logoPath(dto.logoPath())
                         .createdAt(dto.createdAt())
                         .isApplied(isApplied)
+                        .selectedTechStackNames(dto.selectedTechStackNames()) // 기술스택 정보 유지
                         .build();
             }
             
@@ -167,25 +172,31 @@ public class PostServiceImpl implements PostService {
             Company company = companyRepository.findById(requestDto.companyId())
                     .orElseThrow(() -> new BusinessException("존재하지 않는 회사입니다."));
             
-            // 기술스택 처리
-            Set<TechStack> techStacks = new HashSet<>();
+            // 기술스택 이름 목록 파싱
+            List<String> techStackNames = null;
             if (requestDto.selectedTechStackNames() != null && !requestDto.selectedTechStackNames().trim().isEmpty()) {
                 try {
                     // JSON 문자열을 List<String>으로 파싱
-                    List<String> techStackNames = objectMapper.readValue(
+                    techStackNames = objectMapper.readValue(
                         requestDto.selectedTechStackNames(), 
                         new TypeReference<List<String>>() {}
                     );
                     
-                    // 기술스택 이름으로 엔티티 조회
-                    for (String techStackName : techStackNames) {
-                        techStackRepository.findByTechStackName(techStackName)
-                            .ifPresent(techStacks::add);
-                    }
-                    
-                    log.debug("기술스택 처리 완료 - 총 {}개", techStacks.size());
+                    log.debug("기술스택 처리 완료 - 총 {}개", techStackNames.size());
                 } catch (Exception e) {
                     log.warn("기술스택 파싱 중 오류 발생: {}", e.getMessage());
+                }
+            }
+            
+            // 이미지 업로드 처리
+            String jobImagePath = null;
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                try {
+                    jobImagePath = s3Service.uploadFile(requestDto.jobImageFile(), "job_images");
+                    log.info("공고 이미지 업로드 성공: {}", jobImagePath);
+                } catch (Exception e) {
+                    log.warn("공고 이미지 업로드 실패: {}", e.getMessage());
+                    // 이미지 업로드 실패는 공고 등록을 중단시키지 않음
                 }
             }
             
@@ -201,11 +212,26 @@ public class PostServiceImpl implements PostService {
                     .preferredDeveloperTypes(requestDto.preferredDeveloperTypes())
                     .expiresAt(requestDto.expiresAt())
                     .status("ACTIVE")
-                    .techStacks(techStacks)
+                    .jobImagePath(jobImagePath)
                     .build();
             
             JobPosting savedJobPosting = jobPostingRepository.save(jobPosting);
             log.debug("공고 등록 완료 - ID: {}", savedJobPosting.getJobPostingId());
+            
+            // 기술스택 관계 저장
+            if (techStackNames != null && !techStackNames.isEmpty()) {
+                for (String techStackName : techStackNames) {
+                    techStackRepository.findByTechStackName(techStackName)
+                        .ifPresent(techStack -> {
+                            JobPostingTechStack jobPostingTechStack = JobPostingTechStack.builder()
+                                .jobPosting(savedJobPosting)
+                                .techStack(techStack)
+                                .build();
+                            jobPostingTechStackRepository.save(jobPostingTechStack);
+                        });
+                }
+                log.debug("기술스택 관계 저장 완료 - 총 {}개", techStackNames.size());
+            }
             
             return JobPostingDto.from(savedJobPosting);
             
@@ -223,25 +249,42 @@ public class PostServiceImpl implements PostService {
             JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
-            // 기술스택 처리
-            Set<TechStack> techStacks = new HashSet<>();
+            // 기술스택 이름 목록 파싱
+            List<String> techStackNames = null;
             if (requestDto.selectedTechStackNames() != null && !requestDto.selectedTechStackNames().trim().isEmpty()) {
                 try {
                     // JSON 문자열을 List<String>으로 파싱
-                    List<String> techStackNames = objectMapper.readValue(
+                    techStackNames = objectMapper.readValue(
                         requestDto.selectedTechStackNames(), 
                         new TypeReference<List<String>>() {}
                     );
                     
-                    // 기술스택 이름으로 엔티티 조회
-                    for (String techStackName : techStackNames) {
-                        techStackRepository.findByTechStackName(techStackName)
-                            .ifPresent(techStacks::add);
-                    }
-                    
-                    log.debug("기술스택 처리 완료 - 총 {}개", techStacks.size());
+                    log.debug("기술스택 처리 완료 - 총 {}개", techStackNames.size());
                 } catch (Exception e) {
                     log.warn("기술스택 파싱 중 오류 발생: {}", e.getMessage());
+                }
+            }
+            
+            // 이미지 업로드 처리
+            String jobImagePath = jobPosting.getJobImagePath(); // 기존 이미지 경로 유지
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                try {
+                    // 기존 이미지가 있다면 삭제
+                    if (jobImagePath != null) {
+                        try {
+                            String fileKey = s3Service.extractFileKeyFromUrl(jobImagePath);
+                            s3Service.deleteFile(fileKey);
+                        } catch (Exception e) {
+                            log.warn("기존 이미지 삭제 실패: {}", e.getMessage());
+                        }
+                    }
+                    
+                    // 새 이미지 업로드
+                    jobImagePath = s3Service.uploadFile(requestDto.jobImageFile(), "job_images");
+                    log.info("공고 이미지 업로드 성공: {}", jobImagePath);
+                } catch (Exception e) {
+                    log.warn("공고 이미지 업로드 실패: {}", e.getMessage());
+                    // 이미지 업로드 실패는 공고 수정을 중단시키지 않음
                 }
             }
             
@@ -254,9 +297,31 @@ public class PostServiceImpl implements PostService {
                     requestDto.location(),
                     requestDto.workType(),
                     requestDto.preferredDeveloperTypes(),
-                    requestDto.expiresAt(),
-                    techStacks
+                    requestDto.expiresAt()
             );
+            
+            // 이미지 경로 업데이트
+            if (requestDto.jobImageFile() != null && !requestDto.jobImageFile().isEmpty()) {
+                jobPosting.updateJobImagePath(jobImagePath);
+            }
+            
+            // 기존 기술스택 관계 삭제
+            jobPostingTechStackRepository.deleteByJobPostingId(jobPostingId);
+            
+            // 새로운 기술스택 관계 저장
+            if (techStackNames != null && !techStackNames.isEmpty()) {
+                for (String techStackName : techStackNames) {
+                    techStackRepository.findByTechStackName(techStackName)
+                        .ifPresent(techStack -> {
+                            JobPostingTechStack jobPostingTechStack = JobPostingTechStack.builder()
+                                .jobPosting(jobPosting)
+                                .techStack(techStack)
+                                .build();
+                            jobPostingTechStackRepository.save(jobPostingTechStack);
+                        });
+                }
+                log.debug("기술스택 관계 업데이트 완료 - 총 {}개", techStackNames.size());
+            }
             
             JobPosting updatedJobPosting = jobPostingRepository.save(jobPosting);
             log.debug("공고 수정 완료 - ID: {}", updatedJobPosting.getJobPostingId());

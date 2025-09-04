@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import surveyService from '../../services/surveyService.ts';
+import surveyService, { SurveyService } from '../../services/surveyService.ts';
 import {
     AnalysisResult,
     UserInfo,
@@ -28,7 +28,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
         df: false
     });
 
-    const typeDefinitions = surveyService.getTypeDefinitions();
+    const typeDefinitions = SurveyService.getTypeDefinitions();
     const typeCode = result.typeCode || 'ARTF';
     const typeInfo = typeDefinitions[typeCode as keyof typeof typeDefinitions] || typeDefinitions['ARTF'];
 
@@ -71,7 +71,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
     const generateAxisAnalyses = (): AxisAnalysis[] => {
         const analyses: AxisAnalysis[] = [];
         const axisInfo = {
-            'A_B': {
+            'B_A': {
                 name: '개발 스타일',
                 leftType: 'Builder', rightType: 'Architect',
                 leftDesc: '빠른 구현과 실용적 해결책을 선호하며, 당면한 문제를 즉시 해결하는 것을 중시합니다.',
@@ -304,7 +304,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                                 try {
                                     const axisContributions: AxisContributions = JSON.parse(result.axisContributions);
                                     return Object.entries(axisContributions).map(([axis, info]) => {
-                                        const axisName = surveyService.getAxisDisplayName(axis);
+                                        const axisName = SurveyService.getAxisDisplayName(axis);
                                         return (
                                             <div key={axis} className="axis-contribution-card">
                                                 <div className="axis-name">{axisName}</div>
@@ -411,14 +411,14 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                                 <div 
                                     className="score-bar-fill score-bar-ab"
                                     style={{ 
-                                        width: scoreAnimations.ab ? `${scoreToPercentage(result.scores?.['A_B'] || 0)}%` : '50%',
+                                        width: scoreAnimations.ab ? `${scoreToPercentage(result.scores?.['B_A'] || 0)}%` : '50%',
                                         transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
                                     }}
                                 ></div>
                                 <div 
                                     className="score-bar-indicator score-indicator-ab"
                                     style={{ 
-                                        left: scoreAnimations.ab ? `${scoreToPercentage(result.scores?.['A_B'] || 0)}%` : '50%',
+                                        left: scoreAnimations.ab ? `${scoreToPercentage(result.scores?.['B_A'] || 0)}%` : '50%',
                                         transition: 'left 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
                                     }}
                                 ></div>
@@ -426,10 +426,10 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                             <div className="right-label">Architect</div>
                         </div>
                         <div className="score-bar-result ab-result" style={{ 
-                            color: (result.scores?.['A_B'] || 0) >= 0 ? '#a855f7' : '#6366f1' 
+                            color: (result.scores?.['B_A'] || 0) >= 0 ? '#a855f7' : '#6366f1' 
                         }}>
                             {scoreAnimations.ab ? 
-                                `${getIntensityText(result.scores?.['A_B'] || 0)} ${(result.scores?.['A_B'] || 0) >= 0 ? 'Architect' : 'Builder'} 성향` 
+                                `${getIntensityText(result.scores?.['B_A'] || 0)} ${(result.scores?.['B_A'] || 0) >= 0 ? 'Architect' : 'Builder'} 성향` 
                                 : '분석 중...'
                             }
                         </div>

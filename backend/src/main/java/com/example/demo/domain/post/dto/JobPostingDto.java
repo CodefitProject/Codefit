@@ -28,9 +28,15 @@ public record JobPostingDto(
     String jobImagePath,
     String logoPath,
     LocalDateTime createdAt,
-    Boolean isApplied
+    Boolean isApplied,
+    String selectedTechStackNames // 기술스택 정보 추가
 ) {
     public static JobPostingDto from(JobPosting jobPosting) {
+        // 기술스택 이름들을 쉼표로 연결된 문자열로 변환
+        String techStackNames = jobPosting.getTechStacks().stream()
+                .map(techStack -> techStack.getTechStackName())
+                .collect(java.util.stream.Collectors.joining(","));
+        
         return JobPostingDto.builder()
                 .jobPostingId(jobPosting.getJobPostingId())
                 .companyId(jobPosting.getCompany().getCompanyId())
@@ -48,6 +54,7 @@ public record JobPostingDto(
                 .logoPath(jobPosting.getCompany().getLogoPath())
                 .createdAt(jobPosting.getCreatedAt())
                 .isApplied(false) // 기본값, 실제로는 Service에서 계산
+                .selectedTechStackNames(techStackNames) // 기술스택 정보 설정
                 .build();
     }
 }

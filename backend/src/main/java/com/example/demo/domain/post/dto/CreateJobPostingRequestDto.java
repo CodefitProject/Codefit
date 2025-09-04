@@ -3,6 +3,7 @@ package com.example.demo.domain.post.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +34,9 @@ public record CreateJobPostingRequestDto(
     @NotNull(message = "공고 만료일은 필수입니다")
     LocalDateTime expiresAt,
     
-    String selectedTechStackNames
+    String selectedTechStackNames,
+    
+    MultipartFile jobImageFile
 ) {
 }
 
