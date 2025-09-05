@@ -222,7 +222,7 @@
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
-    .user-detail-container {
+    .user-detail-page-container {
         flex-direction: column;
     }
 
