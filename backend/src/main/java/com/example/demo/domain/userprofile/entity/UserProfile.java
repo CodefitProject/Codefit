@@ -1,7 +1,6 @@
 package com.example.demo.domain.userprofile.entity;
 
 import com.example.demo.domain.baseuser.entity.BaseUser;
-import com.example.demo.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
