@@ -23,15 +23,15 @@ const Header: React.FC = () => {
     const handleLogout = () => {
         AuthService.logout();
         checkAuthStatus();
-        window.location.reload();
+        navigate('/', { replace: true });
     };
 
     const handleLogoClick = () => {
         if (userInfo && userInfo.role === "COMPANY") {
-            window.location.href = "/company/dashboard";
+            navigate('/company/dashboard');
         } else {
             // 비로그인 유저 또는 USER 권한: 메인 페이지로 이동
-            window.location.href = "/";
+            navigate('/');
         }
     };
 
@@ -53,21 +53,22 @@ const Header: React.FC = () => {
         if (!userInfo) {
             alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
         } else {
-            window.location.href = "/survey/mbti";
+            navigate('/survey/mbti');
         }
     };
 
     const handleCompanyBrowse = () => {
-        window.location.href = "/post";
+        navigate('/post');
     };
 
     const handleEnterpriseService = () => {
         if (userInfo === null) {
-            window.location.href = "/company";
+            navigate('/company');
         } else if (userInfo.role === "USER") {
-            window.location.href = "/company";
+            navigate('/company');
         } else if (userInfo.role === "COMPANY") {
             alert("채용 대시보드로 이동합니다.");
+            navigate('/company/dashboard');
         }
     };
 

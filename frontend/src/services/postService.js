@@ -221,7 +221,7 @@ class PostService {
     /**
      * 공고 지원 (POS0001JAPL.pwkjson)
      * @param {string} jobPostingId - 공고 ID
-     * @param {string} accountId - 지원자 ID
+     * @param {string} baseUserId - 지원자 ID
      * @returns {Promise<Object>} 지원 결과
      */
     async applyToPost(jobPostingId, userId) {

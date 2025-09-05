@@ -12,11 +12,11 @@ export const getUserProfile = async (): Promise<UserDetailInfo> => {
     }
 
     const userInfo = AuthService.getUserInfo();
-    if (!userInfo || !userInfo.accountId) {
+    if (!userInfo || !userInfo.baseUserId) {
         throw new Error('Unable to get user information');
     }
 
-    const response = await fetch(`${API_URL}/detail/${userInfo.accountId}`, {
+    const response = await fetch(`${API_URL}/detail/${userInfo.baseUserId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
