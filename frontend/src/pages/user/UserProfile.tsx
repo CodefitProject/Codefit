@@ -6,11 +6,15 @@ import ResultFrame from './ResultFrame.tsx';
 import './UserProfile.css';
 
 const UserProfile: React.FC = () => {
-    const { userInfo, isLoading } = useUserDetailData();
+    const { userInfo, isLoading, error } = useUserDetailData();
     const { isMbtiDone, isCodeDone, isAllComplete, progressPercentage } = useProgress(userInfo);
 
     if (isLoading) {
         return <div>로딩중...</div>;
+    }
+
+    if (error) {
+        return <div>오류: {error}</div>;
     }
 
     if (!userInfo) {
