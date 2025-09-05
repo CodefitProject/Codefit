@@ -1,6 +1,7 @@
 package com.example.demo.domain.userprofile.entity;
 
 import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,8 @@ public class UserProfile {
     @Column(name = "user_id")
     private Long userId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "base_user_id", nullable = false, unique = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "base_user_id", unique = true, nullable = false) // FK → base_users.base_user_id (UNIQUE)
     private BaseUser baseUser;
 
     // ERD 컬럼 대응
@@ -33,6 +34,7 @@ public class UserProfile {
     private String yearSalary; // 범위 문자열 보존
     private String career; // 신입/경력 등 요약 값
     private String bio;
+
     @Column(name = "profile_image_path")
     private String profileImagePath;
     @Column(name = "is_profile_complete")
@@ -43,5 +45,3 @@ public class UserProfile {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-
-
