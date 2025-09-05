@@ -94,3 +94,33 @@ public class SurveyController {
     }
 }
 
+/**
+ * 설문 관련 Public API 컨트롤러 (인증 없이 접근 가능)
+ * 
+ * @author 배상현
+ * @since 2025/01/21
+ */
+@RestController
+@RequestMapping("/api/public/survey")
+@RequiredArgsConstructor
+@Slf4j
+class PublicSurveyController {
+    
+    private final SurveyService surveyService;
+    
+    /**
+     * 활성화된 설문 질문 목록 조회 (Public API)
+     * 
+     * @return 설문 질문 목록
+     */
+    @GetMapping("/questions")
+    public ResponseEntity<SurveyQuestionsResponseDto> getQuestions() {
+        log.debug("Public API - 설문 질문 목록 조회 요청");
+        
+        SurveyQuestionsResponseDto response = surveyService.getActiveQuestions();
+        log.debug("Public API - 설문 질문 조회 완료 - 총 {}개", response.totalCount());
+        
+        return ResponseEntity.ok(response);
+    }
+}
+
