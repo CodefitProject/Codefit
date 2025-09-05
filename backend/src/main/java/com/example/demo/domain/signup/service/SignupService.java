@@ -34,6 +34,10 @@ public class SignupService {
     @Transactional
     public Long registerUser(String name, String birthDate, String gender, String phoneNumber,
                              String email, String rawPassword, boolean emailConsent) {
+
+        if (baseUserRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 이메일");
+        }
         BaseUser user = BaseUser.builder()
                 .email(email)
                 .password(passwordEncoder.encode(rawPassword))
@@ -97,5 +101,3 @@ public class SignupService {
         });
     }
 }
-
-
