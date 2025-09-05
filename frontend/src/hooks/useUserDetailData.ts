@@ -3,7 +3,7 @@ import { getUserProfile } from '../services/userService.ts';
 
 // UserDetail.xml의 데이터 모델을 기반으로 타입 정의
 export interface UserDetailInfo {
-    accountId: number;
+    baseUserId: number;
     name: string;
     career: string;
     preferredLocations: string;

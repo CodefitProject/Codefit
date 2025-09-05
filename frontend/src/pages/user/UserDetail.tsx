@@ -8,7 +8,7 @@ import UserMatchPage from './UserMatchPage.tsx';
 
 // XML의 데이터 모델을 기반으로 타입 정의
 interface UserInfo {
-    accountId: number;
+    baseUserId: number;
     name: string;
     career: string;
     isMbtiChecked: number;
@@ -56,7 +56,7 @@ const UserDetail: React.FC = () => {
     // TODO: API 호출을 통해 실제 사용자 정보를 가져오는 로직 추가 필요
     // 우선 XML에 있던 데이터 구조를 바탕으로 목업 데이터를 사용합니다.
     const mockUserInfo: UserInfo = {
-        accountId: 1,
+        baseUserId: 1,
         name: '김코드',
         career: '주니어 (1~3년)',
         isMbtiChecked: 0, // 0: 미완료, 1: 완료

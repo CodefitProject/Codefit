@@ -32,7 +32,7 @@ interface PostListParams {
 }
 
 interface UserInfo {
-    accountId: string;
+    baseUserId: string;
     name: string;
     role: string;
     mbti?: string;

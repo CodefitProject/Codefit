@@ -32,7 +32,7 @@ interface JobPosting {
 }
 
 interface UserInfo {
-    accountId: string;
+    baseUserId: string;
     name: string;
     role: string;
     companyId?: string;
@@ -119,7 +119,7 @@ const PostDetail: React.FC = () => {
         try {
             const data = await postService.applyToPost(
                 jobPosting?.jobPostingId || '',
-                userInfo.accountId
+                userInfo.baseUserId
             );
             
             console.log('지원 응답:', data);
