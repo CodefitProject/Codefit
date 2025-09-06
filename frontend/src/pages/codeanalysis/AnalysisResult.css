@@ -124,6 +124,24 @@
   gap: 16px;
 }
 
+.score-item:not(.bipolar):not(.single) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.score-item.bipolar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.score-item.bipolar .score-label {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+
 .score-label {
   font-weight: 600;
   color: #333;
@@ -131,7 +149,31 @@
   font-size: 14px;
 }
 
-.score-bar {
+
+/* 신뢰도 스코어바 스타일 */
+.score-item.single {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.score-item.single .score-label {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.confidence-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.confidence-spacer {
+  min-width: 20px;
+  text-align: center;
+}
+
+.confidence-bar {
   flex: 1;
   height: 24px;
   background-color: #f0f0f0;
@@ -141,25 +183,14 @@
   align-items: center;
 }
 
-.score-fill {
+.confidence-fill {
   height: 100%;
   border-radius: 12px;
+  background: linear-gradient(90deg, #fd7e14, #e74c3c);
   transition: width 0.3s ease;
 }
 
-.score-fill.development-style {
-  background: linear-gradient(90deg, #28a745, #20c997);
-}
-
-.score-fill.preference {
-  background: linear-gradient(90deg, #007bff, #6610f2);
-}
-
-.score-fill.confidence {
-  background: linear-gradient(90deg, #fd7e14, #e74c3c);
-}
-
-.score-value {
+.confidence-value {
   position: absolute;
   right: 12px;
   font-weight: 600;
@@ -390,19 +421,12 @@
     font-size: 24px;
   }
   
-  .score-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+  /* 모바일에서는 모든 score-item이 이미 세로 레이아웃이므로 별도 처리 불필요 */
   
   .score-label {
     min-width: auto;
   }
   
-  .score-bar {
-    width: 100%;
-  }
   
   .bipolar-score-container {
     width: 100%;
@@ -412,6 +436,14 @@
   .score-label-left,
   .score-label-right {
     font-size: 14px;
+    min-width: 16px;
+  }
+  
+  .confidence-container {
+    gap: 8px;
+  }
+  
+  .confidence-spacer {
     min-width: 16px;
   }
   

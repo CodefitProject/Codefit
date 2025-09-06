@@ -70,7 +70,7 @@ const AnalysisResult: React.FC = () => {
 
           <div className="scores-section">
             <div className="score-grid">
-              <div className="score-item">
+              <div className="score-item bipolar">
                 <span className="score-label">개발 스타일 점수</span>
                 <div className="bipolar-score-container">
                   <span className="score-label-left">B</span>
@@ -89,7 +89,7 @@ const AnalysisResult: React.FC = () => {
                 </div>
               </div>
               
-              <div className="score-item">
+              <div className="score-item bipolar">
                 <span className="score-label">개발자 선호도 점수</span>
                 <div className="bipolar-score-container">
                   <span className="score-label-left">R</span>
@@ -108,14 +108,18 @@ const AnalysisResult: React.FC = () => {
                 </div>
               </div>
               
-              <div className="score-item">
+              <div className="score-item single">
                 <span className="score-label">신뢰도</span>
-                <div className="score-bar">
-                  <div 
-                    className="score-fill confidence" 
-                    style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
-                  ></div>
-                  <span className="score-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
+                <div className="confidence-container">
+                  <span className="confidence-spacer"></span>
+                  <div className="confidence-bar">
+                    <div 
+                      className="confidence-fill" 
+                      style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
+                    ></div>
+                    <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
+                  </div>
+                  <span className="confidence-spacer"></span>
                 </div>
               </div>
             </div>
