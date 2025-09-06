@@ -68,15 +68,30 @@ public class CodeAnalysisService {
             return createPartialSuccessResponse(baseUserId, analysisResultJson);
         }
 
-        // Gemini 응답에서 실제 분석 값 추출
+        // 4. Gemini 응답에서 실제 분석 값 추출
         String typeCode = (String) analysisResult.getOrDefault("type_code", "AI");
         Integer developmentStyleScore = (Integer) analysisResult.getOrDefault("development_style_score", 0);
         Integer developerPreferenceScore = (Integer) analysisResult.getOrDefault("developer_preference_score", 0);
         Integer confidenceScore = (Integer) analysisResult.getOrDefault("confidence_score", 50);
         String comment = (String) analysisResult.getOrDefault("comment", "코드 분석 완료");
-        //String language = (String) analysisResult.getOrDefault("language", "unknown");
+        String language = (String) analysisResult.getOrDefault("language", "unknown");
+        
+        // detailed_analysis 내부 필드들 추출
+        Map<String, Object> detailedAnalysis = (Map<String, Object>) analysisResult.get("detailed_analysis");
+        String reasoning = detailedAnalysis != null ? (String) detailedAnalysis.get("reasoning") : null;
+        String strengths = null;
+        String suggestions = null;
+        String codePatterns = null;
+        
+        try {
+            strengths = detailedAnalysis != null ? convertArrayToText((List<?>) detailedAnalysis.get("strengths")) : null;
+            suggestions = detailedAnalysis != null ? convertArrayToText((List<?>) detailedAnalysis.get("suggestions")) : null;
+            codePatterns = detailedAnalysis != null ? convertCodePatternsToText((List<?>) detailedAnalysis.get("code_patterns")) : null;
+        } catch (Exception e) {
+            log.warn("detailed_analysis 필드 텍스트 변환 실패", e);
+        }
 
-        // 4. 코드 분석 엔티티 생성
+        // 5. 코드 분석 엔티티 생성
         CodeAnalysis codeAnalysis = CodeAnalysis.builder()
                 .baseUserId(baseUserId)
                 .analysisResult(analysisResultJson)
@@ -85,15 +100,20 @@ public class CodeAnalysisService {
                 .developerPreferenceScore(developerPreferenceScore)
                 .confidenceScore(new java.math.BigDecimal(confidenceScore / 100.0))
                 .comment(comment)
+                .language(language)
+                .reasoning(reasoning)
+                .strengths(strengths)
+                .suggestions(suggestions)
+                .codePatterns(codePatterns)
                 .build();
 
-        // 5. 분석 결과를 데이터베이스에 저장
+        // 6. 분석 결과를 데이터베이스에 저장
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
 
-        // 6. UsersMbtiTypes 엔티티 생성 또는 업데이트
+        // 7. UsersMbtiTypes 엔티티 생성 또는 업데이트
         createOrUpdateUsersMbtiTypes(baseUserId);
 
-        // 7. 완료 응답 DTO 생성 및 반환 (ID만 포함)
+        // 8. 완료 응답 DTO 생성 및 반환
         return new CodeAnalysisCompleteDto(
                 savedAnalysis.getAnalysisId(),
                 true,
@@ -110,6 +130,11 @@ public class CodeAnalysisService {
                 .developerPreferenceScore(0)
                 .confidenceScore(new java.math.BigDecimal("0.50"))
                 .comment("분석은 완료되었으나 상세 결과 파싱에 실패했습니다.")
+                .language("unknown")
+                .reasoning("분석 결과 파싱 실패")
+                .strengths(null)
+                .suggestions(null)
+                .codePatterns(null)
                 .build();
 
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
@@ -122,11 +147,10 @@ public class CodeAnalysisService {
     }
 
     /**
-     * 사용자 ID와 분석 ID로 코드 분석 결과 조회 (보안 강화)
+     * 사용자 ID와 분석 ID로 코드 분석 결과 조회
      */
     @Transactional(readOnly = true)
     public CodeAnalysisResponseDto getAnalysisResultByUser(Long analysisId, Long baseUserId) {
-        log.info("분석 결과 조회 시도 - analysisId: {}, baseUserId: {}", analysisId, baseUserId);
         
         CodeAnalysis analysis = codeAnalysisRepository.findByAnalysisIdAndBaseUserId(analysisId, baseUserId)
                 .orElseThrow(() -> {
@@ -138,13 +162,16 @@ public class CodeAnalysisService {
                 analysis.getAnalysisId(),
                 analysis.getBaseUserId(),
                 analysis.getTypeCode(),
-                "적응형 지능형",
+                getTypeNameByCode(analysis.getTypeCode()),
                 "Gemini AI를 활용한 코드 분석",
                 analysis.getDevelopmentStyleScore(),
                 analysis.getDeveloperPreferenceScore(),
                 analysis.getConfidenceScore(),
-                "자동_감지",
-                analysis.getAnalysisResult(),
+                analysis.getLanguage(),
+                analysis.getReasoning(),
+                analysis.getStrengths(),
+                analysis.getSuggestions(),
+                analysis.getCodePatterns(),
                 analysis.getComment(),
                 analysis.getCreatedAt(),
                 true,
@@ -170,6 +197,53 @@ public class CodeAnalysisService {
         }
 
         usersMbtiTypesRepository.save(usersMbtiTypes);
+    }
+
+    /**
+     * 배열을 텍스트로 변환 (strengths, suggestions용)
+     */
+    private String convertArrayToText(List<?> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.stream()
+                .map(Object::toString)
+                .collect(java.util.stream.Collectors.joining("\n• ", "• ", ""));
+    }
+
+    /**
+     * code_patterns 배열을 텍스트로 변환
+     */
+    private String convertCodePatternsToText(List<?> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i) instanceof Map) {
+                Map<?, ?> pattern = (Map<?, ?>) list.get(i);
+                result.append(String.format("%d. %s\n", i + 1, pattern.get("pattern")));
+                result.append(String.format("   설명: %s\n", pattern.get("description")));
+                if (pattern.get("impact_score") != null) {
+                    result.append(String.format("   영향도: %s\n", pattern.get("impact_score")));
+                }
+                result.append("\n");
+            }
+        }
+        return result.toString().trim();
+    }
+
+    /**
+     * 타입 코드에 따른 타입 이름 반환
+     */
+    private String getTypeNameByCode(String typeCode) {
+        return switch (typeCode) {
+            case "AI" -> "적응형 지능형";
+            case "AR" -> "적응형 실용형";
+            case "BI" -> "체계형 지능형";
+            case "BR" -> "체계형 실용형";
+            default -> "알 수 없는 타입";
+        };
     }
 }
 
