@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUserDetailData } from '../../hooks/useUserDetailData.ts';
 import { useProgress } from '../../hooks/useProgress.ts';
 import ActionCardsFrame from './ActionCardsFrame.tsx';
@@ -6,11 +7,16 @@ import ResultFrame from './ResultFrame.tsx';
 import './UserProfile.css';
 
 const UserProfile: React.FC = () => {
-    const { userInfo, isLoading } = useUserDetailData();
+    const navigate = useNavigate();
+    const { userInfo, isLoading, error } = useUserDetailData();
     const { isMbtiDone, isCodeDone, isAllComplete, progressPercentage } = useProgress(userInfo);
 
     if (isLoading) {
         return <div>로딩중...</div>;
+    }
+
+    if (error) {
+        return <div>오류: {error}</div>;
     }
 
     if (!userInfo) {
@@ -18,8 +24,7 @@ const UserProfile: React.FC = () => {
     }
 
     const handleUserUpdate = () => {
-        // 사용자 정보 수정 페이지로 이동
-        window.location.href = '/user/update';
+        navigate('/user/update');
     };
 
     return (

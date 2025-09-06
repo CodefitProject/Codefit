@@ -2,10 +2,8 @@ package com.example.demo.common.security.service;
 
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
-import com.example.demo.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
     
     private final BaseUserRepository baseuserRepository;
-    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

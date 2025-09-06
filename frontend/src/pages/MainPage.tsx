@@ -233,7 +233,7 @@ const MainPage: React.FC = () => {
                                     <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
                                     <div className="dev-type-tag-container">
                                         {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
-                                            <span key={idx} className="dev-type-tag">{type}</span>
+                                            <span key={`${posting.jobPostingId}-${idx}`} className="dev-type-tag">{type}</span>
                                         ))}
                                     </div>
                                 </div>

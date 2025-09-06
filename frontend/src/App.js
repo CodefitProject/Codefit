@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext.tsx";
 import MainPage from "./pages/MainPage.tsx";
 import MbtiExample from "./pages/survey/MbtiExample.tsx";
 import SurveyMbti from "./pages/survey/SurveyMbti.tsx";
@@ -18,12 +19,15 @@ import CareerInput from "./pages/user/CareerInput.tsx";
 import ProfileAdditional from "./pages/user/ProfileAdditional.tsx";
 import ProfileComplete from "./pages/user/ProfileComplete.tsx";
 import UserDetailRoutes from "./pages/user/UserDetail.tsx";
+import UserUpdate from "./pages/user/UserUpdate.tsx";
 import CodeAnalysisMain from "./pages/codeanalysis/CodeAnalysisMain.tsx";
+import AnalysisResult from "./pages/codeanalysis/AnalysisResult.tsx";
 
 function App() {
   return (
     <div className="App">
-      <Router>
+      <AuthProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/signup" element={<Signup />} />
@@ -46,10 +50,13 @@ function App() {
           <Route path="/post/detail/:jobPostingId" element={<PostDetail />} />
           <Route path="/post/create" element={<PostCreate />} />
           <Route path="/codeanalysis" element={<CodeAnalysisMain />} />
+          <Route path="/analysis-result/:analysisId" element={<AnalysisResult />} />
           <Route path="/user/detail/*" element={<UserDetailRoutes />} />
+          <Route path="/user/update" element={<UserUpdate />} />
           <Route path="/post/edit/:jobPostingId" element={<PostEdit />} />
         </Routes>
-      </Router>
+        </Router>
+      </AuthProvider>
     </div>
   );
 }

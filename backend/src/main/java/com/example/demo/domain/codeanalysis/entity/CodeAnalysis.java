@@ -22,8 +22,8 @@ public class CodeAnalysis {
     @Column(name = "analysis_id")
     private Long analysisId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "base_user_id", nullable = false)
+    private Long baseUserId;
 
     @Column(name = "analysis_result", columnDefinition = "JSON")
     private String analysisResult;
@@ -37,11 +37,26 @@ public class CodeAnalysis {
     @Column(name = "developer_preference_score")
     private Integer developerPreferenceScore;
 
-    @Column(name = "comment")
+    @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
 
     @Column(name = "confidence_score", precision = 3, scale = 2)
     private BigDecimal confidenceScore;
+
+    @Column(name = "language", length = 50)
+    private String language;
+
+    @Column(name = "reasoning", columnDefinition = "TEXT")
+    private String reasoning;
+
+    @Column(name = "strengths", columnDefinition = "TEXT")
+    private String strengths;
+
+    @Column(name = "suggestions", columnDefinition = "TEXT")
+    private String suggestions;
+
+    @Column(name = "code_patterns", columnDefinition = "TEXT")
+    private String codePatterns;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
