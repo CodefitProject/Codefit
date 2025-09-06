@@ -146,7 +146,7 @@ const SurveyMbti: React.FC = () => {
             }));
 
             const submitData = {
-                userId: userInfo.accountId,
+                userId: userInfo.baseUserId,
                 typeId: 1,
                 answers
             };

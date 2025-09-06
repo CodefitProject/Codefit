@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useCodeAnalysis } from '../../hooks/useCodeAnalysis.ts';
 import Header from '../../components/Header/Header.tsx';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 import './CodeAnalysisMain.css';
 
 interface UploadedFile {
@@ -11,6 +12,7 @@ interface UploadedFile {
 const CodeAnalysisMain: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const { analyzeCode, isLoading } = useCodeAnalysis();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -24,19 +26,7 @@ const CodeAnalysisMain: React.FC = () => {
   };
 
   const handleUploadAreaClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = '.java,.js,.ts,.py,.cpp,.c,.cs,.go,.php,.rb,.swift,.kt';
-    input.onchange = (e) => {
-      const target = e.target as HTMLInputElement;
-      if (target.files) {
-        handleFileUpload({
-          target: { files: target.files }
-        } as React.ChangeEvent<HTMLInputElement>);
-      }
-    };
-    input.click();
+    fileInputRef.current?.click();
   };
 
   const handleAnalyze = async () => {
@@ -60,12 +50,29 @@ const CodeAnalysisMain: React.FC = () => {
   return (
     <div className="code-analysis-container">
       <Header />
+      
+      {/* Loading Overlay */}
+      {isLoading && (
+        <LoadingSpinner 
+          message="코드 분석 중입니다..."
+          overlay={true}
+          size="large"
+        />
+      )}
 
       {/* Main Content */}
       <div className="main-content">
         <h1 className="main-title">다양한 언어의 코드를 분석해드립니다</h1>
         <p className="main-subtitle">Java, Python, JavaScript 등 어떤 언어든 분석 가능합니다</p>
         
+        <input
+          type="file"
+          multiple
+          accept=".java,.js,.ts,.py,.cpp,.c,.cs,.go,.php,.rb,.swift,.kt"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+        />
 
         {/* Upload Area */}
         <div className="upload-area" onClick={handleUploadAreaClick}>

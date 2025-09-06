@@ -13,7 +13,6 @@ interface UserInfo {
   name: string | null;
   role:  'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
-  accountId: string | null;
 }
 
 interface JwtPayload {
@@ -125,8 +124,7 @@ class AuthService {
         email: decodedToken.sub,
         name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
-        baseUserId: decodedToken.baseUserId,
-        accountId: decodedToken.baseUserId // accountId는 baseUserId와 동일하게 사용
+        baseUserId: decodedToken.baseUserId
       };
     } catch (error) {
       console.error('Error getting user info from token:', error);

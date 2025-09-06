@@ -45,6 +45,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    // Gemini AI 분석 예외
+    @ExceptionHandler(GeminiException.class)
+    public ResponseEntity<String> handleGeminiException(GeminiException e) {
+        log.error("Gemini AI 분석 예외: {}", e.getMessage(), e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     // 기타 모든 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception e) {
