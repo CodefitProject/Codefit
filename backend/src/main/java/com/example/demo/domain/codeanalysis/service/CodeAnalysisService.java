@@ -238,10 +238,10 @@ public class CodeAnalysisService {
      */
     private String getTypeNameByCode(String typeCode) {
         return switch (typeCode) {
-            case "AI" -> "적응형 지능형";
-            case "AR" -> "적응형 실용형";
-            case "BI" -> "체계형 지능형";
-            case "BR" -> "체계형 실용형";
+            case "AI" -> "미래 지향적 설계자";
+            case "AR" -> "체계적인 진화자";
+            case "BI" -> "신속한 혁신가";
+            case "BR" -> "실용적인 개선자";
             default -> "알 수 없는 타입";
         };
     }
