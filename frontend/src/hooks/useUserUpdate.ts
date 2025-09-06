@@ -8,7 +8,7 @@ export interface UserUpdateData {
   career: string;
   preferredLocations: string;
   currentPosition: string;
-  yearSalary: number;
+  yearSalary: string;
   bio: string;
   testChecked: boolean;
   techStack: string;
@@ -60,7 +60,6 @@ const LOCATION_OPTIONS = [
   { label: "대전", value: "대전" },
   { label: "광주", value: "광주" },
   { label: "울산", value: "울산" },
-  { label: "세종", value: "세종" },
   { label: "강원", value: "강원" },
   { label: "충북", value: "충북" },
   { label: "충남", value: "충남" },
@@ -73,16 +72,11 @@ const LOCATION_OPTIONS = [
 ];
 
 const SALARY_OPTIONS = [
-  { label: "3,000만원 이하", value: 3000 },
-  { label: "3,000 ~ 3,300만원", value: 3300 },
-  { label: "3,300 ~ 3,600만원", value: 3600 },
-  { label: "3,600 ~ 4,000만원", value: 4000 },
-  { label: "4,000 ~ 4,500만원", value: 4500 },
-  { label: "4,500 ~ 5,000만원", value: 5000 },
-  { label: "5,000 ~ 6,000만원", value: 6000 },
-  { label: "6,000 ~ 7,000만원", value: 7000 },
-  { label: "7,000 ~ 8,000만원", value: 8000 },
-  { label: "8,000만원 이상", value: 8500 }
+  { label: "2,000만원 ~ 2,500만원", value: "2000-2500" },
+  { label: "2,500만원 ~ 3,000만원", value: "2500-3000" },
+  { label: "3,000만원 ~ 4,000만원", value: "3000-4000" },
+  { label: "4,000만원 ~ 5,000만원", value: "4000-5000" },
+  { label: "5,000만원 이상", value: "5000+" }
 ];
 
 export const useUserUpdate = () => {
@@ -109,14 +103,18 @@ export const useUserUpdate = () => {
         throw new Error('사용자 정보를 찾을 수 없습니다.');
       }
 
-      const response = await fetch(`/InsWebApp/US0002UpdView.pwkjson`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userInfoVo: { baseUserId: Number(authUserInfo.baseUserId!) }
-        })
+      const token = getToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`/api/users/${authUserInfo.baseUserId}`, {
+        method: 'GET',
+        headers
       });
 
       if (!response.ok) {
@@ -126,38 +124,44 @@ export const useUserUpdate = () => {
       const data = await response.json();
       const userData = data.elData || data;
       
+      console.log('🔍 사용자 데이터 확인:', userData);
+      console.log('🔍 선호 지역 데이터:', userData.preferredLocations);
+      
       setUserInfo(userData);
       
       // 선호 지역 초기화
       if (userData.preferredLocations) {
-        setSelectedLocations(userData.preferredLocations.split(','));
+        const locations = userData.preferredLocations.split(',');
+        console.log('🔍 분할된 선호 지역:', locations);
+        setSelectedLocations(locations);
+      } else {
+        console.log('🔍 선호 지역 없음, 빈 배열로 설정');
+        setSelectedLocations([]);
       }
 
-      // 기술 스택 초기화
-      if (userData.techStack) {
-        const techStackIds = userData.techStack.split(',');
-        const selectedStacks = techStackIds.map((id: string) => {
-          const stack = techStackOptions.find(option => option.techStackId === id.trim());
-          return stack || { techStackId: id.trim(), techStackName: id.trim() };
-        });
-        setSelectedTechStacks(selectedStacks);
-      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
-  }, [techStackOptions]);
+  }, [getToken, authUserInfo]);
 
   // 기술 스택 옵션 조회
   const fetchTechStackOptions = useCallback(async () => {
     try {
-      const response = await fetch('/InsWebApp/POS0002List.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const token = getToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/techstacks', {
+        method: 'GET',
+        headers
       });
 
       if (!response.ok) {
@@ -165,32 +169,48 @@ export const useUserUpdate = () => {
       }
 
       const data = await response.json();
-      setTechStackOptions(data.techStackVoList || []);
+      setTechStackOptions(data.techStackVoList || data || []);
     } catch (err) {
       console.error('기술스택 조회 오류:', err);
     }
-  }, []);
+  }, [getToken]);
 
-  // 사용자 정보 수정
-  const updateUserInfo = useCallback(async () => {
-    if (!userInfo) return false;
+  // 사용자 정보 수정 (이력서 포함)
+  const updateUserInfo = useCallback(async (resumeFile?: File | null) => {
+    if (!userInfo || !authUserInfo?.baseUserId) return false;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      const updateData = {
-        ...userInfo,
-        preferredLocations: selectedLocations.join(','),
-        techStack: selectedTechStacks.map(stack => stack.techStackId).join(',')
-      };
+      const token = getToken();
+      const headers: HeadersInit = {};
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-      const response = await fetch('/InsWebApp/USUpdateUserInfo.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
+      // FormData로 모든 데이터 전송
+      const formData = new FormData();
+      
+      // 기본 사용자 정보
+      formData.append('name', userInfo.name);
+      formData.append('career', userInfo.career);
+      formData.append('currentPosition', userInfo.currentPosition);
+      formData.append('yearSalary', userInfo.yearSalary);
+      formData.append('bio', userInfo.bio);
+      formData.append('preferredLocations', selectedLocations.join(','));
+      formData.append('techStack', selectedTechStacks.map(stack => stack.techStackId).join(','));
+      
+      // 이력서 파일 (선택사항)
+      if (resumeFile) {
+        formData.append('resumeFile', resumeFile);
+      }
+
+      const response = await fetch(`/api/users/${authUserInfo.baseUserId}`, {
+        method: 'PATCH',
+        headers,
+        body: formData
       });
 
       if (!response.ok) {
@@ -198,18 +218,14 @@ export const useUserUpdate = () => {
       }
 
       const result = await response.json();
-      if (result.result === 'success') {
-        return true;
-      } else {
-        throw new Error(result.message || '저장에 실패했습니다.');
-      }
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, [userInfo, selectedLocations, selectedTechStacks]);
+  }, [userInfo, selectedLocations, selectedTechStacks, authUserInfo, getToken]);
 
   // 비밀번호 변경
   const updatePassword = useCallback(async () => {
@@ -256,96 +272,7 @@ export const useUserUpdate = () => {
     }
   }, [passwordData]);
 
-  // 이력서 업로드
-  const uploadResume = useCallback(async (file: File) => {
-    try {
-      setIsLoading(true);
-      setError(null);
 
-      if (!file.type.includes('pdf')) {
-        throw new Error('PDF 파일만 업로드 가능합니다.');
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('파일 크기는 5MB를 초과할 수 없습니다.');
-      }
-
-      const formData = new FormData();
-      formData.append('resumeFile', file);
-      if (!authUserInfo?.baseUserId) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
-      }
-      
-      formData.append('userId', authUserInfo.baseUserId);
-
-      const response = await fetch('/InsWebApp/USUploadResume.pwkjson', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('이력서 업로드에 실패했습니다.');
-      }
-
-      const result = await response.json();
-      if (result.result === 'success') {
-        if (userInfo) {
-          setUserInfo({
-            ...userInfo,
-            resume_file_name: result.fileName
-          });
-        }
-        return true;
-      } else {
-        throw new Error(result.message || '이력서 업로드에 실패했습니다.');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userInfo]);
-
-  // 이력서 삭제
-  const deleteResume = useCallback(async () => {
-    if (!userInfo?.resume_file_name || !authUserInfo?.baseUserId) return false;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch('/InsWebApp/USDeleteResume.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          baseUserId: Number(authUserInfo.baseUserId!)
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('이력서 삭제에 실패했습니다.');
-      }
-
-      const result = await response.json();
-      if (result.result === 'success') {
-        setUserInfo({
-          ...userInfo,
-          resume_file_name: ''
-        });
-        return true;
-      } else {
-        throw new Error(result.message || '이력서 삭제에 실패했습니다.');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userInfo, authUserInfo]);
 
   // 지역 토글
   const toggleLocation = useCallback((location: string) => {
@@ -385,11 +312,24 @@ export const useUserUpdate = () => {
     fetchTechStackOptions();
   }, [fetchTechStackOptions]);
 
+  // 기본 사용자 정보 조회 (기술스택과 독립적)
   useEffect(() => {
-    if (techStackOptions.length > 0 && authUserInfo) {
+    if (authUserInfo) {
       fetchUserInfo();
     }
-  }, [techStackOptions, fetchUserInfo, authUserInfo]);
+  }, [fetchUserInfo, authUserInfo]);
+
+  // 기술스택 정보가 로드된 후 기술스택 재처리
+  useEffect(() => {
+    if (techStackOptions.length > 0 && userInfo?.techStack) {
+      const techStackIds = userInfo.techStack.split(',').filter(id => id.trim());
+      const selectedStacks = techStackIds.map((id: string) => {
+        const stack = techStackOptions.find(option => option.techStackId === id.trim());
+        return stack || { techStackId: id.trim(), techStackName: id.trim() };
+      });
+      setSelectedTechStacks(selectedStacks);
+    }
+  }, [techStackOptions, userInfo?.techStack]);
 
   return {
     // 데이터
@@ -412,8 +352,6 @@ export const useUserUpdate = () => {
     setPasswordData,
     updateUserInfo,
     updatePassword,
-    uploadResume,
-    deleteResume,
     toggleLocation,
     addTechStack,
     removeTechStack,

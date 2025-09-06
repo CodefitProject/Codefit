@@ -43,6 +43,21 @@ public class CodeAnalysis {
     @Column(name = "confidence_score", precision = 3, scale = 2)
     private BigDecimal confidenceScore;
 
+    @Column(name = "language", length = 50)
+    private String language;
+
+    @Column(name = "reasoning", columnDefinition = "TEXT")
+    private String reasoning;
+
+    @Column(name = "strengths", columnDefinition = "TEXT")
+    private String strengths;
+
+    @Column(name = "suggestions", columnDefinition = "TEXT")
+    private String suggestions;
+
+    @Column(name = "code_patterns", columnDefinition = "TEXT")
+    private String codePatterns;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

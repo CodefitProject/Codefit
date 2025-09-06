@@ -22,7 +22,7 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long companyId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "base_user_id", nullable = false, unique = true)
     private BaseUser baseUser;
 

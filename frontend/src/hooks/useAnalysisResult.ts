@@ -9,8 +9,11 @@ export interface AnalysisResult {
   developmentStyleScore: number;
   developerPreferenceScore: number;
   confidenceScore: number;
-  detectedLanguage: string;
-  analysisResult: string;
+  language: string;
+  reasoning: string;
+  strengths: string;
+  suggestions: string;
+  codePatterns: string;
   comment: string;
   createdAt: string;
   success: boolean;
