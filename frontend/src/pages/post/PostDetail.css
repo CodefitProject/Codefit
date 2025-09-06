@@ -11,18 +11,16 @@
 }
 
 .post-detail-main-wrap .container {
-    max-width: 1060px;
     width: 100%;
     margin: 0 auto;
     background-color: white;
-    padding: 0 min(30px, 4vw);
+    padding: 0 min(5vw, 80px);
 }
 
 .post-detail-main-wrap .main-content {
     padding: 0;
     width: 100%;
     flex: 1;
-    overflow-y: auto;
 }
 
 
@@ -416,8 +414,8 @@
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
-    .container {
-        padding: 0 20px;
+    .post-detail-main-wrap .container {
+        padding: 0 min(4vw, 40px);
     }
     
     .info-tags {
@@ -426,8 +424,8 @@
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 0 15px;
+    .post-detail-main-wrap .container {
+        padding: 0 min(3vw, 20px);
     }
     
     .job-actions {
