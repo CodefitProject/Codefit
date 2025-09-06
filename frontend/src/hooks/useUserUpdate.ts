@@ -175,26 +175,42 @@ export const useUserUpdate = () => {
     }
   }, [getToken]);
 
-  // 사용자 정보 수정
-  const updateUserInfo = useCallback(async () => {
-    if (!userInfo) return false;
+  // 사용자 정보 수정 (이력서 포함)
+  const updateUserInfo = useCallback(async (resumeFile?: File | null) => {
+    if (!userInfo || !authUserInfo?.baseUserId) return false;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      const updateData = {
-        ...userInfo,
-        preferredLocations: selectedLocations.join(','),
-        techStack: selectedTechStacks.map(stack => stack.techStackId).join(',')
-      };
+      const token = getToken();
+      const headers: HeadersInit = {};
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-      const response = await fetch('/InsWebApp/USUpdateUserInfo.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
+      // FormData로 모든 데이터 전송
+      const formData = new FormData();
+      
+      // 기본 사용자 정보
+      formData.append('name', userInfo.name);
+      formData.append('career', userInfo.career);
+      formData.append('currentPosition', userInfo.currentPosition);
+      formData.append('yearSalary', userInfo.yearSalary);
+      formData.append('bio', userInfo.bio);
+      formData.append('preferredLocations', selectedLocations.join(','));
+      formData.append('techStack', selectedTechStacks.map(stack => stack.techStackId).join(','));
+      
+      // 이력서 파일 (선택사항)
+      if (resumeFile) {
+        formData.append('resumeFile', resumeFile);
+      }
+
+      const response = await fetch(`/api/users/${authUserInfo.baseUserId}`, {
+        method: 'PATCH',
+        headers,
+        body: formData
       });
 
       if (!response.ok) {
@@ -202,18 +218,14 @@ export const useUserUpdate = () => {
       }
 
       const result = await response.json();
-      if (result.result === 'success') {
-        return true;
-      } else {
-        throw new Error(result.message || '저장에 실패했습니다.');
-      }
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, [userInfo, selectedLocations, selectedTechStacks]);
+  }, [userInfo, selectedLocations, selectedTechStacks, authUserInfo, getToken]);
 
   // 비밀번호 변경
   const updatePassword = useCallback(async () => {
@@ -260,96 +272,7 @@ export const useUserUpdate = () => {
     }
   }, [passwordData]);
 
-  // 이력서 업로드
-  const uploadResume = useCallback(async (file: File) => {
-    try {
-      setIsLoading(true);
-      setError(null);
 
-      if (!file.type.includes('pdf')) {
-        throw new Error('PDF 파일만 업로드 가능합니다.');
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('파일 크기는 5MB를 초과할 수 없습니다.');
-      }
-
-      const formData = new FormData();
-      formData.append('resumeFile', file);
-      if (!authUserInfo?.baseUserId) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
-      }
-      
-      formData.append('userId', authUserInfo.baseUserId);
-
-      const response = await fetch('/InsWebApp/USUploadResume.pwkjson', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('이력서 업로드에 실패했습니다.');
-      }
-
-      const result = await response.json();
-      if (result.result === 'success') {
-        if (userInfo) {
-          setUserInfo({
-            ...userInfo,
-            resume_file_name: result.fileName
-          });
-        }
-        return true;
-      } else {
-        throw new Error(result.message || '이력서 업로드에 실패했습니다.');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userInfo]);
-
-  // 이력서 삭제
-  const deleteResume = useCallback(async () => {
-    if (!userInfo?.resume_file_name || !authUserInfo?.baseUserId) return false;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch('/InsWebApp/USDeleteResume.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          baseUserId: Number(authUserInfo.baseUserId!)
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('이력서 삭제에 실패했습니다.');
-      }
-
-      const result = await response.json();
-      if (result.result === 'success') {
-        setUserInfo({
-          ...userInfo,
-          resume_file_name: ''
-        });
-        return true;
-      } else {
-        throw new Error(result.message || '이력서 삭제에 실패했습니다.');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userInfo, authUserInfo]);
 
   // 지역 토글
   const toggleLocation = useCallback((location: string) => {
@@ -429,8 +352,6 @@ export const useUserUpdate = () => {
     setPasswordData,
     updateUserInfo,
     updatePassword,
-    uploadResume,
-    deleteResume,
     toggleLocation,
     addTechStack,
     removeTechStack,

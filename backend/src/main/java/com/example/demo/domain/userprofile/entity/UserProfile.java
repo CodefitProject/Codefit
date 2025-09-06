@@ -45,4 +45,23 @@ public class UserProfile {
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * 프로필 정보 업데이트
+     */
+    public void updateProfile(String career, String currentPosition, String yearSalary, String bio) {
+        this.career = career;
+        this.currentPosition = currentPosition;
+        this.yearSalary = yearSalary;
+        this.bio = bio;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 이력서 파일명 업데이트
+     */
+    public void updateResumeFileName(String resumeFileName) {
+        this.resumeFileName = resumeFileName;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -8,6 +8,7 @@ const UserUpdate: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   
   const {
     userInfo,
@@ -25,8 +26,6 @@ const UserUpdate: React.FC = () => {
     setPasswordData,
     updateUserInfo,
     updatePassword,
-    uploadResume,
-    deleteResume,
     toggleLocation,
     addTechStack,
     removeTechStack
@@ -40,7 +39,7 @@ const UserUpdate: React.FC = () => {
     }
 
     if (window.confirm('변경사항을 저장하시겠습니까?')) {
-      const success = await updateUserInfo();
+      const success = await updateUserInfo(resumeFile);
       if (success) {
         alert('개인정보가 성공적으로 수정되었습니다.');
         navigate('/user/detail');
@@ -65,27 +64,18 @@ const UserUpdate: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const success = await uploadResume(file);
-      if (success) {
-        alert('이력서가 성공적으로 업로드되었습니다.');
+      if (!file.type.includes('pdf')) {
+        alert('PDF 파일만 업로드 가능합니다.');
+        return;
       }
-    }
-  };
-
-  const handleResumeDelete = async () => {
-    if (!userInfo?.resume_file_name) {
-      alert('삭제할 이력서 파일이 없습니다.');
-      return;
-    }
-
-    if (window.confirm('이력서 파일을 삭제하시겠습니까?\n삭제 시 실제 파일도 함께 삭제됩니다.')) {
-      const success = await deleteResume();
-      if (success) {
-        alert('이력서가 성공적으로 삭제되었습니다.');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('파일 크기는 5MB를 초과할 수 없습니다.');
+        return;
       }
+      setResumeFile(file);
     }
   };
 
@@ -333,11 +323,15 @@ const UserUpdate: React.FC = () => {
                 type="text"
                 className="form-input"
                 readOnly
-                style={{ backgroundColor: '#f5f5f5', cursor: userInfo?.resume_file_name ? 'pointer' : 'default' }}
+                style={{ backgroundColor: '#f5f5f5', cursor: (userInfo?.resume_file_name && !resumeFile) ? 'pointer' : 'default' }}
                 placeholder="업로드된 이력서 파일이 없습니다"
-                value={userInfo?.resume_file_name ? displayFileName(userInfo.resume_file_name) : ''}
-                onClick={userInfo?.resume_file_name ? handleViewPdf : undefined}
-                title={userInfo?.resume_file_name ? "클릭하여 PDF 파일 보기" : ""}
+                value={
+                  resumeFile 
+                    ? `새 파일: ${resumeFile.name}` 
+                    : (userInfo?.resume_file_name ? displayFileName(userInfo.resume_file_name) : '')
+                }
+                onClick={(userInfo?.resume_file_name && !resumeFile) ? handleViewPdf : undefined}
+                title={(userInfo?.resume_file_name && !resumeFile) ? "클릭하여 PDF 파일 보기" : ""}
               />
               <div className="resume-buttons">
                 <button
@@ -345,15 +339,22 @@ const UserUpdate: React.FC = () => {
                   className="btn btn-secondary"
                   onClick={handleFileUpload}
                 >
-                  이력서 업로드
+                  {resumeFile ? '다른 파일 선택' : '이력서 업로드'}
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleResumeDelete}
-                >
-                  이력서 삭제
-                </button>
+                {resumeFile && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setResumeFile(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                  >
+                    선택 취소
+                  </button>
+                )}
               </div>
               <p className="file-info">* PDF 파일만 업로드 가능합니다. (최대 5MB)</p>
             </div>

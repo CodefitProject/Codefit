@@ -5,6 +5,7 @@ import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.enums.UserRole;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.user.dto.UserDetailDto;
+import com.example.demo.domain.user.dto.UserUpdateRequest;
 import com.example.demo.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,16 +32,24 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserDetail(userId));
     }
 
-    // RESTful API - 사용자 정보 조회 (수정용)
+    // 사용자 정보 조회 (수정용)
     @GetMapping("/api/users/{baseUserId}")
     public ResponseEntity<?> getUserForUpdate(@PathVariable("baseUserId") Long baseUserId) {
         return ResponseEntity.ok(userService.getUserForUpdate(baseUserId));
     }
 
-    // RESTful API - 기술스택 목록 조회
+    // 전체 기술스택 목록 조회
     @GetMapping("/api/techstacks")
     public ResponseEntity<?> getTechStacks() {
         return ResponseEntity.ok(userService.getTechStacks());
+    }
+
+    // 사용자 정보 수정 (개인정보 + 이력서)
+    @PatchMapping("/api/users/{baseUserId}")
+    public ResponseEntity<?> updateUserInfo(
+            @PathVariable("baseUserId") Long baseUserId,
+            UserUpdateRequest request) {
+        return ResponseEntity.ok(userService.updateUserInfo(baseUserId, request));
     }
 
     /**
