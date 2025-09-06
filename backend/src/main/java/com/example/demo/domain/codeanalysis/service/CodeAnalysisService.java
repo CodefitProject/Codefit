@@ -3,8 +3,12 @@ package com.example.demo.domain.codeanalysis.service;
 import com.example.demo.domain.codeanalysis.dto.CodeAnalysisResponseDto;
 import com.example.demo.domain.codeanalysis.dto.CodeAnalysisCompleteDto;
 import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
+import com.example.demo.domain.codeanalysis.entity.UsersMbtiTypes;
+import com.example.demo.domain.codeanalysis.repository.UsersMbtiTypesRepository;
 import com.example.demo.global.exception.GeminiException;
 import com.example.demo.domain.codeanalysis.repository.CodeAnalysisRepository;
+import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.common.service.GeminiService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +30,8 @@ import java.util.Map;
 public class CodeAnalysisService {
 
     private final CodeAnalysisRepository codeAnalysisRepository;
+    private final UsersMbtiTypesRepository usersMbtiTypesRepository;
+    private final BaseUserRepository baseUserRepository;
     private final ObjectMapper objectMapper;
     private final GeminiService geminiService;
 
@@ -83,8 +90,8 @@ public class CodeAnalysisService {
         // 5. 분석 결과를 데이터베이스에 저장
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
 
-        // 6. 코드분석을 완료했음을 저장
-
+        // 6. UsersMbtiTypes 엔티티 생성 또는 업데이트
+        createOrUpdateUsersMbtiTypes(baseUserId);
 
         // 7. 완료 응답 DTO 생성 및 반환 (ID만 포함)
         return new CodeAnalysisCompleteDto(
@@ -143,6 +150,26 @@ public class CodeAnalysisService {
                 true,
                 "분석 결과 조회 완료"
         );
+    }
+
+    /**
+     * UsersMbtiTypes 엔티티 생성 또는 업데이트
+     */
+    private void createOrUpdateUsersMbtiTypes(Long baseUserId) {
+        BaseUser baseUser = baseUserRepository.findById(baseUserId)
+                .orElseThrow(() -> new GeminiException("사용자를 찾을 수 없습니다."));
+
+        UsersMbtiTypes usersMbtiTypes = usersMbtiTypesRepository.findByBaseUser_BaseUserId(baseUserId)
+                .orElse(UsersMbtiTypes.builder()
+                        .baseUser(baseUser)
+                        .isCodeChecked(true)
+                        .build());
+
+        if (usersMbtiTypes.getTypeId() != null) {
+            usersMbtiTypes.markCodeChecked();
+        }
+
+        usersMbtiTypesRepository.save(usersMbtiTypes);
     }
 }
 
