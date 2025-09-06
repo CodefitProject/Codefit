@@ -8,7 +8,7 @@ export interface UserUpdateData {
   career: string;
   preferredLocations: string;
   currentPosition: string;
-  yearSalary: number;
+  yearSalary: string;
   bio: string;
   testChecked: boolean;
   techStack: string;
@@ -60,7 +60,6 @@ const LOCATION_OPTIONS = [
   { label: "대전", value: "대전" },
   { label: "광주", value: "광주" },
   { label: "울산", value: "울산" },
-  { label: "세종", value: "세종" },
   { label: "강원", value: "강원" },
   { label: "충북", value: "충북" },
   { label: "충남", value: "충남" },
@@ -73,16 +72,11 @@ const LOCATION_OPTIONS = [
 ];
 
 const SALARY_OPTIONS = [
-  { label: "3,000만원 이하", value: 3000 },
-  { label: "3,000 ~ 3,300만원", value: 3300 },
-  { label: "3,300 ~ 3,600만원", value: 3600 },
-  { label: "3,600 ~ 4,000만원", value: 4000 },
-  { label: "4,000 ~ 4,500만원", value: 4500 },
-  { label: "4,500 ~ 5,000만원", value: 5000 },
-  { label: "5,000 ~ 6,000만원", value: 6000 },
-  { label: "6,000 ~ 7,000만원", value: 7000 },
-  { label: "7,000 ~ 8,000만원", value: 8000 },
-  { label: "8,000만원 이상", value: 8500 }
+  { label: "2,000만원 ~ 2,500만원", value: "2000-2500" },
+  { label: "2,500만원 ~ 3,000만원", value: "2500-3000" },
+  { label: "3,000만원 ~ 4,000만원", value: "3000-4000" },
+  { label: "4,000만원 ~ 5,000만원", value: "4000-5000" },
+  { label: "5,000만원 이상", value: "5000+" }
 ];
 
 export const useUserUpdate = () => {
@@ -130,29 +124,28 @@ export const useUserUpdate = () => {
       const data = await response.json();
       const userData = data.elData || data;
       
+      console.log('🔍 사용자 데이터 확인:', userData);
+      console.log('🔍 선호 지역 데이터:', userData.preferredLocations);
+      
       setUserInfo(userData);
       
       // 선호 지역 초기화
       if (userData.preferredLocations) {
-        setSelectedLocations(userData.preferredLocations.split(','));
+        const locations = userData.preferredLocations.split(',');
+        console.log('🔍 분할된 선호 지역:', locations);
+        setSelectedLocations(locations);
+      } else {
+        console.log('🔍 선호 지역 없음, 빈 배열로 설정');
+        setSelectedLocations([]);
       }
 
-      // 기술 스택 초기화
-      if (userData.techStack) {
-        const techStackIds = userData.techStack.split(',');
-        const selectedStacks = techStackIds.map((id: string) => {
-          const stack = techStackOptions.find(option => option.techStackId === id.trim());
-          return stack || { techStackId: id.trim(), techStackName: id.trim() };
-        });
-        setSelectedTechStacks(selectedStacks);
-      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
-  }, [techStackOptions, getToken, authUserInfo]);
+  }, [getToken, authUserInfo]);
 
   // 기술 스택 옵션 조회
   const fetchTechStackOptions = useCallback(async () => {
@@ -396,11 +389,24 @@ export const useUserUpdate = () => {
     fetchTechStackOptions();
   }, [fetchTechStackOptions]);
 
+  // 기본 사용자 정보 조회 (기술스택과 독립적)
   useEffect(() => {
-    if (techStackOptions.length > 0 && authUserInfo) {
+    if (authUserInfo) {
       fetchUserInfo();
     }
-  }, [techStackOptions, fetchUserInfo, authUserInfo]);
+  }, [fetchUserInfo, authUserInfo]);
+
+  // 기술스택 정보가 로드된 후 기술스택 재처리
+  useEffect(() => {
+    if (techStackOptions.length > 0 && userInfo?.techStack) {
+      const techStackIds = userInfo.techStack.split(',').filter(id => id.trim());
+      const selectedStacks = techStackIds.map((id: string) => {
+        const stack = techStackOptions.find(option => option.techStackId === id.trim());
+        return stack || { techStackId: id.trim(), techStackName: id.trim() };
+      });
+      setSelectedTechStacks(selectedStacks);
+    }
+  }, [techStackOptions, userInfo?.techStack]);
 
   return {
     // 데이터

@@ -134,7 +134,7 @@ import java.util.stream.Collectors;
         } else {
             result.put("career", "");
             result.put("currentPosition", "");
-            result.put("yearSalary", 0);
+            result.put("yearSalary", "");
             result.put("bio", "");
             result.put("resume_file_name", "");
         }

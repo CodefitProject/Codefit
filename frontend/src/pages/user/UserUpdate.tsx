@@ -32,9 +32,6 @@ const UserUpdate: React.FC = () => {
     removeTechStack
   } = useUserUpdate();
 
-  const filteredTechStacks = techStackOptions.filter(stack =>
-    stack.techStackName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleSave = async () => {
     if (!userInfo?.name?.trim()) {
@@ -259,7 +256,7 @@ const UserUpdate: React.FC = () => {
             <select
               className="form-select"
               value={userInfo?.yearSalary || ''}
-              onChange={(e) => setUserInfo(prev => prev ? { ...prev, yearSalary: Number(e.target.value) } : null)}
+              onChange={(e) => setUserInfo(prev => prev ? { ...prev, yearSalary: e.target.value } : null)}
             >
               <option value="">선택하세요</option>
               {salaryOptions.map(option => (
@@ -277,24 +274,28 @@ const UserUpdate: React.FC = () => {
               <input
                 type="text"
                 className="form-input"
-                placeholder="기술스택을 검색하세요"
+                placeholder="기술스택을 입력하세요"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const selectedStack = techStackOptions.find(
+                      stack => stack.techStackName.toLowerCase() === searchTerm.toLowerCase()
+                    );
+                    if (selectedStack) {
+                      handleTechStackSelect(selectedStack);
+                    }
+                  }
+                }}
+                list="techstack-datalist"
               />
               
-              {searchTerm && (
-                <div className="tech-stack-dropdown">
-                  {filteredTechStacks.map(stack => (
-                    <div
-                      key={stack.techStackId}
-                      className="tech-stack-option"
-                      onClick={() => handleTechStackSelect(stack)}
-                    >
-                      {stack.techStackName}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <datalist id="techstack-datalist">
+                {techStackOptions.map(stack => (
+                  <option key={stack.techStackId} value={stack.techStackName} />
+                ))}
+              </datalist>
               
               <div className="tech-stack-tags">
                 {selectedTechStacks.map(stack => (
