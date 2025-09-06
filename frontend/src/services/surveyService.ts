@@ -53,18 +53,12 @@ class SurveyService {
      */
     async getQuestions(): Promise<SurveyQuestionsData> {
         try {
-            const token = AuthService.getToken();
-            const headers: { [key: string]: string } = {
-                'Content-Type': 'application/json',
-            };
-            
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            
-            const response = await fetch(`${API_BASE_URL}/survey/questions`, {
+            // Public API 사용 (인증 없이 접근 가능)
+            const response = await fetch(`${API_BASE_URL}/public/survey/questions`, {
                 method: 'GET',
-                headers: headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
 
             if (!response.ok) {

@@ -23,7 +23,7 @@ public class Company {
     private Long companyId;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "base_user_id", nullable = false, unique = true)
+    @JoinColumn(name = "base_user_id", nullable = false, unique = true, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private BaseUser baseUser;
 
     @Column(unique = true, nullable = false, name = "business_number")

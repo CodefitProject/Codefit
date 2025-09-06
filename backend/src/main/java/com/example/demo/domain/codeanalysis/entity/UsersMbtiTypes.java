@@ -29,7 +29,7 @@ public class UsersMbtiTypes {
     private Long typeId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "base_user_id", nullable = false, unique = true)
+    @JoinColumn(name = "base_user_id", nullable = false, unique = true, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private BaseUser baseUser;
 
     @Column(name = "type_code", length = 4, columnDefinition = "CHAR(4) COMMENT 'BRSD, AITF 등 4자리 타입 코드'")
