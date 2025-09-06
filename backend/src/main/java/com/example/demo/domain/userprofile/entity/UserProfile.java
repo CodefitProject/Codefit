@@ -38,6 +38,8 @@ public class UserProfile {
     private String profileImagePath;
     @Column(name = "is_profile_complete")
     private Boolean isProfileComplete;
+    @Column(name = "resume_file_name")
+    private String resumeFileName;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

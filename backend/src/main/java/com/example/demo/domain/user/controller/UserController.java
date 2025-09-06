@@ -25,9 +25,22 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
+    // 유저 상세정보 가져오기
     @GetMapping("/api/user/detail/{userId}")
     public ResponseEntity<UserDetailDto> getUserDetail(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(userService.getUserDetail(userId));
+    }
+
+    // RESTful API - 사용자 정보 조회 (수정용)
+    @GetMapping("/api/users/{baseUserId}")
+    public ResponseEntity<?> getUserForUpdate(@PathVariable("baseUserId") Long baseUserId) {
+        return ResponseEntity.ok(userService.getUserForUpdate(baseUserId));
+    }
+
+    // RESTful API - 기술스택 목록 조회
+    @GetMapping("/api/techstacks")
+    public ResponseEntity<?> getTechStacks() {
+        return ResponseEntity.ok(userService.getTechStacks());
     }
 
     /**

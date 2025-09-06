@@ -109,14 +109,18 @@ export const useUserUpdate = () => {
         throw new Error('사용자 정보를 찾을 수 없습니다.');
       }
 
-      const response = await fetch(`/InsWebApp/US0002UpdView.pwkjson`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userInfoVo: { baseUserId: Number(authUserInfo.baseUserId!) }
-        })
+      const token = getToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`/api/users/${authUserInfo.baseUserId}`, {
+        method: 'GET',
+        headers
       });
 
       if (!response.ok) {
@@ -148,16 +152,23 @@ export const useUserUpdate = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [techStackOptions]);
+  }, [techStackOptions, getToken, authUserInfo]);
 
   // 기술 스택 옵션 조회
   const fetchTechStackOptions = useCallback(async () => {
     try {
-      const response = await fetch('/InsWebApp/POS0002List.pwkjson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const token = getToken();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/techstacks', {
+        method: 'GET',
+        headers
       });
 
       if (!response.ok) {
@@ -165,11 +176,11 @@ export const useUserUpdate = () => {
       }
 
       const data = await response.json();
-      setTechStackOptions(data.techStackVoList || []);
+      setTechStackOptions(data.techStackVoList || data || []);
     } catch (err) {
       console.error('기술스택 조회 오류:', err);
     }
-  }, []);
+  }, [getToken]);
 
   // 사용자 정보 수정
   const updateUserInfo = useCallback(async () => {

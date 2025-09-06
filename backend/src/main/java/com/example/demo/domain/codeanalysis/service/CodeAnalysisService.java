@@ -83,7 +83,10 @@ public class CodeAnalysisService {
         // 5. 분석 결과를 데이터베이스에 저장
         CodeAnalysis savedAnalysis = codeAnalysisRepository.save(codeAnalysis);
 
-        // 6. 완료 응답 DTO 생성 및 반환 (ID만 포함)
+        // 6. 코드분석을 완료했음을 저장
+
+
+        // 7. 완료 응답 DTO 생성 및 반환 (ID만 포함)
         return new CodeAnalysisCompleteDto(
                 savedAnalysis.getAnalysisId(),
                 true,
@@ -108,32 +111,6 @@ public class CodeAnalysisService {
                 savedAnalysis.getAnalysisId(),
                 false,
                 "코드 분석은 완료되었으나 결과 파싱 중 오류가 발생했습니다."
-        );
-    }
-
-    /**
-     * 분석 ID로 코드 분석 결과 조회
-     */
-    @Transactional(readOnly = true)
-    public CodeAnalysisResponseDto getAnalysisResult(Long analysisId) {
-        CodeAnalysis analysis = codeAnalysisRepository.findByAnalysisId(analysisId)
-                .orElseThrow(() -> new GeminiException("분석 결과를 찾을 수 없습니다. ID: " + analysisId));
-
-        return new CodeAnalysisResponseDto(
-                analysis.getAnalysisId(),
-                analysis.getBaseUserId(),
-                analysis.getTypeCode(),
-                "적응형 지능형", // 고정값 (프론트에서 타입별 이름 처리)
-                "Gemini AI를 활용한 코드 분석",
-                analysis.getDevelopmentStyleScore(),
-                analysis.getDeveloperPreferenceScore(),
-                analysis.getConfidenceScore(),
-                "자동_감지",
-                analysis.getAnalysisResult(),
-                analysis.getComment(),
-                analysis.getCreatedAt(),
-                true,
-                "분석 결과 조회 완료"
         );
     }
 
