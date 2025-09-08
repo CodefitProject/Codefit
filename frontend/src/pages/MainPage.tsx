@@ -100,14 +100,9 @@ const MainPage: React.FC = () => {
                                 <div className="profile-header">
                                     <div className="profile-avatar">
                                         <img 
-                                            src={userInfo?.profileImageUrl || '/images/default/default_user.png'} 
+                                            src="/images/default/default_user.png"
                                             alt="User Avatar"
                                             style={{width: '60px', height: '60px', borderRadius: '50%'}}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.onerror = null; // Prevent infinite loop
-                                                target.src = '/images/default/default_user.png';
-                                            }}
                                         />
                                     </div>
                                     <div className="profile-info">
