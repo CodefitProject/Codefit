@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth.ts'; // 기존에 만든 useAuth 훅을 재사용합니다.
+import { getUserProfile } from '../services/userService.ts';
 
 // MainPage에서 사용하던 UserInfo 타입을 확장합니다.
 interface ExtendedUserInfo {
@@ -21,16 +22,26 @@ export const useUserAuthAndInfo = () => {
             // 로그인 상태일 때 추가 정보를 가져오는 로직 (현재는 Mock 데이터 사용)
             const loadUserMatchingInfo = async (baseUserId: string) => {
                 try {
-                    // TODO: API를 통해 실제 사용자 매칭 정보를 가져와야 합니다.
+                    const userDetail = await getUserProfile();
+
                     const extendedInfo: ExtendedUserInfo = {
                         baseUserId: baseUserId,
                         name: authInfo.name || '',
+                        isMbtiChecked: userDetail.isMbtiChecked,
+                        isCodeChecked: userDetail.isCodeChecked,
+                        matchingProposalCount: userDetail.matchingProposalCount,
+                        applicationStatusCount: userDetail.applicationStatusCount,
                     };
                     
                     setUserInfo(extendedInfo);
 
-                    // 프로필 완성도는 userInfo.isMbtiChecked와 userInfo.isCodeChecked를 기반으로 계산됩니다.
-                    setProfileCompletion(0); // 우선 0으로 초기화
+                    // 프로필 완성도 계산
+                    let completeCount = 0;
+                    if (extendedInfo.isMbtiChecked) completeCount++;
+                    if (extendedInfo.isCodeChecked) completeCount++;
+                    const totalTasks = 2;
+                    const completionPercentage = Math.round((completeCount / totalTasks) * 100);
+                    setProfileCompletion(completionPercentage);
 
                 } catch (error) {
                     console.error('매칭 정보 로드 실패:', error);
