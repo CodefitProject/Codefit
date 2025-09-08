@@ -112,7 +112,7 @@ class PostService {
             // companyId를 숫자로 변환
             const requestData = {
                 ...postData,
-                companyId: parseInt(postData.companyId) || 1 // 임시로 1 사용
+                companyId: parseInt(postData.companyId)
             };
 
             console.log('공고 등록 요청 데이터:', requestData);

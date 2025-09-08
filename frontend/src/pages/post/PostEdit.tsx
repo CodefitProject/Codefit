@@ -96,13 +96,14 @@ const PostEdit: React.FC = () => {
                 return;
             }
 
-            // 임시 companyId 설정 (나중에 백엔드에서 제공되어야 함)
-            const userInfoWithCompanyId = {
-                ...userInfo,
-                companyId: "1"  // 숫자 문자열로 설정
-            };
+            // 기업 사용자인 경우 companyId 확인
+            if (!userInfo.companyId) {
+                alert('회사 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+                navigate('/');
+                return;
+            }
 
-            setUserInfo(userInfoWithCompanyId);
+            setUserInfo(userInfo);
         } catch (error) {
             console.error('Access check error:', error);
             navigate('/');
@@ -396,7 +397,7 @@ const PostEdit: React.FC = () => {
             const expiresAtISO = new Date(formData.expiresAt).toISOString();
             
             const submitData = {
-                companyId: parseInt(userInfo.companyId || '1'),
+                companyId: parseInt(userInfo.companyId || '0'),
                 title: formData.title.trim(),
                 description: formData.description.trim(),
                 experienceLevel: formData.experienceLevel,
@@ -471,24 +472,14 @@ const PostEdit: React.FC = () => {
                                     value={formData.location}
                                     onChange={(e) => handleInputChange('location', e.target.value)}
                                 >
-                                    <option value="">지역을 선택해주세요</option>
+                                    <option value="">지역 선택</option>
                                     <option value="서울">서울</option>
                                     <option value="경기">경기</option>
                                     <option value="인천">인천</option>
                                     <option value="부산">부산</option>
                                     <option value="대구">대구</option>
-                                    <option value="광주">광주</option>
                                     <option value="대전">대전</option>
-                                    <option value="울산">울산</option>
-                                    <option value="강원">강원</option>
-                                    <option value="충북">충북</option>
-                                    <option value="충남">충남</option>
-                                    <option value="전북">전북</option>
-                                    <option value="전남">전남</option>
-                                    <option value="경북">경북</option>
-                                    <option value="경남">경남</option>
-                                    <option value="제주">제주</option>
-                                    <option value="재택">재택</option>
+                                    <option value="광주">광주</option>
                                 </select>
                             </div>
 
@@ -501,53 +492,45 @@ const PostEdit: React.FC = () => {
                                     value={formData.workType}
                                     onChange={(e) => handleInputChange('workType', e.target.value)}
                                 >
-                                    <option value="">근무 형태를 선택해주세요</option>
-                                    <option value="정규직">정규직</option>
-                                    <option value="계약직">계약직</option>
-                                    <option value="인턴">인턴</option>
-                                    <option value="프리랜서">프리랜서</option>
-                                    <option value="파트타임">파트타임</option>
+                                    <option value="">형태 선택</option>
+                                    <option value="remote">원격 근무</option>
+                                    <option value="onsite">출근 근무</option>
+                                    <option value="hybrid">하이브리드</option>
                                 </select>
                             </div>
 
                             {/* 경력 요구사항 */}
                             <div className="form-group">
-                                <label htmlFor="experienceLevel" className="form-label">경력 요구사항 *</label>
+                                <label htmlFor="experienceLevel" className="form-label">선호 경력</label>
                                 <select
                                     id="experienceLevel"
                                     className="form-select"
                                     value={formData.experienceLevel}
                                     onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
                                 >
-                                    <option value="">경력을 선택해주세요</option>
-                                    <option value="신입">신입</option>
-                                    <option value="1년 이상">1년 이상</option>
-                                    <option value="3년 이상">3년 이상</option>
-                                    <option value="5년 이상">5년 이상</option>
-                                    <option value="10년 이상">10년 이상</option>
-                                    <option value="경력무관">경력무관</option>
+                                    <option value="">경력 선택</option>
+                                    <option value="any">상관없음</option>
+                                    <option value="new">신입 (0년)</option>
+                                    <option value="junior">1-2년</option>
+                                    <option value="mid">3-5년</option>
+                                    <option value="senior">5년 이상</option>
                                 </select>
                             </div>
 
                             {/* 급여 범위 */}
                             <div className="form-group">
-                                <label htmlFor="salaryRange" className="form-label">급여 범위 *</label>
+                                <label htmlFor="salaryRange" className="form-label">예상 연봉범위</label>
                                 <select
                                     id="salaryRange"
                                     className="form-select"
                                     value={formData.salaryRange}
                                     onChange={(e) => handleInputChange('salaryRange', e.target.value)}
                                 >
-                                    <option value="">급여 범위를 선택해주세요</option>
-                                    <option value="2000만원 이하">2000만원 이하</option>
-                                    <option value="2000만원-3000만원">2000만원-3000만원</option>
-                                    <option value="3000만원-4000만원">3000만원-4000만원</option>
-                                    <option value="4000만원-5000만원">4000만원-5000만원</option>
-                                    <option value="5000만원-6000만원">5000만원-6000만원</option>
-                                    <option value="6000만원-7000만원">6000만원-7000만원</option>
-                                    <option value="7000만원-8000만원">7000만원-8000만원</option>
-                                    <option value="8000만원 이상">8000만원 이상</option>
-                                    <option value="협의">협의</option>
+                                    <option value="">연봉 선택</option>
+                                    <option value="under25">2,500만원 미만</option>
+                                    <option value="25to35">2,500-3,500만원</option>
+                                    <option value="35to50">3,500-5,000만원</option>
+                                    <option value="over50">5,000만원 이상</option>
                                 </select>
                             </div>
 

@@ -6,6 +6,8 @@ import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
+import com.example.demo.domain.company.entity.Company;
+import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.common.security.service.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
     private final BaseUserRepository baseUserRepository;
+    private final CompanyRepository companyRepository;
     
     // Access Token 갱신
     @PostMapping("/refresh")
@@ -66,8 +69,23 @@ public class AuthController {
                     .body(createErrorResponse("사용자를 찾을 수 없습니다."));
         }
         
+        // COMPANY 역할인 경우 companyId 가져오기
+        Long companyId = null;
+        if ("COMPANY".equals(baseUser.getUserRole().name())) {
+            try {
+                Company company = companyRepository.findByBaseUserBaseUserId(baseUser.getBaseUserId())
+                    .orElse(null);
+                if (company != null) {
+                    companyId = company.getCompanyId();
+                    log.debug("토큰 갱신 - 기업 사용자 companyId: {}", companyId);
+                }
+            } catch (Exception e) {
+                log.warn("companyId 추출 실패, null로 처리: {}", e.getMessage());
+            }
+        }
+        
         // 새로운 Access Token 생성
-        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name(), baseUser.getBaseUserId(), baseUser.getName());
+        String newAccessToken = jwtUtil.generateAccessToken(username, baseUser.getUserRole().name(), baseUser.getBaseUserId(), baseUser.getName(), companyId);
         
         LoginResponse response = LoginResponse.builder()
                 .accessToken(newAccessToken)

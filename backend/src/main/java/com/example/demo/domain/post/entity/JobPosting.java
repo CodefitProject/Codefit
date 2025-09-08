@@ -98,6 +98,12 @@ public class JobPosting {
     private String jobImagePath;
 
     /**
+     * 소프트 삭제 여부
+     */
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    /**
      * 요구 기술 스택 (일대다 관계 - 중간테이블 사용)
      */
     @OneToMany(mappedBy = "jobPosting", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -114,7 +120,7 @@ public class JobPosting {
     @Builder
     public JobPosting(Company company, String title, String description, String experienceLevel,
                       String salaryRange, String location, String workType, String preferredDeveloperTypes,
-                      LocalDateTime expiresAt, String status, String jobImagePath) {
+                      LocalDateTime expiresAt, String status, String jobImagePath, Boolean isDeleted) {
         this.company = company;
         this.title = title;
         this.description = description;
@@ -126,6 +132,7 @@ public class JobPosting {
         this.expiresAt = expiresAt;
         this.status = status != null ? status : "ACTIVE";
         this.jobImagePath = jobImagePath;
+        this.isDeleted = isDeleted != null ? isDeleted : false;
         this.jobPostingTechStacks = new HashSet<>();
     }
 
@@ -191,6 +198,21 @@ public class JobPosting {
      */
     public void expire() {
         this.status = "EXPIRED";
+    }
+    
+    /**
+     * 소프트 삭제 처리
+     */
+    public void softDelete() {
+        this.isDeleted = true;
+        this.status = "INACTIVE";
+    }
+    
+    /**
+     * 삭제 여부 확인
+     */
+    public boolean isDeleted() {
+        return this.isDeleted != null && this.isDeleted;
     }
 }
 

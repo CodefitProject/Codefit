@@ -65,6 +65,7 @@ const PostDetail: React.FC = () => {
         // AuthService 사용하여 일관된 사용자 정보 가져오기
         const userInfo = AuthService.getUserInfo();
         console.log('PostDetail - 사용자 정보:', userInfo);
+        setUserInfo(userInfo);
     };
 
     const loadPostDetail = async (id: string) => {
