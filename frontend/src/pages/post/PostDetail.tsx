@@ -28,6 +28,8 @@ interface JobPosting {
     preferredDeveloperTypes: string;
     jobImageFileName?: string;
     logoFileName?: string;
+    jobImagePath?: string;
+    logoPath?: string;
     isApplied?: boolean;
 }
 
@@ -62,16 +64,6 @@ const PostDetail: React.FC = () => {
         // AuthService 사용하여 일관된 사용자 정보 가져오기
         const userInfo = AuthService.getUserInfo();
         console.log('PostDetail - 사용자 정보:', userInfo);
-        
-        if (userInfo) {
-            // 임시로 기업 사용자의 경우 companyId: "1" 설정 (테스트용)
-            const enrichedUserInfo = userInfo.role === 'COMPANY' 
-                ? { ...userInfo, companyId: "1" }
-                : userInfo;
-            setUserInfo(enrichedUserInfo);
-        } else {
-            setUserInfo(null);
-        }
     };
 
     const loadPostDetail = async (id: string) => {
@@ -244,8 +236,9 @@ const PostDetail: React.FC = () => {
 
     // 소유자 확인 로직 (데이터 타입 고려)
     const isOwner = userInfo?.role === 'COMPANY' && 
-                   (String(userInfo?.companyId) === String(jobPosting?.companyId) || 
-                    parseInt(userInfo?.companyId) === parseInt(jobPosting?.companyId));
+                   userInfo?.companyId &&
+                   (String(userInfo.companyId) === String(jobPosting?.companyId) || 
+                    parseInt(userInfo.companyId) === parseInt(jobPosting?.companyId || '0'));
                    
     console.log('권한 체크:', {
         userRole: userInfo?.role,

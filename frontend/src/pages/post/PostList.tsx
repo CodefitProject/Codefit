@@ -49,7 +49,6 @@ const PostList: React.FC = () => {
     const pageSize = 12;
 
     useEffect(() => {
-        console.log("채용공고 목록 페이지 로드");
         checkUserLoginStatus();
         loadPostList();
     }, [currentPage, mbtiFilter]);
@@ -65,7 +64,6 @@ const PostList: React.FC = () => {
                 const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
                 setUserInfo(parsedUserInfo);
             } catch (e) {
-                console.error('사용자 정보 파싱 오류:', e);
                 setUserInfo(null);
             }
         }
@@ -80,13 +78,11 @@ const PostList: React.FC = () => {
             };
 
             const data = await postService.getPostList(requestData);
-            console.log('공고 목록 응답:', data);
             
             // 표준 REST API 응답 처리
             setJobPostings(data.jobPostings || []);
             setTotalCount(data.totalCount || 0);
         } catch (error) {
-            console.error('공고 목록 로드 실패:', error);
             setJobPostings([]);
             setTotalCount(0);
         } finally {
@@ -109,7 +105,6 @@ const PostList: React.FC = () => {
             };
 
             const data = await postService.getMbtiMatchedPostList(requestData);
-            console.log('MBTI 매칭 공고 응답:', data);
             
             // 표준 REST API 응답 처리
             setJobPostings(data.jobPostings || []);
@@ -149,7 +144,6 @@ const PostList: React.FC = () => {
 
     const openPostDetail = (jobPostingId: string | number) => {
         if (!jobPostingId || String(jobPostingId).trim() === "") {
-            console.error("공고 ID가 없습니다.");
             alert("선택된 공고의 정보를 찾을 수 없습니다.");
             return;
         }
@@ -159,7 +153,6 @@ const PostList: React.FC = () => {
 
     const viewCompany = (e: React.MouseEvent, companyId: string) => {
         e.stopPropagation();
-        console.log("회사 정보 보기:", companyId);
         // TODO: 회사 상세 페이지로 이동
     };
 
@@ -248,9 +241,7 @@ const PostList: React.FC = () => {
                     src={mainImagePath} 
                     alt={`${jobData.title || '공고'} 이미지`}
                     className="main-job-image"
-                    onLoad={() => console.log('이미지 로드 성공:', mainImagePath)}
                     onError={(e) => { 
-                        console.log('이미지 로드 실패:', mainImagePath);
                         (e.target as HTMLImageElement).src = '/images/default/default_company.png'; 
                     }}
                 />
