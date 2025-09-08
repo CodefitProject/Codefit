@@ -1,7 +1,7 @@
 // 설문 관련 타입 정의
 
 export interface UserInfo {
-    accountId: string;
+    baseUserId: string;
     name?: string;
     role: 'USER' | 'COMPANY';
     mbti?: string;

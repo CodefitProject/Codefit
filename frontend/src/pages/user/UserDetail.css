@@ -1,8 +1,8 @@
 /* 메인 레이아웃 */
-.user-detail-container {
+.user-detail-page-container {
     display: flex;
     min-height: calc(100vh - 70px);
-    max-width: 1400px;
+    max-width: 1100px;
     margin: 0 auto;
     background-color: #f8f9fa;
 }
@@ -95,7 +95,7 @@
 }
 
 /* 메인 콘텐츠 */
-.main-content {
+.user-detail-main-area {
     flex: 1;
     padding: min(30px, 4vw);
     overflow-y: auto;
@@ -222,7 +222,7 @@
 
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
-    .user-detail-container {
+    .user-detail-page-container {
         flex-direction: column;
     }
 
@@ -254,7 +254,7 @@
         display: none;
     }
 
-    .sidebar, .main-content {
+    .sidebar, .user-detail-main-area {
         padding: 15px;
     }
 
@@ -289,7 +289,7 @@
 }
 
 @media (max-width: 480px) {
-    .sidebar, .main-content {
+    .sidebar, .user-detail-main-area {
         padding: 10px;
     }
 

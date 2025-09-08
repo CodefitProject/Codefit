@@ -23,51 +23,52 @@ const Header: React.FC = () => {
     const handleLogout = () => {
         AuthService.logout();
         checkAuthStatus();
-        window.location.reload();
+        navigate('/', { replace: true });
     };
 
     const handleLogoClick = () => {
         if (userInfo && userInfo.role === "COMPANY") {
-            window.location.href = "/company/dashboard";
+            navigate('/company/dashboard');
         } else {
             // 비로그인 유저 또는 USER 권한: 메인 페이지로 이동
-            window.location.href = "/";
+            navigate('/');
         }
     };
 
     const handleCodeAnalysis = () => {
-        if (!userInfo || !userInfo.baseUserId) {
-            alert("로그인이 필요한 서비스입니다.");
-            return;
-        }
+        // if (!userInfo || !userInfo.baseUserId) {
+        //     alert("로그인이 필요한 서비스입니다.");
+        //     return;
+        // }
         
-        if (userInfo.role === "COMPANY") {
-            alert("죄송합니다. 코드 분석은 개인 사용자만 이용 가능합니다.");
-            return;
-        }
+        // if (userInfo.role === "COMPANY") {
+        //     alert("코드 분석은 개인 사용자만 이용 가능합니다.");
+        //     return;
+        // }
         
-        alert("코드분석 페이지로 이동합니다.");
+        navigate("/codeanalysis");
     };
 
     const handlePersonalityAnalysis = () => {
         if (!userInfo) {
             alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
         } else {
-            window.location.href = "/survey/mbti";
+            navigate('/survey/mbti');
         }
     };
 
     const handleCompanyBrowse = () => {
-        window.location.href = "/post";
+        navigate('/post');
     };
 
     const handleEnterpriseService = () => {
         if (userInfo === null) {
-            window.location.href = "/company";
+            navigate('/company');
         } else if (userInfo.role === "USER") {
-            window.location.href = "/company";
+            navigate('/company');
         } else if (userInfo.role === "COMPANY") {
             alert("채용 대시보드로 이동합니다.");
+            navigate('/company/dashboard');
         }
     };
 
@@ -99,13 +100,13 @@ const Header: React.FC = () => {
                         />
                         {showMenuForRole(userInfo?.role) && (
                             <>
-                                <Link 
-                                    to="/mbti-example"
+                                <span 
+                                    onClick={handleCodeAnalysis}
                                     className="nav-link" 
-                                    style={{marginLeft: '20px', fontSize: '16px'}}
+                                    style={{marginLeft: '20px', fontSize: '16px', cursor: 'pointer'}}
                                 >
                                     코드분석
-                                </Link>
+                                </span>
                                 <Link 
                                     to="/survey/mbti"
                                     className="nav-link" 

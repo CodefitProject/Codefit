@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@DynamicUpdate
 @Entity
 @Table(name = "base_users")
 public class BaseUser {
@@ -37,12 +39,12 @@ public class BaseUser {
     private String name;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updateAt;
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -80,6 +82,13 @@ public class BaseUser {
         return this.baseUserTechStacks.stream()
                 .map(BaseUserTechStack::getTechStack)
                 .collect(java.util.stream.Collectors.toSet());
+    }
+
+    /**
+     * 사용자 이름 업데이트
+     */
+    public void updateName(String name) {
+        this.name = name;
     }
 
 }

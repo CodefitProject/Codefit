@@ -13,7 +13,35 @@ interface UserInfo {
   name: string | null;
   role:  'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
-  accountId: string | null;
+}
+
+interface JwtPayload {
+  sub: string;
+  role: string;
+  baseUserId: string;
+  email: string;
+  exp?: number;
+  iat?: number;
+  [key: string]: any;
+}
+
+interface LoginData {
+  email?: string;
+  username?: string;
+  password: string;
+}
+
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  message?: string;
+}
+
+interface UserInfo {
+  email : string | null;
+  name: string | null;
+  role:  'USER' | 'COMPANY' | 'ADMIN';
+  baseUserId: string | null;
 }
 
 interface JwtPayload {
@@ -29,6 +57,10 @@ interface JwtPayload {
 class AuthService {
   static getToken(): string | null {
     return localStorage.getItem('accessToken');
+  }
+
+  static getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
   }
 
   static isLoggedIn(): boolean {
@@ -58,16 +90,12 @@ class AuthService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const authHeader = response.headers.get('Authorization');
-      let accessToken: string | null = null;
-
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        accessToken = authHeader.substring(7);
-        // 토큰을 localStorage에 저장
-        this.setToken(accessToken);
+      const result: LoginResponse = await response.json();
+      
+      if (result.accessToken && result.refreshToken) {
+        this.setToken(result.accessToken);
+        this.setRefreshToken(result.refreshToken);
       }
-
-      const result = await response.json();
       
       return result;
     } catch (error) {
@@ -80,9 +108,8 @@ class AuthService {
     localStorage.setItem('accessToken', token);
   }
 
-  static setUserInfo(userInfo: UserInfo): void {
-    // JWT 토큰에서 사용자 정보를 가져오므로 별도 저장은 하지 않음
-    // 필요시 추가 구현 가능
+  static setRefreshToken(token: string): void {
+    localStorage.setItem('refreshToken', token);
   }
 
   static getUserInfo(): UserInfo | null {
@@ -97,8 +124,7 @@ class AuthService {
         email: decodedToken.sub,
         name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
-        baseUserId: decodedToken.baseUserId,
-        accountId: decodedToken.baseUserId // accountId는 baseUserId와 동일하게 사용
+        baseUserId: decodedToken.baseUserId
       };
     } catch (error) {
       console.error('Error getting user info from token:', error);
@@ -108,6 +134,7 @@ class AuthService {
 
   static logout(): void {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   }
 
   static redirectByRole(userRole: string): void {
