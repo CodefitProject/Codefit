@@ -324,7 +324,7 @@ const PostList: React.FC = () => {
     };
 
     return (
-        <div className="main-wrap">
+        <div className="post-list-page">
             <Header />
             
             {/* 필터 섹션 */}
