@@ -27,6 +27,9 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
         st: false,
         df: false
     });
+    const [showResultCard, setShowResultCard] = useState(false);
+    const [showScoreSection, setShowScoreSection] = useState(false);
+    const resultCardRef = React.useRef<HTMLDivElement>(null);
 
     const typeDefinitions = SurveyService.getTypeDefinitions();
     const typeCode = result.typeCode || 'ARTF';
@@ -40,17 +43,31 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
         return Math.max(0, Math.min(100, (score + 50)));
     };
 
-    // 스코어 바 애니메이션
+    // 결과 표시 애니메이션 시퀀스 및 포커싱
     useEffect(() => {
-        const animateScores = () => {
-            // 순차적으로 애니메이션 실행
-            setTimeout(() => setScoreAnimations(prev => ({ ...prev, ab: true })), 200);
-            setTimeout(() => setScoreAnimations(prev => ({ ...prev, ri: true })), 500);
-            setTimeout(() => setScoreAnimations(prev => ({ ...prev, st: true })), 800);
-            setTimeout(() => setScoreAnimations(prev => ({ ...prev, df: true })), 1100);
+        const animationSequence = () => {
+            // 0. 결과 카드로 스크롤 이동 (즉시)
+            if (resultCardRef.current) {
+                resultCardRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+            
+            // 1. 결과 카드 표시 (0.5초 후)
+            setTimeout(() => setShowResultCard(true), 500);
+            
+            // 2. 점수 섹션 표시 (1.5초 후)
+            setTimeout(() => setShowScoreSection(true), 1500);
+            
+            // 3. 스코어 바 애니메이션 (순차적)
+            setTimeout(() => setScoreAnimations(prev => ({ ...prev, ab: true })), 2000);
+            setTimeout(() => setScoreAnimations(prev => ({ ...prev, ri: true })), 2300);
+            setTimeout(() => setScoreAnimations(prev => ({ ...prev, st: true })), 2600);
+            setTimeout(() => setScoreAnimations(prev => ({ ...prev, df: true })), 2900);
         };
 
-        animateScores();
+        animationSequence();
     }, []);
 
     // 탭 전환 핸들러
@@ -164,18 +181,42 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                 detailedAnalysis = fullAnalysis.detailed_analysis || detailedAnalysis;
             } catch (e) {
                 console.warn('codeAnalysisDetail JSON 파싱 실패:', e);
+                // 파싱 실패 시 기본값 유지
+                detailedAnalysis = { reasoning: '', code_patterns: [], strengths: [], suggestions: [] };
             }
         }
 
         return (
             <div className="code-analysis-section">
-                <div className="code-analysis-title">코드 분석 AI 코멘트</div>
-                <div className="code-analysis-comment">
-                    {result.codeAnalysisComment || '코드 구조와 패턴을 분석하여 개발 스타일을 도출했습니다.'}
+                <div className="code-analysis-header">
+                    <div className="code-analysis-title">
+                        <i className="fas fa-code"></i>
+                        코드 분석 AI 종합 리포트
+                    </div>
+                    <div className="analysis-confidence">
+                        <span className="confidence-label">분석 신뢰도</span>
+                        <div className="confidence-bar">
+                            <div className="confidence-fill" style={{width: `${result.confidenceScore || 85}%`}}></div>
+                        </div>
+                        <span className="confidence-score">{result.confidenceScore || 85}%</span>
+                    </div>
+                </div>
+                
+                <div className="code-analysis-summary">
+                    <div className="summary-card">
+                        <div className="summary-icon">🎯</div>
+                        <div className="summary-content">
+                            <h4>핵심 개발 성향</h4>
+                            <p>{result.codeAnalysisComment || '코드 구조와 패턴을 분석하여 개발 스타일을 도출했습니다.'}</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div className="detailed-section">
-                    <div className="detailed-title">상세 분석 결과</div>
+                    <div className="detailed-title">
+                        <i className="fas fa-chart-line"></i>
+                        상세 분석 결과
+                    </div>
 
                     {/* 분석 근거 */}
                     <div className="section-item reasoning-section">
@@ -191,7 +232,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     <div className="section-item patterns-section">
                         <div className="section-header">발견된 코드 패턴</div>
                         <div className="code-patterns-list">
-                            {detailedAnalysis.code_patterns.length > 0 ? (
+                            {Array.isArray(detailedAnalysis.code_patterns) && detailedAnalysis.code_patterns.length > 0 ? (
                                 detailedAnalysis.code_patterns.map((pattern, index) => (
                                     <div key={index} className="pattern-item">
                                         <div className="pattern-header">
@@ -231,7 +272,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     <div className="section-item strengths-section">
                         <div className="section-header">개발 강점</div>
                         <div className="strengths-content">
-                            {detailedAnalysis.strengths.length > 0 ? (
+                            {Array.isArray(detailedAnalysis.strengths) && detailedAnalysis.strengths.length > 0 ? (
                                 <ul className="strengths-list">
                                     {detailedAnalysis.strengths.map((strength, index) => (
                                         <li key={index} className="strength-item">
@@ -252,7 +293,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     <div className="section-item suggestions-section">
                         <div className="section-header">개선 제안</div>
                         <div className="suggestions-content">
-                            {detailedAnalysis.suggestions.length > 0 ? (
+                            {Array.isArray(detailedAnalysis.suggestions) && detailedAnalysis.suggestions.length > 0 ? (
                                 <ul className="suggestions-list">
                                     {detailedAnalysis.suggestions.map((suggestion, index) => (
                                         <li key={index} className="suggestion-item">
@@ -273,13 +314,72 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
         );
     };
 
+    // 개선된 설문 분석 생성
+    const generateAdvancedSurveyAnalysis = () => {
+        const scores = result.scores || {};
+        const insights: string[] = [];
+        
+        // 성향 강도 분석
+        const strongestAxis = Object.entries(scores).reduce((max, [axis, score]) => 
+            Math.abs(score) > Math.abs(max[1]) ? [axis, score] : max
+        );
+        
+        const axisNames = {
+            'B_A': '개발 스타일',
+            'R_I': '기술 접근법',
+            'S_T': '협업 방식',
+            'D_F': '작업 선호도'
+        };
+        
+        insights.push(`가장 뚜렷한 성향은 ${axisNames[strongestAxis[0] as keyof typeof axisNames]}(${Math.abs(strongestAxis[1]).toFixed(1)}점)입니다.`);
+        
+        // 균형도 분석
+        const scoreValues = Object.values(scores);
+        const avgScore = scoreValues.reduce((sum, score) => sum + Math.abs(score), 0) / scoreValues.length;
+        
+        if (avgScore < 15) {
+            insights.push("전반적으로 균형잡힌 성향을 보이며, 상황에 따라 유연하게 접근하는 특성을 가지고 있습니다.");
+        } else if (avgScore > 35) {
+            insights.push("명확하고 강한 개발 선호도를 가지고 있어, 자신만의 확고한 개발 철학을 보여줍니다.");
+        } else {
+            insights.push("적당한 선호도를 가지면서도 상황에 따른 적응력을 겸비한 개발자입니다.");
+        }
+        
+        return insights;
+    };
+
     // 답변 분석 렌더링
     const renderAnswerAnalysis = () => {
         const axisAnalyses = generateAxisAnalyses();
+        const advancedInsights = generateAdvancedSurveyAnalysis();
 
         return (
             <div className="answer-analysis-section">
-                <div className="answer-analysis-title">설문 답변 분석</div>
+                <div className="answer-analysis-header">
+                    <div className="answer-analysis-title">
+                        <i className="fas fa-brain"></i>
+                        설문 심층 분석
+                    </div>
+                    <div className="analysis-badge">
+                        <span className="badge-text">개인화 분석</span>
+                    </div>
+                </div>
+                
+                {/* 핵심 인사이트 섹션 */}
+                <div className="ai-insights-section">
+                    <div className="insights-header">
+                        <h4>🎯 핵심 인사이트</h4>
+                    </div>
+                    <div className="insights-list">
+                        {advancedInsights.map((insight, index) => (
+                            <div key={index} className="insight-item">
+                                <div className="insight-number">{index + 1}</div>
+                                <div className="insight-text">{insight}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                
                 <div className="answer-analysis-content">
                     
                     {/* 성향 분석 결과 */}
@@ -301,56 +401,6 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                         ))}
                     </div>
 
-                    {/* 축별 기여도 */}
-                    {result.axisContributions && (
-                        <div className="answer-item">
-                            <div className="answer-header">
-                                <h4 className="answer-title">축별 기여도</h4>
-                            </div>
-                            {(() => {
-                                try {
-                                    const axisContributions: AxisContributions = JSON.parse(result.axisContributions);
-                                    return Object.entries(axisContributions).map(([axis, info]) => {
-                                        const axisName = SurveyService.getAxisDisplayName(axis);
-                                        return (
-                                            <div key={axis} className="axis-contribution-card">
-                                                <div className="axis-name">{axisName}</div>
-                                                <div className="axis-stats">
-                                                    <div className="stat-item">
-                                                        <span className="stat-label">총점:</span>
-                                                        <span className="stat-value">{info.total.toFixed(1)}점</span>
-                                                    </div>
-                                                    <div className="stat-item">
-                                                        <span className="stat-label">평균:</span>
-                                                        <span className="stat-value">{info.average.toFixed(1)}점</span>
-                                                    </div>
-                                                    <div className="stat-item">
-                                                        <span className="stat-label">답변 수:</span>
-                                                        <span className="stat-value">{info.count}개</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    });
-                                } catch (e) {
-                                    console.error('축별 기여도 파싱 오류:', e);
-                                    return null;
-                                }
-                            })()}
-                        </div>
-                    )}
-
-                    {/* 답변 패턴 분석 */}
-                    {result.answerPattern && (
-                        <div className="answer-item">
-                            <div className="answer-header">
-                                <h4 className="answer-title">답변 패턴 분석</h4>
-                            </div>
-                            <div className="pattern-analysis">
-                                {result.answerPattern.replace(/\n/g, '\n')}
-                            </div>
-                        </div>
-                    )}
 
                     {/* 주요 인사이트 */}
                     {result.keyInsights && (
@@ -389,22 +439,25 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
             </div>
 
             {/* 결과 카드 */}
-            <div className="result-card">
-                <img 
-                    src={imagePath} 
-                    alt="MBTI Result Image" 
-                    className="mbti-result-image"
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/default/question.png';
-                    }}
-                />
-                <div className="result-type-code">{typeCode}</div>
-                <div className="result-type-name">{typeInfo.name}</div>
-                <div className="result-type-desc">{typeInfo.desc}</div>
+            <div ref={resultCardRef} className={`result-card ${showResultCard ? 'show' : ''}`}>
+                <div className="result-card-inner">
+                    <img 
+                        src={imagePath} 
+                        alt="MBTI Result Image" 
+                        className="mbti-result-image"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/default/question.png';
+                        }}
+                    />
+                    <div className="result-type-code">{typeCode}</div>
+                    <div className="result-type-name">{typeInfo.name}</div>
+                    <div className="result-type-desc">{typeInfo.desc}</div>
+                </div>
+                <div className="result-card-glow"></div>
             </div>
 
             {/* 점수 섹션 */}
-            <div className="score-section">
+            <div className={`score-section ${showScoreSection ? 'show' : ''}`}>
                 <div className="score-title">성향 분석 결과</div>
                 
                 <div className="score-bars">

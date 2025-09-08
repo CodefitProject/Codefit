@@ -165,8 +165,7 @@ public class SurveyServiceImpl implements SurveyService {
             String typeName = TYPE_NAMES.getOrDefault(finalTypeCode, "알 수 없는 유형");
             String typeDescription = generateTypeDescription(finalTypeCode);
             
-            // 8. 답변 분석 수행
-            String analysisResults = analyzeAnswers(requestDto.answers());
+            // 8. 키 인사이트 생성
             String keyInsights = generateKeyInsights(requestDto.answers());
             
             UsersMbtiTypes savedResult;
@@ -203,7 +202,7 @@ public class SurveyServiceImpl implements SurveyService {
             }
             
             return MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
-                                               analysisResults, analysisResults, keyInsights);
+                                               null, null, keyInsights);
             
         } catch (Exception e) {
             log.error("설문 제출 및 MBTI 계산 중 오류 발생", e);
@@ -232,9 +231,27 @@ public class SurveyServiceImpl implements SurveyService {
             String typeName = TYPE_NAMES.getOrDefault(result.getTypeCode(), "알 수 없는 유형");
             String typeDescription = generateTypeDescription(result.getTypeCode());
             
+            // 기존 설문 응답 조회하여 키 인사이트 생성
+            Optional<SurveyResponse> surveyResponse = surveyResponseRepository.findLatestResponseByUserId(userId);
+            String keyInsights = "[]";
+            
+            if (surveyResponse.isPresent()) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    List<QuestionAnswerDto> answers = objectMapper.readValue(
+                        surveyResponse.get().getResponses(), 
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, QuestionAnswerDto.class)
+                    );
+                    
+                    keyInsights = generateKeyInsights(answers);
+                } catch (Exception e) {
+                    log.warn("기존 설문 응답 파싱 실패", e);
+                }
+            }
+            
             log.debug("MBTI 타입 조회 완료 - 타입: {}", result.getTypeCode());
             return MbtiCalculationResultDto.from(result, codeAnalysis, typeName, typeDescription, 
-                                               null, null, null);
+                                               null, null, keyInsights);
             
         } catch (Exception e) {
             log.error("MBTI 타입 조회 중 오류 발생", e);
@@ -471,7 +488,8 @@ public class SurveyServiceImpl implements SurveyService {
                 insights.add("상황에 따라 유연하게 접근하는 성향을 보이며, 균형잡힌 개발자의 특성을 가지고 있습니다.");
             }
             
-            insights.add("설문 응답을 통해 개인의 개발 성향을 분석했습니다.");
+            // 총 답변 수를 기반으로 한 분석 완료 메시지
+            insights.add(String.format("%d개의 설문 문항에 대한 응답을 종합적으로 분석하여 개발 성향을 도출했습니다.", answers.size()));
             
             return objectMapper.writeValueAsString(insights);
             
@@ -480,5 +498,6 @@ public class SurveyServiceImpl implements SurveyService {
             return "[]";
         }
     }
+    
 }
 
