@@ -5,33 +5,6 @@ interface LoginData {
 }
 
 interface LoginResponse {
-  message: string;
-}
-
-interface UserInfo {
-  email : string | null;
-  name: string | null;
-  role:  'USER' | 'COMPANY' | 'ADMIN';
-  baseUserId: string | null;
-}
-
-interface JwtPayload {
-  sub: string;
-  role: string;
-  baseUserId: string;
-  email: string;
-  exp?: number;
-  iat?: number;
-  [key: string]: any;
-}
-
-interface LoginData {
-  email?: string;
-  username?: string;
-  password: string;
-}
-
-interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   message?: string;
@@ -42,6 +15,7 @@ interface UserInfo {
   name: string | null;
   role:  'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
+  companyId?: string;
 }
 
 interface JwtPayload {
