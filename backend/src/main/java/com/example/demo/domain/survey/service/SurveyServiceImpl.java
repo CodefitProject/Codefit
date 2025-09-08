@@ -140,27 +140,34 @@ public class SurveyServiceImpl implements SurveyService {
             Map<String, Double> surveyScores = calculateSurveyScores(requestDto.answers());
             log.debug("설문 점수 계산 완료: {}", surveyScores);
             
-            // 4. 코드 분석 점수 조회 (현재는 기본값 사용)
-            Map<String, Object> codeScores = new HashMap<>();
-            // TODO: 코드 분석 결과가 구현되면 여기서 조회
+            // 4. 코드 분석 결과 조회
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(requestDto.userId())
+                    .stream().findFirst().orElse(null);
             
-            // 5. 기존 MBTI 결과 확인
+            // 5. 코드 분석 점수 추출
+            Map<String, Object> codeScores = new HashMap<>();
+            if (codeAnalysis != null) {
+                codeScores.put("developmentStyleScore", codeAnalysis.getDevelopmentStyleScore());
+                codeScores.put("developerPreferenceScore", codeAnalysis.getDeveloperPreferenceScore());
+                log.debug("코드 분석 점수 - 개발 스타일: {}, 개발자 선호도: {}", 
+                         codeAnalysis.getDevelopmentStyleScore(), codeAnalysis.getDeveloperPreferenceScore());
+            } else {
+                log.debug("코드 분석 결과가 없어 기본값 사용");
+            }
+            
+            // 6. 기존 MBTI 결과 확인
             UsersMbtiTypes existingResult = usersMbtiTypesRepository.findByBaseUser_BaseUserId(requestDto.userId())
                     .orElse(null);
             
-            // 6. 최종 MBTI 타입 계산
+            // 7. 최종 MBTI 타입 계산
             Map<String, Double> finalScores = calculateFinalScores(surveyScores, codeScores);
             String finalTypeCode = calculateTypeCode(finalScores);
             String typeName = TYPE_NAMES.getOrDefault(finalTypeCode, "알 수 없는 유형");
             String typeDescription = generateTypeDescription(finalTypeCode);
             
-            // 7. 답변 분석 수행
+            // 8. 답변 분석 수행
             String analysisResults = analyzeAnswers(requestDto.answers());
             String keyInsights = generateKeyInsights(requestDto.answers());
-            
-            // 8. 코드 분석 결과 조회
-            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(requestDto.userId())
-                    .stream().findFirst().orElse(null);
             
             UsersMbtiTypes savedResult;
             if (existingResult != null) {
@@ -310,26 +317,44 @@ public class SurveyServiceImpl implements SurveyService {
     private Map<String, Double> calculateFinalScores(Map<String, Double> surveyScores, 
                                                      Map<String, Object> codeScores) {
         
-        // 코드 분석 점수 추출 (현재는 기본값 사용)
-        double codeStyleScore = 0.0;
-        double codeCollabScore = 0.0;
+        // 코드 분석 점수 추출
+        double codeStyleScore = 0.0;  // B/A 축에 영향
+        double codeInnovationScore = 0.0;  // R/I 축에 영향
+        
+        if (codeScores.containsKey("developmentStyleScore")) {
+            Integer styleScore = (Integer) codeScores.get("developmentStyleScore");
+            if (styleScore != null) {
+                codeStyleScore = styleScore.doubleValue();
+                log.debug("코드 분석 - 개발 스타일 점수: {}", codeStyleScore);
+            }
+        }
+        
+        if (codeScores.containsKey("developerPreferenceScore")) {
+            Integer prefScore = (Integer) codeScores.get("developerPreferenceScore");
+            if (prefScore != null) {
+                codeInnovationScore = prefScore.doubleValue();
+                log.debug("코드 분석 - 개발자 선호도 점수: {}", codeInnovationScore);
+            }
+        }
         
         // B/A 축 계산 (+값: Architect, -값: Builder)
         double surveyBA = surveyScores.getOrDefault("B/A", 0.0);
         double finalBA = (surveyBA * WEIGHT_BA_SURVEY) + (codeStyleScore * WEIGHT_BA_CODE);
         
-        // R/I 축 계산 (+값: Innovate, -값: Refactor)  
+        // R/I 축 계산 (+값: Refactor, -값: Innovate)  
         double surveyRI = surveyScores.getOrDefault("R/I", 0.0);
-        double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (0.0 * WEIGHT_RI_CODE);
+        double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (codeInnovationScore * WEIGHT_RI_CODE);
         
-        // S/T 축 계산 (+값: Team, -값: Solo)
+        // S/T 축 계산 (+값: Team, -값: Solo) - 코드 분석 영향 없음
         double surveyST = surveyScores.getOrDefault("S/T", 0.0);
-        double finalST = (surveyST * WEIGHT_ST_SURVEY) + (codeCollabScore * WEIGHT_ST_CODE);
+        double finalST = (surveyST * WEIGHT_ST_SURVEY);
         
-        // D/F 축 계산 (+값: Feature, -값: Debug)
+        // D/F 축 계산 (+값: Feature, -값: Debug) - 코드 분석 영향 없음
         double surveyDF = surveyScores.getOrDefault("D/F", 0.0);
-        double finalDF = (surveyDF * WEIGHT_DF_SURVEY) + (0.0 * WEIGHT_DF_CODE);
+        double finalDF = (surveyDF * WEIGHT_DF_SURVEY);
         
+        log.debug("설문 점수 - BA: {}, RI: {}, ST: {}, DF: {}", surveyBA, surveyRI, surveyST, surveyDF);
+        log.debug("코드 분석 점수 - Style: {}, Innovation: {}", codeStyleScore, codeInnovationScore);
         log.debug("최종 계산 점수 - BA: {}, RI: {}, ST: {}, DF: {}", finalBA, finalRI, finalST, finalDF);
         
         Map<String, Double> finalScores = new HashMap<>();
