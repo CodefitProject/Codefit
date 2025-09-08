@@ -5,6 +5,7 @@ import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.enums.UserRole;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.user.dto.UserDetailDto;
+import com.example.demo.domain.user.dto.UserUpdateRequest;
 import com.example.demo.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +26,30 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
+    // 유저 상세정보 가져오기
     @GetMapping("/api/user/detail/{userId}")
     public ResponseEntity<UserDetailDto> getUserDetail(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(userService.getUserDetail(userId));
+    }
+
+    // 사용자 정보 조회 (수정용)
+    @GetMapping("/api/users/{baseUserId}")
+    public ResponseEntity<?> getUserForUpdate(@PathVariable("baseUserId") Long baseUserId) {
+        return ResponseEntity.ok(userService.getUserForUpdate(baseUserId));
+    }
+
+    // 전체 기술스택 목록 조회
+    @GetMapping("/api/techstacks")
+    public ResponseEntity<?> getTechStacks() {
+        return ResponseEntity.ok(userService.getTechStacks());
+    }
+
+    // 사용자 정보 수정 (개인정보 + 이력서)
+    @PatchMapping("/api/users/{baseUserId}")
+    public ResponseEntity<?> updateUserInfo(
+            @PathVariable("baseUserId") Long baseUserId,
+            UserUpdateRequest request) {
+        return ResponseEntity.ok(userService.updateUserInfo(baseUserId, request));
     }
 
     /**

@@ -70,36 +70,56 @@ const AnalysisResult: React.FC = () => {
 
           <div className="scores-section">
             <div className="score-grid">
-              <div className="score-item">
+              <div className="score-item bipolar">
                 <span className="score-label">개발 스타일 점수</span>
-                <div className="score-bar">
-                  <div 
-                    className="score-fill development-style" 
-                    style={{ width: `${Math.abs(analysisResult.developmentStyleScore) * 2}%` }}
-                  ></div>
-                  <span className="score-value">{analysisResult.developmentStyleScore}</span>
+                <div className="bipolar-score-container">
+                  <span className="score-label-left">B</span>
+                  <div className="bipolar-score-bar">
+                    <div className="score-center-line"></div>
+                    <div 
+                      className={`bipolar-score-fill development-style ${analysisResult.developmentStyleScore >= 0 ? 'positive' : 'negative'}`}
+                      style={{ 
+                        width: `${Math.abs(analysisResult.developmentStyleScore)}%`,
+                        [analysisResult.developmentStyleScore >= 0 ? 'left' : 'right']: '50%'
+                      }}
+                    ></div>
+                    <span className="bipolar-score-value">{analysisResult.developmentStyleScore}</span>
+                  </div>
+                  <span className="score-label-right">A</span>
                 </div>
               </div>
               
-              <div className="score-item">
+              <div className="score-item bipolar">
                 <span className="score-label">개발자 선호도 점수</span>
-                <div className="score-bar">
-                  <div 
-                    className="score-fill preference" 
-                    style={{ width: `${Math.abs(analysisResult.developerPreferenceScore) * 2}%` }}
-                  ></div>
-                  <span className="score-value">{analysisResult.developerPreferenceScore}</span>
+                <div className="bipolar-score-container">
+                  <span className="score-label-left">R</span>
+                  <div className="bipolar-score-bar">
+                    <div className="score-center-line"></div>
+                    <div 
+                      className={`bipolar-score-fill preference ${analysisResult.developerPreferenceScore >= 0 ? 'positive' : 'negative'}`}
+                      style={{ 
+                        width: `${Math.abs(analysisResult.developerPreferenceScore)}%`,
+                        [analysisResult.developerPreferenceScore >= 0 ? 'left' : 'right']: '50%'
+                      }}
+                    ></div>
+                    <span className="bipolar-score-value">{analysisResult.developerPreferenceScore}</span>
+                  </div>
+                  <span className="score-label-right">I</span>
                 </div>
               </div>
               
-              <div className="score-item">
+              <div className="score-item single">
                 <span className="score-label">신뢰도</span>
-                <div className="score-bar">
-                  <div 
-                    className="score-fill confidence" 
-                    style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
-                  ></div>
-                  <span className="score-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
+                <div className="confidence-container">
+                  <span className="confidence-spacer"></span>
+                  <div className="confidence-bar">
+                    <div 
+                      className="confidence-fill" 
+                      style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
+                    ></div>
+                    <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
+                  </div>
+                  <span className="confidence-spacer"></span>
                 </div>
               </div>
             </div>
@@ -108,14 +128,50 @@ const AnalysisResult: React.FC = () => {
 
           <div className="analysis-meta">
             <div className="meta-item">
-              <span className="meta-label">분석 방법:</span>
-              <span className="meta-value">{analysisResult.detectedLanguage}</span>
+              <span className="meta-label">분석 언어:</span>
+              <span className="meta-value">{analysisResult.language}</span>
             </div>
             <div className="meta-item">
               <span className="meta-label">분석 ID:</span>
               <span className="meta-value">{analysisResult.analysisId}</span>
             </div>
           </div>
+
+          {analysisResult.reasoning && (
+            <div className="analysis-section">
+              <h3 className="section-title">분석 근거</h3>
+              <div className="section-content">
+                <p className="reasoning-text">{analysisResult.reasoning}</p>
+              </div>
+            </div>
+          )}
+
+          {analysisResult.strengths && (
+            <div className="analysis-section">
+              <h3 className="section-title">강점</h3>
+              <div className="section-content">
+                <pre className="analysis-text">{analysisResult.strengths}</pre>
+              </div>
+            </div>
+          )}
+
+          {analysisResult.suggestions && (
+            <div className="analysis-section">
+              <h3 className="section-title">개선 제안</h3>
+              <div className="section-content">
+                <pre className="analysis-text">{analysisResult.suggestions}</pre>
+              </div>
+            </div>
+          )}
+
+          {analysisResult.codePatterns && (
+            <div className="analysis-section">
+              <h3 className="section-title">코드 패턴 분석</h3>
+              <div className="section-content">
+                <pre className="analysis-text">{analysisResult.codePatterns}</pre>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

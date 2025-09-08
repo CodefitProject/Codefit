@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@DynamicUpdate
 @Entity
 @Table(name = "base_users")
 public class BaseUser {
@@ -84,4 +86,14 @@ public class BaseUser {
                 .collect(java.util.stream.Collectors.toSet());
     }
 
+    /**
+     * 사용자 이름 업데이트
+     */
+    public void updateName(String name) {
+        this.name = name;
+    }
+
 }
+
+
+

@@ -21,7 +21,7 @@ public class UserProfile {
     private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "base_user_id", unique = true, nullable = false) // FK → base_users.base_user_id (UNIQUE)
+    @JoinColumn(name = "base_user_id", unique = true, nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)) // FK → base_users.base_user_id (UNIQUE)
     private BaseUser baseUser;
 
     // ERD 컬럼 대응
@@ -38,9 +38,30 @@ public class UserProfile {
     private String profileImagePath;
     @Column(name = "is_profile_complete")
     private Boolean isProfileComplete;
+    @Column(name = "resume_file_name")
+    private String resumeFileName;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * 프로필 정보 업데이트
+     */
+    public void updateProfile(String career, String currentPosition, String yearSalary, String bio) {
+        this.career = career;
+        this.currentPosition = currentPosition;
+        this.yearSalary = yearSalary;
+        this.bio = bio;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 이력서 파일명 업데이트
+     */
+    public void updateResumeFileName(String resumeFileName) {
+        this.resumeFileName = resumeFileName;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
