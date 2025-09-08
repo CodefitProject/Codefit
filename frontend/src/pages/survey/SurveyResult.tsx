@@ -137,12 +137,19 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
 
     // 상세 분석 결과 렌더링
     const renderDetailedAnalysis = () => {
+        // 코드 분석 정보가 없는 경우
         if (!result.codeAnalysisComment && !result.codeAnalysisDetail) {
             return (
                 <div className="code-analysis-section">
                     <div className="code-analysis-title">코드 분석 AI 코멘트</div>
                     <div className="code-analysis-comment">
-                        코드 분석을 먼저 수행해주세요. 프로필 페이지에서 코드 분석을 진행할 수 있습니다.
+                        <div className="no-code-analysis">
+                            <p>코드 분석 결과가 아직 없습니다.</p>
+                            <p>프로필 페이지에서 코드 분석을 진행하면 설문 결과와 함께 종합된 분석을 확인할 수 있습니다.</p>
+                            <div className="current-analysis-note">
+                                <strong>현재 결과:</strong> 설문 응답만을 기반으로 한 개발 성향 분석입니다.
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
