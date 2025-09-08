@@ -15,15 +15,14 @@ interface JobPosting {
     location: string;
     workType: string;
     expiresAt: string;
-    postedAt: string;
+    createdAt: string;
     status: string;
     companyName: string;
-    industry: string;
-    empCount: string;
-    techStackNames: string;
+    selectedTechStackNames: string;
     preferredDeveloperTypes: string;
-    jobImageFileName?: string;
-    logoFileName?: string;
+    jobImagePath?: string;
+    logoPath?: string;
+    isApplied: boolean;
 }
 
 interface PostListParams {
@@ -230,13 +229,13 @@ const PostList: React.FC = () => {
             }
         }
 
-        // 이미지 경로 결정
-        const mainImagePath = (jobData.jobImageFileName && jobData.jobImageFileName.trim() !== "" && jobData.jobImageFileName !== "null")
-            ? `/images/company/${jobData.jobImageFileName}`
+        // 이미지 경로 결정 (S3 URL 사용)
+        const mainImagePath = (jobData.jobImagePath && jobData.jobImagePath.trim() !== "" && jobData.jobImagePath !== "null")
+            ? jobData.jobImagePath
             : '/images/default/default_company.png';
         
-        const logoPath = (jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null")
-            ? `/images/company/${jobData.logoFileName}`
+        const logoPath = (jobData.logoPath && jobData.logoPath.trim() !== "" && jobData.logoPath !== "null")
+            ? jobData.logoPath
             : '/images/default/default_company.png';
 
         return (
@@ -249,7 +248,11 @@ const PostList: React.FC = () => {
                     src={mainImagePath} 
                     alt={`${jobData.title || '공고'} 이미지`}
                     className="main-job-image"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/images/default/default_company.png'; }}
+                    onLoad={() => console.log('이미지 로드 성공:', mainImagePath)}
+                    onError={(e) => { 
+                        console.log('이미지 로드 실패:', mainImagePath);
+                        (e.target as HTMLImageElement).src = '/images/default/default_company.png'; 
+                    }}
                 />
                 <div className="job-info-area">
                     <h2 className="job-title-new">{jobData.title || '제목없음'}</h2>
