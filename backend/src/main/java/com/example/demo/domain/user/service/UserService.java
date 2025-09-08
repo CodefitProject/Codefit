@@ -85,7 +85,7 @@ import java.util.stream.Collectors;
             UserProfile userProfile = userProfileRepository.findByBaseUser_BaseUserId(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-             UsersMbtiTypes usersMbtiTypes = usersMbtiTypesRepository.findByBaseUser_BaseUserId(userId)
+            UsersMbtiTypes usersMbtiTypes = usersMbtiTypesRepository.findByBaseUser_BaseUserId(userId)
                     .orElse(null);
 
             int isMbtiChecked;
@@ -106,7 +106,10 @@ import java.util.stream.Collectors;
                 isCodeChecked = 0;
                 mbtiType = "";
             }
-            String preferredLocations = "";
+            List<UsersLocationsRelation> userLocations = usersLocationsRelationRepository.findAllByBaseUser_BaseUserId(userId);
+            String preferredLocations = userLocations.stream()
+                    .map(ul -> ul.getLocation().getLocationName())
+                    .collect(Collectors.joining(","));
 
             return UserDetailDto.builder()
                     .accountId(baseUser.getBaseUserId())
