@@ -48,7 +48,7 @@ public class BaseUser {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole userRole= UserRole.USER; // 일반, 기업, 관리자 등
+    private UserRole userRole; // 일반, 기업, 관리자 등
     @Column(nullable = false)
     private boolean enabled = true;
 
@@ -94,6 +94,3 @@ public class BaseUser {
     }
 
 }
-
-
-
