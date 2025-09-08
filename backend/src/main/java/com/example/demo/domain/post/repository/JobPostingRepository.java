@@ -1,5 +1,7 @@
 package com.example.demo.domain.post.repository;
 
+import com.example.demo.domain.application.dto.CompanyOwnerInfoDto;
+import com.example.demo.domain.application.dto.CompanyOwnerInfoProjection;
 import com.example.demo.domain.post.entity.JobPosting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -74,5 +76,14 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
            "LEFT JOIN FETCH jpts.techStack ts " +
            "WHERE jp.jobPostingId = :jobPostingId")
     Optional<JobPosting> findByIdWithTechStacks(@Param("jobPostingId") Long jobPostingId);
+
+    @Query(value = """
+    SELECT b.email AS email, b.name AS name, b.base_user_id AS baseUserId, j.company_id AS companyId
+    FROM job_postings j
+    JOIN companies c ON j.company_id = c.company_id
+    JOIN base_users b ON c.base_user_id = b.base_user_id
+    WHERE j.job_posting_id = :jobPostingId
+    """, nativeQuery = true)
+    CompanyOwnerInfoProjection findCompanyOwnerInfo(@Param("jobPostingId") Long jobPostingId);
 }
 

@@ -44,8 +44,8 @@ public class JobApplication {
     /**
      * 지원 상태 (PENDING, ACCEPTED, REJECTED)
      */
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Column(name = "application_status", nullable = false, length = 20)
+    private String applicationStatus;
 
     @CreationTimestamp
     @Column(name = "applied_at", updatable = false)
@@ -55,21 +55,21 @@ public class JobApplication {
     public JobApplication(JobPosting jobPosting, BaseUser user) {
         this.jobPosting = jobPosting;
         this.user = user;
-        this.status = "PENDING";
+        this.applicationStatus = "PENDING";
     }
 
     /**
      * 지원 수락
      */
     public void accept() {
-        this.status = "ACCEPTED";
+        this.applicationStatus = "ACCEPTED";
     }
 
     /**
      * 지원 거절
      */
     public void reject() {
-        this.status = "REJECTED";
+        this.applicationStatus = "REJECTED";
     }
 }
 

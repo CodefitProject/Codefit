@@ -1,6 +1,6 @@
-import React, { useState, ChangeEvent, FormEvent, useRef } from 'react';
-import axios from 'axios';
-import './CompanyRegister.css';
+import React, { useState, ChangeEvent, FormEvent, useRef } from "react";
+import axios from "axios";
+import "./CompanyRegister.css";
 
 interface FormData {
   email: string;
@@ -32,54 +32,56 @@ interface BusinessNumberApiResponse {
 
 const CompanyRegister: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: '',
-    name: '',
-    businessNumber: '',
-    industry: '',
-    empCount: '',
-    description: '',
+    email: "",
+    password: "",
+    name: "",
+    businessNumber: "",
+    industry: "",
+    empCount: "",
+    description: "",
     businessCertificate: null,
-    logo: null
+    logo: null,
   });
 
   const [fileNames, setFileNames] = useState<FileNames>({
-    businessCertificate: '',
-    logo: ''
+    businessCertificate: "",
+    logo: "",
   });
 
   const [imagePreviews, setImagePreviews] = useState<ImagePreviews>({
     businessCertificate: null,
-    logo: null
+    logo: null,
   });
 
   const businessCertificateRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ): void => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const isImageFile = (file: File): boolean => {
-    return file.type.startsWith('image/');
+    return file.type.startsWith("image/");
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, files } = e.target;
     if (files && files[0]) {
       const file = files[0];
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        [name]: file
+        [name]: file,
       }));
-      setFileNames(prev => ({
+      setFileNames((prev) => ({
         ...prev,
-        [name]: file.name
+        [name]: file.name,
       }));
 
       // 이미지 파일인 경우 미리보기 생성
@@ -87,18 +89,18 @@ const CompanyRegister: React.FC = () => {
         const reader = new FileReader();
         reader.onload = (event) => {
           if (event.target?.result) {
-            setImagePreviews(prev => ({
+            setImagePreviews((prev) => ({
               ...prev,
-              [name]: event.target!.result as string
+              [name]: event.target!.result as string,
             }));
           }
         };
         reader.readAsDataURL(file);
       } else {
         // 이미지가 아닌 경우 미리보기 제거
-        setImagePreviews(prev => ({
+        setImagePreviews((prev) => ({
           ...prev,
-          [name]: null
+          [name]: null,
         }));
       }
     }
@@ -112,20 +114,28 @@ const CompanyRegister: React.FC = () => {
     }
 
     try {
-      const response = await fetch("https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=yinZtZoIZHJc8jq8NnIE8zNvIc69XfYrMflYSywUFhAQr9ShfzBmntj7d4jMkuLJ5kZomJ7i7bOFOUAykjWAOw%3D%3D", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ b_no: [bizNo] })
-      });
+      const response = await fetch(
+        "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=yinZtZoIZHJc8jq8NnIE8zNvIc69XfYrMflYSywUFhAQr9ShfzBmntj7d4jMkuLJ5kZomJ7i7bOFOUAykjWAOw%3D%3D",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ b_no: [bizNo] }),
+        }
+      );
 
       const result: BusinessNumberApiResponse = await response.json();
 
       if (result && result.data && result.data.length > 0) {
         const info = result.data[0];
-        if (info.tax_type && info.tax_type.indexOf("국세청에 등록되지 않은 사업자등록번호") > -1) {
-          alert("국세청에 등록되지 않은 사업자등록번호입니다.\n번호를 다시 확인해 주세요.");
+        if (
+          info.tax_type &&
+          info.tax_type.indexOf("국세청에 등록되지 않은 사업자등록번호") > -1
+        ) {
+          alert(
+            "국세청에 등록되지 않은 사업자등록번호입니다.\n번호를 다시 확인해 주세요."
+          );
           return;
         }
         alert("유효한 사업자등록번호입니다.");
@@ -140,14 +150,15 @@ const CompanyRegister: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    
+
     const errors: string[] = [];
     if (!formData.email) errors.push("이메일을 입력해주세요.");
     if (!formData.password) errors.push("패스워드를 입력해주세요.");
     if (!formData.name) errors.push("기업명을 입력해주세요.");
     if (!formData.businessNumber) errors.push("사업자등록번호를 입력해주세요.");
     if (!formData.industry) errors.push("산업분류를 선택해주세요.");
-    if (!formData.businessCertificate) errors.push("사업자등록증명원을 업로드해주세요.");
+    if (!formData.businessCertificate)
+      errors.push("사업자등록증명원을 업로드해주세요.");
 
     if (errors.length > 0) {
       alert("다음 항목들을 확인해주세요:\n\n" + errors.join("\n"));
@@ -158,40 +169,47 @@ const CompanyRegister: React.FC = () => {
       try {
         // FormData 객체 생성
         const submitFormData = new FormData();
-        submitFormData.append('email', formData.email);
-        submitFormData.append('password', formData.password);
-        submitFormData.append('name', formData.name);
-        submitFormData.append('businessNumber', formData.businessNumber);
-        submitFormData.append('industry', formData.industry);
-        submitFormData.append('empCount', formData.empCount);
-        submitFormData.append('description', formData.description);
-        
+        submitFormData.append("email", formData.email);
+        submitFormData.append("password", formData.password);
+        submitFormData.append("name", formData.name);
+        submitFormData.append("businessNumber", formData.businessNumber);
+        submitFormData.append("industry", formData.industry);
+        submitFormData.append("empCount", formData.empCount);
+        submitFormData.append("description", formData.description);
+
         if (formData.businessCertificate) {
-          submitFormData.append('businessCertificate', formData.businessCertificate);
-        }
-        
-        if (formData.logo) {
-          submitFormData.append('logo', formData.logo);
+          submitFormData.append(
+            "businessCertificate",
+            formData.businessCertificate
+          );
         }
 
-        console.log('Submitting form data:', {
+        if (formData.logo) {
+          submitFormData.append("logo", formData.logo);
+        }
+
+        console.log("Submitting form data:", {
           email: formData.email,
           name: formData.name,
           businessNumber: formData.businessNumber,
           industry: formData.industry,
           hasBusinessCertificate: !!formData.businessCertificate,
-          hasLogo: !!formData.logo
+          hasLogo: !!formData.logo,
         });
 
-        const response = await axios.post('/api/public/company/register', submitFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
+        const response = await axios.post(
+          "/api/public/company/register",
+          submitFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           }
-        });
+        );
 
         alert("등록 성공: " + response.data);
         // 성공 시 폼 초기화 또는 리다이렉트
-        window.location.href = '/company';
+        window.location.href = "/company";
       } catch (error) {
         console.error("API 호출 오류:", error);
         alert("서버와의 통신 중 오류가 발생했습니다.");
@@ -203,10 +221,12 @@ const CompanyRegister: React.FC = () => {
     window.history.back();
   };
 
-  const handleFileButtonClick = (fileType: 'businessCertificate' | 'logo'): void => {
-    if (fileType === 'businessCertificate' && businessCertificateRef.current) {
+  const handleFileButtonClick = (
+    fileType: "businessCertificate" | "logo"
+  ): void => {
+    if (fileType === "businessCertificate" && businessCertificateRef.current) {
       businessCertificateRef.current.click();
-    } else if (fileType === 'logo' && logoRef.current) {
+    } else if (fileType === "logo" && logoRef.current) {
       logoRef.current.click();
     }
   };
@@ -289,8 +309,14 @@ const CompanyRegister: React.FC = () => {
         {/* 사업자등록증명원 */}
         <div className="form-group">
           <label className="form-label required">사업자등록증명원</label>
-          <div className={`upload-container ${fileNames.businessCertificate ? 'file-selected' : ''}`}>
-            <div className="upload-label">PDF, JPG, PNG 파일 업로드 (최대 10MB)</div>
+          <div
+            className={`upload-container ${
+              fileNames.businessCertificate ? "file-selected" : ""
+            }`}
+          >
+            <div className="upload-label">
+              PDF, JPG, PNG 파일 업로드 (최대 10MB)
+            </div>
             <div className="file-upload-section">
               <input
                 type="file"
@@ -303,14 +329,16 @@ const CompanyRegister: React.FC = () => {
               <button
                 type="button"
                 className="file-upload-btn"
-                onClick={() => handleFileButtonClick('businessCertificate')}
+                onClick={() => handleFileButtonClick("businessCertificate")}
               >
                 파일 선택
               </button>
               {fileNames.businessCertificate && (
                 <div className="file-status">
                   <div className="file-info show">
-                    <span className="file-name">{fileNames.businessCertificate}</span>
+                    <span className="file-name">
+                      {fileNames.businessCertificate}
+                    </span>
                     <div>✓ 파일이 선택되었습니다</div>
                   </div>
                 </div>
@@ -318,9 +346,9 @@ const CompanyRegister: React.FC = () => {
             </div>
             {imagePreviews.businessCertificate && (
               <div className="image-preview">
-                <img 
-                  src={imagePreviews.businessCertificate} 
-                  alt="사업자등록증명원 미리보기" 
+                <img
+                  src={imagePreviews.businessCertificate}
+                  alt="사업자등록증명원 미리보기"
                   className="preview-image"
                 />
               </div>
@@ -368,14 +396,22 @@ const CompanyRegister: React.FC = () => {
             value={formData.description}
             onChange={handleInputChange}
           />
-          <div className="help-text">개발자들이 우리 회사를 이해할 수 있도록 자세히 작성해주세요.</div>
+          <div className="help-text">
+            개발자들이 우리 회사를 이해할 수 있도록 자세히 작성해주세요.
+          </div>
         </div>
 
         {/* 기업 로고 */}
         <div className="form-group">
           <label className="form-label">기업 로고 (선택사항)</label>
-          <div className={`upload-container ${fileNames.logo ? 'file-selected' : ''}`}>
-            <div className="upload-label">PNG, JPG, SVG 파일 업로드 (최대 5MB)</div>
+          <div
+            className={`upload-container ${
+              fileNames.logo ? "file-selected" : ""
+            }`}
+          >
+            <div className="upload-label">
+              PNG, JPG, SVG 파일 업로드 (최대 5MB)
+            </div>
             <div className="file-upload-section">
               <input
                 type="file"
@@ -388,7 +424,7 @@ const CompanyRegister: React.FC = () => {
               <button
                 type="button"
                 className="file-upload-btn"
-                onClick={() => handleFileButtonClick('logo')}
+                onClick={() => handleFileButtonClick("logo")}
               >
                 파일 선택
               </button>
@@ -403,9 +439,9 @@ const CompanyRegister: React.FC = () => {
             </div>
             {imagePreviews.logo && (
               <div className="image-preview">
-                <img 
-                  src={imagePreviews.logo} 
-                  alt="기업 로고 미리보기" 
+                <img
+                  src={imagePreviews.logo}
+                  alt="기업 로고 미리보기"
                   className="preview-image"
                 />
               </div>
