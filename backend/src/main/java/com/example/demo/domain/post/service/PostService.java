@@ -1,7 +1,9 @@
 package com.example.demo.domain.post.service;
 
+import com.example.demo.common.security.service.CustomUserDetails;
 import com.example.demo.domain.post.dto.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
@@ -34,10 +36,9 @@ public interface PostService {
      * 공고 상세 조회
      * 
      * @param jobPostingId 공고 ID
-     * @param userId 사용자 ID (지원 여부 확인용)
      * @return 공고 상세 정보
      */
-    JobPostingDto getJobPostingDetail(Long jobPostingId, Long userId);
+    JobPostingDto getJobPostingDetail(Long jobPostingId, CustomUserDetails userDetails);
     
     /**
      * 공고 등록
