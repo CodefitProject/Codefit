@@ -1,5 +1,7 @@
 package com.example.demo.domain.user.service;
 
+import com.example.demo.domain.codeanalysis.entity.UsersMbtiTypes;
+import com.example.demo.domain.codeanalysis.repository.UsersMbtiTypesRepository;
 import com.example.demo.domain.user.dto.UserDetailDto;
 import com.example.demo.domain.user.dto.UserRegisterRequestDto;
 import com.example.demo.domain.user.dto.UserUpdateRequest;
@@ -40,6 +42,7 @@ import java.util.stream.Collectors;
     private final TechStackRepository techStackRepository;
     private final BaseUserTechStackRepository baseUserTechStackRepository;
     private final UsersLocationsRelationRepository usersLocationsRelationRepository;
+    private final UsersMbtiTypesRepository usersMbtiTypesRepository;
     private final LocationRepository locationRepository;
     private final S3Service s3Service;
     
@@ -82,9 +85,27 @@ import java.util.stream.Collectors;
             UserProfile userProfile = userProfileRepository.findByBaseUser_BaseUserId(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-            int isMbtiChecked = 0;
-            int isCodeChecked = 0;
-            String mbtiType = null;
+             UsersMbtiTypes usersMbtiTypes = usersMbtiTypesRepository.findByBaseUser_BaseUserId(userId)
+                    .orElse(null);
+
+            int isMbtiChecked;
+            int isCodeChecked;
+            String mbtiType;
+
+            if (usersMbtiTypes != null) {
+                Boolean mbtiCheckedBool = usersMbtiTypes.getIsMbtiChecked();
+                isMbtiChecked = (mbtiCheckedBool != null && mbtiCheckedBool) ? 1 : 0;
+
+                Boolean codeCheckedBool = usersMbtiTypes.getIsCodeChecked();
+                isCodeChecked = (codeCheckedBool != null && codeCheckedBool) ? 1 : 0;
+
+                String mbtiTypeValue = usersMbtiTypes.getTypeCode();
+                mbtiType = (mbtiTypeValue == null) ? "" : mbtiTypeValue;
+            } else {
+                isMbtiChecked = 0;
+                isCodeChecked = 0;
+                mbtiType = "";
+            }
             String preferredLocations = "";
 
             return UserDetailDto.builder()
