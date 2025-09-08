@@ -21,29 +21,16 @@ export const useUserAuthAndInfo = () => {
             // 로그인 상태일 때 추가 정보를 가져오는 로직 (현재는 Mock 데이터 사용)
             const loadUserMatchingInfo = async (baseUserId: string) => {
                 try {
-                    // Mock data from original component
-                    const mockData = {
-                        isMbtiChecked: true,
-                        isCodeChecked: false,
-                        matchingProposalCount: 3,
-                        applicationStatusCount: 5
-                    };
-
+                    // TODO: API를 통해 실제 사용자 매칭 정보를 가져와야 합니다.
                     const extendedInfo: ExtendedUserInfo = {
                         baseUserId: baseUserId,
                         name: authInfo.name || '',
-                        ...mockData
                     };
                     
                     setUserInfo(extendedInfo);
 
-                    // 프로필 완성도 계산
-                    let completeCount = 0;
-                    if (mockData.isMbtiChecked) completeCount++;
-                    if (mockData.isCodeChecked) completeCount++;
-                    const totalTasks = 2;
-                    const completionPercentage = (completeCount / totalTasks) * 100;
-                    setProfileCompletion(completionPercentage);
+                    // 프로필 완성도는 userInfo.isMbtiChecked와 userInfo.isCodeChecked를 기반으로 계산됩니다.
+                    setProfileCompletion(0); // 우선 0으로 초기화
 
                 } catch (error) {
                     console.error('매칭 정보 로드 실패:', error);
