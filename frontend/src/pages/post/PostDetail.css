@@ -286,6 +286,7 @@
 
 .empty-content {
     padding: 40px 20px;
+    text-align: left;
 }
 
 /* 태그 - 반응형 */
@@ -358,15 +359,18 @@
     color: #333;
     font-weight: 500;
     flex: 1;
+    text-align: left;
 }
 
 /* 설명 내용 */
 .description-content {
     padding: 20px;
+    text-align: left;
 }
 
 .description-content p {
     margin-bottom: 12px;
+    text-align: left;
 }
 
 .description-content p:last-child {
