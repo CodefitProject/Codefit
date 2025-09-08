@@ -222,93 +222,54 @@ const PostList: React.FC = () => {
         let developerTypeTags: string[] = [];
         if (jobData.preferredDeveloperTypes) {
             try {
+                // Assuming it's a JSON string array '["type1", "type2"]'
                 developerTypeTags = JSON.parse(jobData.preferredDeveloperTypes);
             } catch (e) {
+                // Fallback for comma-separated string "type1, type2"
                 developerTypeTags = jobData.preferredDeveloperTypes.split(',').map(item => item.trim());
             }
         }
 
         // 이미지 경로 결정
-        let imagePath = '';
-        let imageAlt = '';
-
-        if (jobData.jobImageFileName && jobData.jobImageFileName.trim() !== "" && jobData.jobImageFileName !== "null") {
-            imagePath = `/images/company/${jobData.jobImageFileName}`;
-            imageAlt = `${jobData.title || '공고'} 이미지`;
-        } else if (jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null") {
-            imagePath = `/images/company/${jobData.logoFileName}`;
-            imageAlt = `${jobData.companyName || '회사'} 로고`;
-        } else {
-            imagePath = '/images/default/default_company.png';
-            imageAlt = `${jobData.companyName || '회사'} 기본 이미지`;
-        }
+        const mainImagePath = (jobData.jobImageFileName && jobData.jobImageFileName.trim() !== "" && jobData.jobImageFileName !== "null")
+            ? `/images/company/${jobData.jobImageFileName}`
+            : '/images/default/default_company.png';
+        
+        const logoPath = (jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null")
+            ? `/images/company/${jobData.logoFileName}`
+            : '/images/default/default_company.png';
 
         return (
             <div 
                 key={jobData.jobPostingId}
-                className="job-card"
+                className="job-card-new" // Use new CSS class
                 onClick={() => openPostDetail(jobData.jobPostingId)}
             >
-                <div className="job-image">
-                    <img 
-                        src={imagePath} 
-                        alt={imageAlt}
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/images/default/default_company.png';
-                        }}
-                    />
-                </div>
-                
-                <div className="job-content">
-                    <div className="job-header">
-                        <div className="job-title">{jobData.title || '제목없음'}</div>
-                    </div>
-                    
-                    <div className="job-company" onClick={(e) => viewCompany(e, jobData.companyId)}>
-                        <img 
-                            src={jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null" 
-                                ? `/images/company/${jobData.logoFileName}` 
-                                : '/images/default/default_company.png'
-                            }
+                <img 
+                    src={mainImagePath} 
+                    alt={`${jobData.title || '공고'} 이미지`}
+                    className="main-job-image"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/images/default/default_company.png'; }}
+                />
+                <div className="job-info-area">
+                    <h2 className="job-title-new">{jobData.title || '제목없음'}</h2>
+                    <div className="company-info">
+                        <img
+                            src={logoPath}
                             alt={`${jobData.companyName || '회사'} 로고`}
-                            className="company-logo"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/default/default_company.png';
-                            }}
+                            className="company-logo-small"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/default/default_company.png'; }}
                         />
-                        <span>{jobData.companyName || '회사명 정보없음'}</span>
+                        <span className="company-name">{jobData.companyName || '회사명 정보없음'}</span>
                     </div>
-                    
-                    <div className="job-meta">
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">📍</span>
-                            {jobData.location}
-                        </div>
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">💼</span>
-                            {getWorkTypeText(jobData.workType)}
-                        </div>
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">⭐</span>
-                            {getExperienceLevelText(jobData.experienceLevel)}
-                        </div>
-                    </div>
-                    
-                    {developerTypeTags.length > 0 && (
-                        <div className="tech-tags">
-                            {developerTypeTags.slice(0, 4).map((type, idx) => (
-                                <span key={idx} className="tech-tag">{type}</span>
-                            ))}
-                        </div>
-                    )}
-                    
-                    <div className="job-footer">
-                        <div className="job-salary">
-                            {getSalaryRangeText(jobData.salaryRange)}
-                        </div>
-                        <div className="job-date">
-                            {formatDate(jobData.postedAt)}
-                        </div>
+                    <div className="developer-types">
+                        {developerTypeTags.length > 0 ? (
+                            developerTypeTags.slice(0, 3).map((type, idx) => ( // Show up to 3 tags
+                                <span key={idx} className="dev-type-tag">{type}</span>
+                            ))
+                        ) : (
+                            <span className="dev-type-tag">성향 정보 없음</span>
+                        )}
                     </div>
                 </div>
             </div>
