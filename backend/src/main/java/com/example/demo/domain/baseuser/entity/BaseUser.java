@@ -47,7 +47,7 @@ public class BaseUser {
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(nullable = false)
     private UserRole userRole= UserRole.USER; // 일반, 기업, 관리자 등
     @Column(nullable = false)
     private boolean enabled = true;
