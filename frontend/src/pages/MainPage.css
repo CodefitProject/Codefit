@@ -133,59 +133,70 @@ body {
 .login-area {
     width: 100%;
     min-height: 350px;
+    max-height: 350px;
     background-color: #fff;
-    padding: min(40px, 5vw);
+    padding: 30px;
     border-radius: 10px;
     border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* 로그인 영역 제목 */
 .login-title {
-    font-size: clamp(14px, 2vw, 16px);
+    font-size: clamp(15px, 2.2vw, 17px);
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 35px;
     color: #333;
-    line-height: 1.4;
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 /* 메인 로그인 버튼 */
 .btn-main-login {
     width: 100%;
-    padding: 15px;
+    padding: 18px;
     background-color: #007bff;
     color: #fff;
     border: none;
-    border-radius: 5px;
-    font-size: clamp(14px, 2vw, 16px);
-    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: clamp(15px, 2.2vw, 17px);
+    font-weight: 600;
+    margin-bottom: 30px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-main-login:hover {
+    background-color: #0056b3;
 }
 
 /* 특혜 안내 영역 */
 .gift-area {
     background-color: #e3f2fd;
-    padding: 20px;
-    border-radius: 5px;
+    padding: 25px;
+    border-radius: 8px;
     text-align: center;
 }
 
 /* 특혜 안내 일반 텍스트 */
 .gift-text {
-    font-size: clamp(12px, 1.8vw, 14px);
+    font-size: clamp(13px, 2vw, 15px);
     color: #1976D2;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     display: block;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* 특혜 안내 강조 텍스트 */
 .gift-text-bold {
-    font-size: clamp(12px, 1.8vw, 14px);
+    font-size: clamp(13px, 2vw, 15px);
     color: #1976D2;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 0;
     display: block;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* ==================================================
