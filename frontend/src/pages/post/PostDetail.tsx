@@ -378,8 +378,8 @@ const PostDetail: React.FC = () => {
                     {/* 공고 내용 */}
                     <section className="job-content">
                         {/* 기술스택 */}
-                        <h2 className="section-title">기술스택</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">기술스택</h2>
+                        <div className="post-detail-section-content">
                             {jobPosting.selectedTechStackNames ? (
                                 <div className="tech-tags">
                                     {renderTechStackTags(jobPosting.selectedTechStackNames)}
@@ -390,13 +390,13 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 선호 개발자 성향 */}
-                        <h2 className="section-title">
+                        <h2 className="post-detail-section-title">
                             선호 개발자 성향
                             <button className="mbti-info-button" onClick={showMbtiInfo}>
                                 ?
                             </button>
                         </h2>
-                        <div className="section-content">
+                        <div className="post-detail-section-content">
                             {jobPosting.preferredDeveloperTypes ? (
                                 <div className="dev-type-tags">
                                     {renderDeveloperTypeTags(jobPosting.preferredDeveloperTypes)}
@@ -407,8 +407,8 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 기본 정보 */}
-                        <h2 className="section-title">기본 정보</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">기본 정보</h2>
+                        <div className="post-detail-section-content">
                             <div className="info-tags">
                                 <div className="info-tag-item">
                                     <span className="info-tag-label">근무 지역</span>
@@ -438,8 +438,8 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 상세 설명 */}
-                        <h2 className="section-title">상세 설명</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">상세 설명</h2>
+                        <div className="post-detail-section-content">
                             {jobPosting.description ? (
                                 <div className="description-content">
                                     {jobPosting.description.split('\n').map((line, index) => (
@@ -454,8 +454,8 @@ const PostDetail: React.FC = () => {
                         {/* 우대사항 */}
                         {jobPosting.preferred && (
                             <>
-                                <h2 className="section-title">우대사항</h2>
-                                <div className="section-content">
+                                <h2 className="post-detail-section-title">우대사항</h2>
+                                <div className="post-detail-section-content">
                                     <div className="description-content">
                                         {jobPosting.preferred.split('\n').map((line, index) => (
                                             <p key={index}>{line}</p>
@@ -468,8 +468,8 @@ const PostDetail: React.FC = () => {
                         {/* 복리후생 */}
                         {jobPosting.benefits && (
                             <>
-                                <h2 className="section-title">복리후생</h2>
-                                <div className="section-content">
+                                <h2 className="post-detail-section-title">복리후생</h2>
+                                <div className="post-detail-section-content">
                                     <div className="description-content">
                                         {jobPosting.benefits.split('\n').map((line, index) => (
                                             <p key={index}>{line}</p>

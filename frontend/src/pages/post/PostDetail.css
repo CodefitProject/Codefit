@@ -232,7 +232,7 @@
     padding: min(40px, 5vw) 0;
 }
 
-.section-title {
+.post-detail-section-title {
     font-size: clamp(18px, 3vw, 20px);
     font-weight: 600;
     color: #333;
@@ -244,8 +244,12 @@
     position: relative;
 }
 
+.post-detail-section-title::before {
+    display: none !important;
+}
+
 /* MBTI 정보 버튼 스타일 */
-.mbti-info-button {
+.post-detail-main-wrap .mbti-info-button {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -263,17 +267,21 @@
     vertical-align: middle;
 }
 
-.mbti-info-button:hover {
+.post-detail-main-wrap .mbti-info-button:hover {
     background-color: #36f;
     transform: scale(1.1);
 }
 
-.mbti-info-button:active {
+.post-detail-main-wrap .mbti-info-button:active {
     transform: scale(0.95);
 }
 
-.section-content {
+.post-detail-section-content {
     margin-bottom: 30px;
+}
+
+.post-detail-section-content::before {
+    display: none !important;
 }
 
 .empty-content {
