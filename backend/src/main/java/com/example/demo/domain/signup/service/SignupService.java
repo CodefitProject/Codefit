@@ -43,7 +43,6 @@ public class SignupService {
                 .password(passwordEncoder.encode(rawPassword))
                 .name(name)
                 .userRole(UserRole.USER)
-                .enabled(true)
                 .build();
         BaseUser saved = baseUserRepository.save(user);
 

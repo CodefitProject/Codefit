@@ -48,9 +48,7 @@ public class BaseUser {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole userRole= UserRole.USER; // 일반, 기업, 관리자 등
-    @Column(nullable = false)
-    private boolean enabled = true;
+    private UserRole userRole; // 일반, 기업, 관리자
 
     /**
      * 사용자 보유 기술 스택 (일대다 관계 - 중간테이블 사용)

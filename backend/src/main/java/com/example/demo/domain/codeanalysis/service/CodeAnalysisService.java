@@ -190,6 +190,7 @@ public class CodeAnalysisService {
                 .orElse(UsersMbtiTypes.builder()
                         .baseUser(baseUser)
                         .isCodeChecked(true)
+                        .isMbtiChecked(false)
                         .build());
 
         if (usersMbtiTypes.getTypeId() != null) {

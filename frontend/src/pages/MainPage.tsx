@@ -42,7 +42,7 @@ const MainPage: React.FC = () => {
             alert("로그인 후 이용해주세요.");
             return;
         }
-        alert("코드분석 페이지로 이동합니다.");
+        window.location.href = "/codeanalysis";
     };
     
     const handleJobPostingClick = (jobPostingId: string) => {
@@ -100,7 +100,7 @@ const MainPage: React.FC = () => {
                                 <div className="profile-header">
                                     <div className="profile-avatar">
                                         <img 
-                                            src="/images/main/default_user.png" 
+                                            src="/images/default/default_user.png"
                                             alt="User Avatar"
                                             style={{width: '60px', height: '60px', borderRadius: '50%'}}
                                         />
