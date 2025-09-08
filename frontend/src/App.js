@@ -18,6 +18,8 @@ import CareerInput from "./pages/user/CareerInput.tsx";
 import ProfileAdditional from "./pages/user/ProfileAdditional.tsx";
 import ProfileComplete from "./pages/user/ProfileComplete.tsx";
 import UserDetailRoutes from "./pages/user/UserDetail.tsx";
+import ApplicationList from "./pages/application/ApplicationList.tsx";
+import ApplicantScout from "./pages/application/ApplicationScout.tsx";
 
 function App() {
   return (
@@ -46,6 +48,11 @@ function App() {
           <Route path="/post/create" element={<PostCreate />} />
           <Route path="/user/detail/*" element={<UserDetailRoutes />} />
           <Route path="/post/edit/:jobPostingId" element={<PostEdit />} />
+          <Route path="/post/applicant/:id" element={<ApplicationList />} />
+          <Route
+            path="/post/scout/:jobPostingId"
+            element={<ApplicantScout />}
+          />
         </Routes>
       </Router>
     </div>
