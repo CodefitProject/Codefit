@@ -23,7 +23,8 @@ const Header: React.FC = () => {
     const handleLogout = () => {
         AuthService.logout();
         checkAuthStatus();
-        navigate('/', { replace: true });
+        // 로그아웃 후 화면 리렌더링을 위해 페이지 새로고침
+        window.location.href = '/';
     };
 
     const handleLogoClick = () => {

@@ -97,18 +97,12 @@ const MainPage: React.FC = () => {
                         ) : (
                             <div className="profile-area">
                                 {/* 사용자 정보 헤더 */}
-                                <div className="profile-header">
-                                    <div className="profile-avatar">
-                                        <img 
-                                            src="/images/default/default_user.png"
-                                            alt="User Avatar"
-                                            style={{width: '60px', height: '60px', borderRadius: '50%'}}
-                                        />
-                                    </div>
-                                    <div className="profile-info">
-                                        <span className="profile-name">{userInfo?.name}님</span>
-                                    </div>
-                                </div>
+                                <img 
+                                    src="/images/default/default_user.png"
+                                    alt="User Avatar"
+                                    style={{width: '60px', height: '60px', borderRadius: '50%'}}
+                                />
+                                <span className="profile-name">{userInfo?.name}님</span>
                                 
                                 {/* 프로필 완성도 */}
                                 <div className="profile-completion">
