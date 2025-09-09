@@ -201,8 +201,14 @@ public class SurveyServiceImpl implements SurveyService {
                 log.debug("새 MBTI 결과 저장 완료 - 타입: {}", savedResult.getTypeCode());
             }
             
-            return MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
+            MbtiCalculationResultDto result = MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
                                                null, null, keyInsights);
+            
+            // 디버깅을 위한 로그 추가
+            log.debug("설문 결과 생성 완료 - codeAnalysisComment: {}", result.codeAnalysisComment());
+            log.debug("설문 결과 생성 완료 - codeAnalysisDetail: {}", result.codeAnalysisDetail());
+            
+            return result;
             
         } catch (Exception e) {
             log.error("설문 제출 및 MBTI 계산 중 오류 발생", e);

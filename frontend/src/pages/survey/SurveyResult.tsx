@@ -154,6 +154,11 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
 
     // 상세 분석 결과 렌더링
     const renderDetailedAnalysis = () => {
+        // 디버깅을 위한 로그 추가
+        console.log('SurveyResult - result 데이터:', result);
+        console.log('SurveyResult - codeAnalysisComment:', result.codeAnalysisComment);
+        console.log('SurveyResult - codeAnalysisDetail:', result.codeAnalysisDetail);
+        
         // 코드 분석 정보가 없는 경우
         if (!result.codeAnalysisComment && !result.codeAnalysisDetail) {
             return (

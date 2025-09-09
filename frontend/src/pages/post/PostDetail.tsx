@@ -299,7 +299,7 @@ const PostDetail: React.FC = () => {
                                     <img 
                                         src={jobPosting.jobImagePath}
                                         alt={`${jobPosting.title} 공고 이미지`}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = '/images/default/default_company.png';
                                         }}
