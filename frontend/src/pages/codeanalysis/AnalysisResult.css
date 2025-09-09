@@ -404,6 +404,23 @@
   line-height: 1.6;
   margin: 0;
   text-align: left;
+  white-space: pre-line;
+}
+
+.analysis-section .analysis-card .card-content strong,
+.analysis-section .analysis-card .card-content b {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.analysis-section .analysis-card .card-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0;
+  text-align: left;
+  white-space: pre-line;
 }
 
 .error-section {

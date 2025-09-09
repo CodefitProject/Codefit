@@ -184,8 +184,12 @@ const AnalysisResult: React.FC = () => {
               <div className="card-grid">
                 {analysisResult.codePatterns.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((pattern, index) => (
                   <div key={index} className="analysis-card">
-                    <div className="card-content">
-                      {pattern.trim().replace(/^[•\-\*]\s*/, '')}
+                    <div className="card-content" dangerouslySetInnerHTML={{
+                      __html: pattern.trim()
+                        .replace(/^[•\-\*]\s*/, '')
+                        .replace(/^(\d+\.\s*[^설명\n]*?)(?=\s*설명:)/g, '<strong>$1</strong>')
+                        .replace(/(\s*영향도:\s*\d+)$/g, '\n\n$1')
+                    }}>
                     </div>
                   </div>
                 ))}
