@@ -154,7 +154,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.strengths.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((strength, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {strength.trim()}
+                      {strength.trim().replace(/^[•\-\*]\s*/, '')}
                     </div>
                   </div>
                 ))}
@@ -169,7 +169,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.suggestions.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((suggestion, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {suggestion.trim()}
+                      {suggestion.trim().replace(/^[•\-\*]\s*/, '')}
                     </div>
                   </div>
                 ))}
