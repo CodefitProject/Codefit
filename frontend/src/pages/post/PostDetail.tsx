@@ -356,10 +356,8 @@ const PostDetail: React.FC = () => {
                                         </button>
                                     </>
                                 ) : userInfo.role === 'COMPANY' ? (
-                                    // 다른 기업의 공고를 보는 경우
-                                    <button className="btn-scout" onClick={handleViewScout}>
-                                        매칭 제안하기
-                                    </button>
+                                    // 다른 기업의 공고를 보는 경우 - 매칭 제안하기 버튼 숨김
+                                    null
                                 ) : (
                                     // 개발자 사용자인 경우
                                     <button 
