@@ -12,7 +12,6 @@ import ApplicationService, {
 } from "../../services/applicationService.ts";
 import AuthService from "../../services/authService.tsx";
 
-// 확장 타입 정의 (chk와 stacks 추가)
 type ExtendedScoutDto = ScoutDto & {
   chk?: boolean;
   stacks?: string[];
@@ -85,7 +84,6 @@ const ApplicantScout: React.FC = () => {
         return data.result.map((s) => ({
           ...s,
           chk: prevMap.get(s.applicationId) ?? false,
-          stacks: s.techStack ? s.techStack.split(",") : [], // 문자열을 배열로 변환
         }));
       });
       setTotalPage(data.totalPage);
@@ -112,6 +110,11 @@ const ApplicantScout: React.FC = () => {
     checkAccess();
     fetchScouts();
   }, [statusFilter, mbtiCount, techStackFilter, pageIndex]);
+
+  useEffect(() => {
+    setScouts((prev) => prev.map((s) => ({ ...s, chk: false })));
+    setSelectAll(false);
+  }, [statusFilter]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -281,7 +284,7 @@ const ApplicantScout: React.FC = () => {
           </thead>
           <tbody>
             {scouts.map((s) => (
-              <tr key={s.applicationId}>
+              <tr key={s.applicationId} className={s.chk ? "selected-row" : ""}>
                 <td>
                   <input
                     type="checkbox"

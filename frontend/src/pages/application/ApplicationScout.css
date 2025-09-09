@@ -200,3 +200,11 @@
   background-color: #f8f9fa;
   font-weight: 600;
 }
+
+.scout-table tr.selected-row {
+  background-color: #f1f3f5;
+}
+
+.scout-table tr.selected-row:hover {
+  background-color: #e9ecef;
+}

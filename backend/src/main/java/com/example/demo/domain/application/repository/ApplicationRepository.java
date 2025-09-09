@@ -34,9 +34,9 @@ public class ApplicationRepository {
     public List<String> findTechStacksByBaseUserId(Long baseUserId) {
         String sql = """
         SELECT t.tech_stack_name
-        FROM users_tech_stack_relation b JOIN tech_stacks t 
-        ON b.type_code = t.tech_stack_id
-        WHERE b.user_id = ?
+        FROM base_user_tech_stacks b JOIN tech_stacks t 
+        ON b.tech_stack_id = t.tech_stack_id
+        WHERE b.base_user_id = ?
     """;
 
         return jdbcTemplate.query(

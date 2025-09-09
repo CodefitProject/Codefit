@@ -152,3 +152,11 @@ input[type="checkbox"] {
   color: #aaa;
   cursor: not-allowed;
 }
+
+.applicant-grid tr.selected-row {
+  background-color: #f1f3f5;
+}
+
+.applicant-grid tr.selected-row:hover {
+  background-color: #e9ecef;
+}

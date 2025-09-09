@@ -108,44 +108,44 @@ const CompanyRegister: React.FC = () => {
 
   const handleBusinessNumberCheck = async (): Promise<void> => {
     const bizNo = formData.businessNumber.replace(/[^0-9]/g, "");
-    if (bizNo.length === 0) {
-      alert("사업자등록번호를 입력해 주세요.");
-      return;
-    }
+    // if (bizNo.length === 0) {
+    //   alert("사업자등록번호를 입력해 주세요.");
+    //   return;
+    // }
 
-    try {
-      const response = await fetch(
-        "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=yinZtZoIZHJc8jq8NnIE8zNvIc69XfYrMflYSywUFhAQr9ShfzBmntj7d4jMkuLJ5kZomJ7i7bOFOUAykjWAOw%3D%3D",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ b_no: [bizNo] }),
-        }
-      );
+    // try {
+    //   const response = await fetch(
+    //     "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=yinZtZoIZHJc8jq8NnIE8zNvIc69XfYrMflYSywUFhAQr9ShfzBmntj7d4jMkuLJ5kZomJ7i7bOFOUAykjWAOw%3D%3D",
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify({ b_no: [bizNo] }),
+    //     }
+    //   );
 
-      const result: BusinessNumberApiResponse = await response.json();
+    //   const result: BusinessNumberApiResponse = await response.json();
 
-      if (result && result.data && result.data.length > 0) {
-        const info = result.data[0];
-        if (
-          info.tax_type &&
-          info.tax_type.indexOf("국세청에 등록되지 않은 사업자등록번호") > -1
-        ) {
-          alert(
-            "국세청에 등록되지 않은 사업자등록번호입니다.\n번호를 다시 확인해 주세요."
-          );
-          return;
-        }
-        alert("유효한 사업자등록번호입니다.");
-      } else {
-        alert("조회 결과가 없습니다. 번호를 확인해 주세요.");
-      }
-    } catch (error) {
-      console.error("Business number check error:", error);
-      alert("조회 중 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
-    }
+    //   if (result && result.data && result.data.length > 0) {
+    //     const info = result.data[0];
+    //     if (
+    //       info.tax_type &&
+    //       info.tax_type.indexOf("국세청에 등록되지 않은 사업자등록번호") > -1
+    //     ) {
+    //       alert(
+    //         "국세청에 등록되지 않은 사업자등록번호입니다.\n번호를 다시 확인해 주세요."
+    //       );
+    //       return;
+    //     }
+    //     alert("유효한 사업자등록번호입니다.");
+    //   } else {
+    //     alert("조회 결과가 없습니다. 번호를 확인해 주세요.");
+    //   }
+    // } catch (error) {
+    //   console.error("Business number check error:", error);
+    //   alert("조회 중 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+    // }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {

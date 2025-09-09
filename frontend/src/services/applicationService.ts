@@ -42,7 +42,7 @@ export interface ScoutDto {
   currentPosition: string;
   resumeFileName?: string;
   typeCode?: string;
-  techStack?: string;
+  stacks?: string[];
   userId?: string;
 }
 
