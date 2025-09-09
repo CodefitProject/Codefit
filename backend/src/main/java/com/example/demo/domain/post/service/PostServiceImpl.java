@@ -118,7 +118,7 @@ public class PostServiceImpl implements PostService {
             throw new BusinessException("MBTI 매칭 공고 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public JobPostingDto getJobPostingDetail(Long jobPostingId, CustomUserDetails userDetails) {
@@ -138,7 +138,6 @@ public class PostServiceImpl implements PostService {
                 
                 // 소유자 여부 확인 - 공고의 회사 baseUserId와 현재 사용자 ID 비교
                 boolean isOwner = jobPosting.getCompany().getBaseUser().getBaseUserId().equals(userId);
-                log.info(">>>>>>>>>>>>>>>>>> isOwner : {}", isOwner);
                 dto = JobPostingDto.builder()
                         .jobPostingId(dto.jobPostingId())
                         .companyId(dto.companyId())

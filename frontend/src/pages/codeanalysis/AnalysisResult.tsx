@@ -92,7 +92,7 @@ const AnalysisResult: React.FC = () => {
               <div className="score-item bipolar">
                 <span className="score-label">개발자 선호도 점수</span>
                 <div className="bipolar-score-container">
-                  <span className="score-label-left">R</span>
+                  <span className="score-label-left">I</span>
                   <div className="bipolar-score-bar">
                     <div className="score-center-line"></div>
                     <div 
@@ -104,7 +104,7 @@ const AnalysisResult: React.FC = () => {
                     ></div>
                     <span className="bipolar-score-value">{analysisResult.developerPreferenceScore}</span>
                   </div>
-                  <span className="score-label-right">I</span>
+                  <span className="score-label-right">R</span>
                 </div>
               </div>
               
@@ -130,10 +130,6 @@ const AnalysisResult: React.FC = () => {
             <div className="meta-item">
               <span className="meta-label">분석 언어:</span>
               <span className="meta-value">{analysisResult.language}</span>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">분석 ID:</span>
-              <span className="meta-value">{analysisResult.analysisId}</span>
             </div>
           </div>
 
