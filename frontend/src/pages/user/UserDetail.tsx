@@ -20,7 +20,7 @@ interface UserInfo {
 
 // 사이드바 메뉴 컴포넌트
 const Sidebar: React.FC<{ userInfo: UserInfo | null }> = ({ userInfo }) => {
-    const isProfileComplete = userInfo ? userInfo.isMbtiChecked === 1 && userInfo.isCodeChecked === 1 : false;
+    const isProfileComplete = userInfo ? userInfo.isMbtiChecked === 1 && userInfo.isCodeChecked === 1 : true;
 
     return (
         <aside className="sidebar">
