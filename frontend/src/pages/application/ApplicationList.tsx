@@ -54,6 +54,10 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
     fetchApplications();
   }, [pageIndex, statusFilter]);
 
+  useEffect(() => {
+    setSelectedRows([]);
+  }, [statusFilter]);
+
   const checkAccess = () => {
     try {
       const userInfo = AuthService.getUserInfo();
@@ -244,7 +248,12 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
 
           <tbody>
             {applications.map((applicant, rowIndex) => (
-              <tr key={rowIndex}>
+              <tr
+                key={rowIndex}
+                className={
+                  selectedRows.includes(rowIndex) ? "selected-row" : ""
+                }
+              >
                 <td>
                   <input
                     type="checkbox"

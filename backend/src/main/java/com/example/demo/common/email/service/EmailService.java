@@ -20,6 +20,7 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(content);
         message.setFrom(from);
+        message.setReplyTo(from);
         mailSender.send(message);
     }
 
@@ -34,7 +35,7 @@ public class EmailService {
             case "SCOUT"                -> "[" + companyOwner.getName() + "] 스카웃 제안 안내";
             default                     -> "지원 상태 변경 안내";
         };
-System.out.println(content);
+        System.out.println(content);
         String footer = "\n\n문의: " + companyOwner.getName() + " (" + companyOwner.getEmail() + ")";
         String fullContent = content + footer;
 

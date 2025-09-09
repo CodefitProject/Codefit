@@ -71,5 +71,6 @@ public class JobApplication {
     public void reject() {
         this.applicationStatus = "REJECTED";
     }
+    
 }
 
