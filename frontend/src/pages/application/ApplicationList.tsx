@@ -9,6 +9,7 @@ import Header from "../../components/Header/Header.tsx";
 import EmailTemplateModal from "./EmailTemplateModal.tsx";
 import ResumePreviewModal from "./ResumePreviewModal.tsx";
 import AuthService from "../../services/authService.tsx";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner.tsx";
 
 interface ApplicationListProps {
   jobPostingId: number;
@@ -48,6 +49,7 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [resumeUrl, setResumeUrl] = useState("");
   const [resumeApplicationName, setResumeApplicationName] = useState("");
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
   useEffect(() => {
     checkAccess();
@@ -313,6 +315,7 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
               parseInt(applications[rowIndex].applicationId, 10)
             );
 
+            setIsEmailSending(true);
             try {
               await applicantService.modifyApplicationStatus(jobPostingId, {
                 applicationIds: selectedApplicationIds,
@@ -327,6 +330,8 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
             } catch (error) {
               console.error("지원자 상태 변경 실패:", error);
               alert("상태 변경 중 오류가 발생했습니다.");
+            } finally {
+              setIsEmailSending(false);
             }
           }}
         />
@@ -338,6 +343,13 @@ const ApplicantList: React.FC<ApplicationListProps> = ({}) => {
         resumeUrl={resumeUrl}
         applicantName={resumeApplicationName}
       />
+      
+      {isEmailSending && (
+        <LoadingSpinner
+          message="메일 발송 중..."
+          overlay={true}
+        />
+      )}
     </div>
   );
 };

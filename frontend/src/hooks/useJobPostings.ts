@@ -20,7 +20,7 @@ export const useJobPostings = () => {
     useEffect(() => {
         const loadJobPostings = async () => {
             try {
-                const data = await postService.getPostList({ pageIndex: 0, pageSize: 4 });
+                const data = await postService.getPostList({ pageIndex: 0, pageSize: 3 });
                 const processedJobPostings = (data.jobPostings || []).map((posting: any) => {
                     let developerTypes: string[] = [];
                     if (typeof posting.preferredDeveloperTypes === 'string') {
