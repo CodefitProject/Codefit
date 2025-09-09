@@ -5,7 +5,6 @@ import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
