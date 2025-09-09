@@ -140,9 +140,9 @@ public class SurveyServiceImpl implements SurveyService {
             Map<String, Double> surveyScores = calculateSurveyScores(requestDto.answers());
             log.debug("설문 점수 계산 완료: {}", surveyScores);
             
-            // 4. 코드 분석 결과 조회
-            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(requestDto.userId())
-                    .stream().findFirst().orElse(null);
+            // 4. 코드 분석 결과 조회 (가장 최신 결과)
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findTopByBaseUserIdOrderByCreatedAtDesc(requestDto.userId())
+                    .orElse(null);
             
             // 5. 코드 분석 점수 추출
             Map<String, Object> codeScores = new HashMap<>();
@@ -201,14 +201,8 @@ public class SurveyServiceImpl implements SurveyService {
                 log.debug("새 MBTI 결과 저장 완료 - 타입: {}", savedResult.getTypeCode());
             }
             
-            MbtiCalculationResultDto result = MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
+            return MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
                                                null, null, keyInsights);
-            
-            // 디버깅을 위한 로그 추가
-            log.debug("설문 결과 생성 완료 - codeAnalysisComment: {}", result.codeAnalysisComment());
-            log.debug("설문 결과 생성 완료 - codeAnalysisDetail: {}", result.codeAnalysisDetail());
-            
-            return result;
             
         } catch (Exception e) {
             log.error("설문 제출 및 MBTI 계산 중 오류 발생", e);
@@ -230,9 +224,9 @@ public class SurveyServiceImpl implements SurveyService {
                 return null;
             }
             
-            // 코드 분석 결과 조회
-            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(userId)
-                    .stream().findFirst().orElse(null);
+            // 코드 분석 결과 조회 (가장 최신 결과)
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findTopByBaseUserIdOrderByCreatedAtDesc(userId)
+                    .orElse(null);
             
             String typeName = TYPE_NAMES.getOrDefault(result.getTypeCode(), "알 수 없는 유형");
             String typeDescription = generateTypeDescription(result.getTypeCode());

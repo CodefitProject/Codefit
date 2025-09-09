@@ -5,7 +5,6 @@ import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,19 +78,11 @@ public record MbtiCalculationResultDto(
      * 코드 분석 상세 정보를 JSON 형태로 구성
      */
     private static String buildCodeAnalysisDetail(CodeAnalysis codeAnalysis) {
-        if (codeAnalysis == null) {
-            System.out.println("DEBUG: codeAnalysis is null");
-            return null;
-        }
+        if (codeAnalysis == null) return null;
         
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> detailedAnalysis = new HashMap<>();
-            
-            System.out.println("DEBUG: codeAnalysis.getReasoning(): " + codeAnalysis.getReasoning());
-            System.out.println("DEBUG: codeAnalysis.getCodePatterns(): " + codeAnalysis.getCodePatterns());
-            System.out.println("DEBUG: codeAnalysis.getStrengths(): " + codeAnalysis.getStrengths());
-            System.out.println("DEBUG: codeAnalysis.getSuggestions(): " + codeAnalysis.getSuggestions());
             
             detailedAnalysis.put("reasoning", codeAnalysis.getReasoning() != null ? codeAnalysis.getReasoning() : "");
             detailedAnalysis.put("code_patterns", parseCodePatterns(codeAnalysis.getCodePatterns()));
@@ -101,13 +92,8 @@ public record MbtiCalculationResultDto(
             Map<String, Object> result = new HashMap<>();
             result.put("detailed_analysis", detailedAnalysis);
             
-            String jsonResult = objectMapper.writeValueAsString(result);
-            System.out.println("DEBUG: Generated JSON: " + jsonResult);
-            
-            return jsonResult;
+            return objectMapper.writeValueAsString(result);
         } catch (Exception e) {
-            System.out.println("DEBUG: JSON 생성 실패: " + e.getMessage());
-            e.printStackTrace();
             // JSON 생성 실패 시 null 반환
             return null;
         }
