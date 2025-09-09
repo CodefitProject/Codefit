@@ -37,25 +37,19 @@ const Header: React.FC = () => {
     };
 
     const handleCodeAnalysis = () => {
-        // if (!userInfo || !userInfo.baseUserId) {
-        //     alert("로그인이 필요한 서비스입니다.");
-        //     return;
-        // }
-        
-        // if (userInfo.role === "COMPANY") {
-        //     alert("코드 분석은 개인 사용자만 이용 가능합니다.");
-        //     return;
-        // }
-        
+        if (!isLoggedIn || userInfo?.role !== "USER") {
+            alert("로그인 후 이용해주세요.");
+            return;
+        }
         navigate("/codeanalysis");
     };
 
     const handlePersonalityAnalysis = () => {
-        if (!userInfo) {
-            alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
-        } else {
-            navigate('/survey/mbti');
+        if (!isLoggedIn || userInfo?.role !== "USER") {
+            alert("로그인 후 이용해주세요.");
+            return;
         }
+        navigate('/survey/mbti');
     };
 
     const handleCompanyBrowse = () => {
@@ -108,13 +102,13 @@ const Header: React.FC = () => {
                                 >
                                     코드분석
                                 </span>
-                                <Link 
-                                    to="/survey/mbti"
+                                <span 
+                                    onClick={handlePersonalityAnalysis}
                                     className="nav-link" 
-                                    style={{fontSize: '16px', fontWeight: 'bold'}}
+                                    style={{fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
                                 >
                                     성향분석
-                                </Link>
+                                </span>
                                 <Link 
                                     to="/post"
                                     className="nav-link nav-link-company" 

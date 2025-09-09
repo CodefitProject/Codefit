@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './CompanyMain.css';
 
 interface Node {
@@ -43,8 +44,10 @@ declare global {
 }
 
 const CompanyMain: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleGoBack = (): void => {
-    window.history.back();
+    navigate('/');
   };
 
   const handleStart = (): void => {
