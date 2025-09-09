@@ -1,6 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUserDetailData } from '../../hooks/useUserDetailData.ts';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useProgress } from '../../hooks/useProgress.ts';
 import ActionCardsFrame from './ActionCardsFrame.tsx';
 import ResultFrame from './ResultFrame.tsx';
@@ -8,20 +7,8 @@ import './UserProfile.css';
 
 const UserProfile: React.FC = () => {
     const navigate = useNavigate();
-    const { userInfo, isLoading, error } = useUserDetailData();
+    const { userInfo } = useOutletContext<{ userInfo: any }>();
     const { isMbtiDone, isCodeDone, isAllComplete, progressPercentage } = useProgress(userInfo);
-
-    if (isLoading) {
-        return <div>로딩중...</div>;
-    }
-
-    if (error) {
-        return <div>오류: {error}</div>;
-    }
-
-    if (!userInfo) {
-        return <div>사용자 정보를 불러올 수 없습니다.</div>;
-    }
 
     const handleUserUpdate = () => {
         navigate('/user/update');

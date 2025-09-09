@@ -61,6 +61,8 @@ const AnalysisResult: React.FC = () => {
         <div className="analysis-info-card">
           <div className="developer-type-section">
             <h2 className="developer-type-title">{analysisResult.typeName}</h2>
+          </div>
+          <div className="type-code-section">
             <div className="type-code-badge">{analysisResult.typeCode}</div>
           </div>
 
@@ -92,7 +94,7 @@ const AnalysisResult: React.FC = () => {
               <div className="score-item bipolar">
                 <span className="score-label">개발자 선호도 점수</span>
                 <div className="bipolar-score-container">
-                  <span className="score-label-left">R</span>
+                  <span className="score-label-left">I</span>
                   <div className="bipolar-score-bar">
                     <div className="score-center-line"></div>
                     <div 
@@ -104,7 +106,7 @@ const AnalysisResult: React.FC = () => {
                     ></div>
                     <span className="bipolar-score-value">{analysisResult.developerPreferenceScore}</span>
                   </div>
-                  <span className="score-label-right">I</span>
+                  <span className="score-label-right">R</span>
                 </div>
               </div>
               
@@ -117,9 +119,8 @@ const AnalysisResult: React.FC = () => {
                       className="confidence-fill" 
                       style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
                     ></div>
-                    <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
                   </div>
-                  <span className="confidence-spacer"></span>
+                  <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
                 </div>
               </div>
             </div>
@@ -131,17 +132,19 @@ const AnalysisResult: React.FC = () => {
               <span className="meta-label">분석 언어:</span>
               <span className="meta-value">{analysisResult.language}</span>
             </div>
-            <div className="meta-item">
-              <span className="meta-label">분석 ID:</span>
-              <span className="meta-value">{analysisResult.analysisId}</span>
-            </div>
           </div>
 
           {analysisResult.reasoning && (
             <div className="analysis-section">
               <h3 className="section-title">분석 근거</h3>
-              <div className="section-content">
-                <p className="reasoning-text">{analysisResult.reasoning}</p>
+              <div className="card-grid">
+                {analysisResult.reasoning.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((reason, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {reason.trim()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -149,8 +152,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.strengths && (
             <div className="analysis-section">
               <h3 className="section-title">강점</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.strengths}</pre>
+              <div className="card-grid">
+                {analysisResult.strengths.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((strength, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {strength.trim().replace(/^[•\-\*]\s*/, '')}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -158,8 +167,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.suggestions && (
             <div className="analysis-section">
               <h3 className="section-title">개선 제안</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.suggestions}</pre>
+              <div className="card-grid">
+                {analysisResult.suggestions.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((suggestion, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {suggestion.trim().replace(/^[•\-\*]\s*/, '')}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -167,8 +182,17 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.codePatterns && (
             <div className="analysis-section">
               <h3 className="section-title">코드 패턴 분석</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.codePatterns}</pre>
+              <div className="card-grid">
+                {analysisResult.codePatterns.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((pattern, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content" dangerouslySetInnerHTML={{
+                      __html: pattern.trim()
+                        .replace(/^(\d+\.\s*[^설명\n]*?)(?=\s*설명:)/g, '<strong>$1</strong>')
+                        .replace(/(\s*영향도:\s*\d+)$/g, '\n<strong>$1</strong>')
+                    }}>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

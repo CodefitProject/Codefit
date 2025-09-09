@@ -5,7 +5,7 @@
 }
 
 /* 상단 헤더 */
-.header {
+.scout-page .header {
   margin: 20px 0;
   padding: 0 20px;
 }
@@ -88,7 +88,7 @@
 }
 
 /* 모달 */
-.modal-overlay {
+.scout-page .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -101,7 +101,7 @@
   z-index: 999;
 }
 
-.modal-content {
+.scout-page .modal-content {
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
