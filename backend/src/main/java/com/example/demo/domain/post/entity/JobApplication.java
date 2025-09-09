@@ -71,8 +71,6 @@ public class JobApplication {
     public void reject() {
         this.applicationStatus = "REJECTED";
     }
-
-    @Column(nullable = false)
-    private String status = "pending";
+    
 }
 
