@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.service;
 
+import com.example.demo.common.security.service.CustomUserDetails;
 import com.example.demo.common.service.S3Service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -119,8 +121,8 @@ public class PostServiceImpl implements PostService {
     
     @Override
     @Transactional(readOnly = true)
-    public JobPostingDto getJobPostingDetail(Long jobPostingId, Long userId) {
-        log.debug("공고 상세 조회 - 공고 ID: {}, 사용자 ID: {}", jobPostingId, userId);
+    public JobPostingDto getJobPostingDetail(Long jobPostingId, CustomUserDetails userDetails) {
+        log.info("공고 상세 조회 - 공고 ID: {}", jobPostingId);
         
         try {
             // 기술스택을 포함하여 조회
@@ -128,11 +130,15 @@ public class PostServiceImpl implements PostService {
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
             JobPostingDto dto = JobPostingDto.from(jobPosting);
-            
-            // 지원 여부 확인
-            if (userId != null) {
+            // 지원 여부 및 소유자 여부 확인
+            if (userDetails != null) {
+                long userId = userDetails.baseUser().getBaseUserId();
                 boolean isApplied = jobApplicationRepository.existsByJobPostingJobPostingIdAndUserBaseUserId(
                         jobPostingId, userId);
+                
+                // 소유자 여부 확인 - 공고의 회사 baseUserId와 현재 사용자 ID 비교
+                boolean isOwner = jobPosting.getCompany().getBaseUser().getBaseUserId().equals(userId);
+                log.info(">>>>>>>>>>>>>>>>>> isOwner : {}", isOwner);
                 dto = JobPostingDto.builder()
                         .jobPostingId(dto.jobPostingId())
                         .companyId(dto.companyId())
@@ -150,6 +156,7 @@ public class PostServiceImpl implements PostService {
                         .logoPath(dto.logoPath())
                         .createdAt(dto.createdAt())
                         .isApplied(isApplied)
+                        .isOwner(isOwner)
                         .selectedTechStackNames(dto.selectedTechStackNames()) // 기술스택 정보 유지
                         .build();
             }
@@ -342,8 +349,8 @@ public class PostServiceImpl implements PostService {
             JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
-            // 공고 비활성화 (실제 삭제 대신)
-            jobPosting.deactivate();
+            // 소프트 삭제 처리
+            jobPosting.softDelete();
             jobPostingRepository.save(jobPosting);
             
             log.debug("공고 삭제 완료 - ID: {}", jobPostingId);

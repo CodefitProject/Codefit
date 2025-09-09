@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.controller;
 
+import com.example.demo.common.security.service.CustomUserDetails;
 import com.example.demo.domain.post.dto.*;
 import com.example.demo.domain.post.service.PostService;
 import jakarta.validation.Valid;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -96,18 +99,15 @@ public class PostController {
      * 공고 상세 조회
      * 
      * @param jobPostingId 공고 ID
-     * @param userId 사용자 ID (선택적, 지원 여부 확인용)
      * @return 공고 상세 정보
      */
     @GetMapping("/{jobPostingId}")
     public ResponseEntity<JobPostingDto> getJobPostingDetail(
             @PathVariable Long jobPostingId,
-            @RequestParam(required = false) Long userId) {
-        
-        log.debug("공고 상세 조회 요청 - 공고 ID: {}, 사용자 ID: {}", jobPostingId, userId);
-        
-        JobPostingDto response = postService.getJobPostingDetail(jobPostingId, userId);
-        log.debug("공고 상세 조회 완료 - 제목: {}", response.title());
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("CustomUserDetails : {}", userDetails);
+        JobPostingDto response = postService.getJobPostingDetail(jobPostingId, userDetails);
+        log.info("공고 상세 조회 완료 - 제목: {}", response.title());
         
         return ResponseEntity.ok(response);
     }

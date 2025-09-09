@@ -19,5 +19,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, Company
 
     boolean existsByBaseUserEmail(String email);
 
+    Optional<Company> findByBaseUserBaseUserId(Long baseUserId);
+
     List<Company> findAllByStatusOrderByCreatedAtDesc(CompanyStatus status, Pageable pageable);
 }

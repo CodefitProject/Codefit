@@ -98,7 +98,8 @@ class AuthService {
         email: decodedToken.sub,
         name: decodedToken.name,
         role: decodedToken.role as 'USER' | 'COMPANY' | 'ADMIN',
-        baseUserId: decodedToken.baseUserId
+        baseUserId: decodedToken.baseUserId,
+        companyId: decodedToken.companyId ? String(decodedToken.companyId) : undefined
       };
     } catch (error) {
       console.error('Error getting user info from token:', error);

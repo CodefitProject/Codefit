@@ -6,6 +6,7 @@ export interface UserInfo {
   name: string | null;
   role: 'USER' | 'COMPANY' | 'ADMIN';
   baseUserId: string | null;
+  companyId?: string;
 }
 
 // JWT Payload 타입 정의

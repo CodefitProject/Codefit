@@ -71,15 +71,22 @@ class PostService {
      */
     async getPostDetail(jobPostingId, userId = null) {
         try {
-            const url = userId ? 
-                `${API_BASE_URL}/posts/${jobPostingId}?userId=${userId}` : 
-                `${API_BASE_URL}/posts/${jobPostingId}`;
+            const url = `${API_BASE_URL}/posts/${jobPostingId}`;
+            
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            // 로그인한 사용자만 Authorization 헤더 추가
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
             });
 
             if (!response.ok) {
@@ -105,7 +112,7 @@ class PostService {
             // companyId를 숫자로 변환
             const requestData = {
                 ...postData,
-                companyId: parseInt(postData.companyId) || 1 // 임시로 1 사용
+                companyId: parseInt(postData.companyId)
             };
 
             console.log('공고 등록 요청 데이터:', requestData);
