@@ -174,9 +174,9 @@
 
 .confidence-bar {
   flex: 1;
-  height: 24px;
+  height: 12px;
   background-color: #f0f0f0;
-  border-radius: 12px;
+  border-radius: 6px;
   position: relative;
   display: flex;
   align-items: center;
@@ -184,17 +184,17 @@
 
 .confidence-fill {
   height: 100%;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #fd7e14, #e74c3c);
+  border-radius: 6px;
+  background: #28a745;
   transition: width 0.3s ease;
 }
 
 .confidence-value {
-  position: absolute;
-  right: 12px;
+  margin-left: 12px;
   font-weight: 600;
   color: #333;
   font-size: 12px;
+  min-width: 35px;
 }
 
 /* 양극성 점수 바 스타일 */
@@ -216,9 +216,9 @@
 
 .bipolar-score-bar {
   flex: 1;
-  height: 24px;
+  height: 12px;
   background-color: #f0f0f0;
-  border-radius: 12px;
+  border-radius: 6px;
   position: relative;
   display: flex;
   align-items: center;
@@ -237,30 +237,30 @@
 
 .bipolar-score-fill {
   height: 100%;
-  border-radius: 12px;
+  border-radius: 6px;
   position: absolute;
   top: 0;
   transition: width 0.3s ease;
 }
 
 .bipolar-score-fill.development-style.positive {
-  background: linear-gradient(90deg, rgba(40, 167, 69, 0.3), #28a745);
-  border-radius: 0 12px 12px 0;
+  background: #007bff;
+  border-radius: 0 6px 6px 0;
 }
 
 .bipolar-score-fill.development-style.negative {
-  background: linear-gradient(90deg, #28a745, rgba(40, 167, 69, 0.3));
-  border-radius: 12px 0 0 12px;
+  background: #007bff;
+  border-radius: 6px 0 0 6px;
 }
 
 .bipolar-score-fill.preference.positive {
-  background: linear-gradient(90deg, rgba(0, 123, 255, 0.3), #007bff);
-  border-radius: 0 12px 12px 0;
+  background: #007bff;
+  border-radius: 0 6px 6px 0;
 }
 
 .bipolar-score-fill.preference.negative {
-  background: linear-gradient(90deg, #007bff, rgba(0, 123, 255, 0.3));
-  border-radius: 12px 0 0 12px;
+  background: #007bff;
+  border-radius: 6px 0 0 6px;
 }
 
 .bipolar-score-value {

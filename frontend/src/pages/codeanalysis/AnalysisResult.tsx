@@ -117,9 +117,8 @@ const AnalysisResult: React.FC = () => {
                       className="confidence-fill" 
                       style={{ width: `${Number(analysisResult.confidenceScore) * 100}%` }}
                     ></div>
-                    <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
                   </div>
-                  <span className="confidence-spacer"></span>
+                  <span className="confidence-value">{(Number(analysisResult.confidenceScore) * 100).toFixed(0)}%</span>
                 </div>
               </div>
             </div>
