@@ -24,29 +24,29 @@ import java.util.Optional;
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     /**
-     * 활성 상태의 공고 목록 조회 (페이징)
+     * 활성 상태의 공고 목록 조회 (페이징) - 삭제되지 않은 것만
      */
-    Page<JobPosting> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+    Page<JobPosting> findByStatusAndIsDeletedFalseOrderByCreatedAtDesc(String status, Pageable pageable);
 
     /**
-     * 특정 회사의 공고 목록 조회
+     * 특정 회사의 공고 목록 조회 - 삭제되지 않은 것만
      */
-    List<JobPosting> findByCompanyCompanyIdAndStatusOrderByCreatedAtDesc(Long companyId, String status);
+    List<JobPosting> findByCompanyCompanyIdAndStatusAndIsDeletedFalseOrderByCreatedAtDesc(Long companyId, String status);
 
     /**
-     * 만료되지 않은 활성 공고 목록 조회 (연관관계 포함)
+     * 만료되지 않은 활성 공고 목록 조회 (연관관계 포함) - 삭제되지 않은 것만
      */
     @Query("SELECT jp FROM JobPosting jp " +
            "LEFT JOIN FETCH jp.company c " +
            "LEFT JOIN FETCH c.baseUser bu " +
-           "WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now " +
+           "WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now AND jp.isDeleted = false " +
            "ORDER BY jp.createdAt DESC")
     Page<JobPosting> findActiveAndNotExpiredJobPostings(@Param("now") LocalDateTime now, Pageable pageable);
 
     /**
-     * MBTI 타입에 매칭되는 공고 목록 조회
+     * MBTI 타입에 매칭되는 공고 목록 조회 - 삭제되지 않은 것만
      */
-    @Query("SELECT jp FROM JobPosting jp WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now " +
+    @Query("SELECT jp FROM JobPosting jp WHERE jp.status = 'ACTIVE' AND jp.expiresAt > :now AND jp.isDeleted = false " +
            "AND (jp.preferredDeveloperTypes IS NULL OR jp.preferredDeveloperTypes LIKE %:mbtiType%) " +
            "ORDER BY jp.createdAt DESC")
     Page<JobPosting> findMbtiMatchedJobPostings(@Param("mbtiType") String mbtiType, 
@@ -67,14 +67,14 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     int updateExpiredJobPostings(@Param("now") LocalDateTime now);
 
     /**
-     * 기술스택을 포함하여 공고 상세 조회 (중간테이블 사용)
+     * 기술스택을 포함하여 공고 상세 조회 (중간테이블 사용) - 삭제되지 않은 것만
      */
     @Query("SELECT jp FROM JobPosting jp " +
            "LEFT JOIN FETCH jp.company c " +
            "LEFT JOIN FETCH c.baseUser bu " +
            "LEFT JOIN FETCH jp.jobPostingTechStacks jpts " +
            "LEFT JOIN FETCH jpts.techStack ts " +
-           "WHERE jp.jobPostingId = :jobPostingId")
+           "WHERE jp.jobPostingId = :jobPostingId AND jp.isDeleted = false")
     Optional<JobPosting> findByIdWithTechStacks(@Param("jobPostingId") Long jobPostingId);
 
     @Query(value = """

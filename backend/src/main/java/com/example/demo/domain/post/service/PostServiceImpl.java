@@ -348,8 +348,8 @@ public class PostServiceImpl implements PostService {
             JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                     .orElseThrow(() -> new BusinessException("존재하지 않는 공고입니다."));
             
-            // 공고 비활성화 (실제 삭제 대신)
-            jobPosting.deactivate();
+            // 소프트 삭제 처리
+            jobPosting.softDelete();
             jobPostingRepository.save(jobPosting);
             
             log.debug("공고 삭제 완료 - ID: {}", jobPostingId);

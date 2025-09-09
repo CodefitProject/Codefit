@@ -20,6 +20,7 @@ interface PostFormData {
     description: string;
     selectedTechStacks: string[];
     selectedPersonalities: string[];
+    expiresAt: string;
     jobImageFile?: File;
 }
 
@@ -51,6 +52,7 @@ const PostCreate: React.FC = () => {
         description: '',
         selectedTechStacks: [],
         selectedPersonalities: [],
+        expiresAt: '',
     });
 
     const maxPersonalities = 4;
@@ -86,13 +88,14 @@ const PostCreate: React.FC = () => {
                 return;
             }
 
-            // 임시 companyId 설정 (나중에 백엔드에서 제공되어야 함)
-            const userInfoWithCompanyId = {
-                ...userInfo,
-                companyId: "1"  // 숫자 문자열로 설정
-            };
+            // 기업 사용자인 경우 companyId 확인
+            if (!userInfo.companyId) {
+                alert('회사 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+                navigate('/');
+                return;
+            }
 
-            setUserInfo(userInfoWithCompanyId);
+            setUserInfo(userInfo);
         } catch (error) {
             console.error('Access check error:', error);
             navigate('/');
@@ -275,6 +278,17 @@ const PostCreate: React.FC = () => {
             errors.push("상세 설명을 입력해주세요.");
         }
         
+        if (!formData.expiresAt || formData.expiresAt.trim() === "") {
+            errors.push("공고 만료일을 선택해주세요.");
+        } else {
+            // 만료일이 현재 시간보다 미래인지 확인
+            const expiresDate = new Date(formData.expiresAt);
+            const now = new Date();
+            if (expiresDate <= now) {
+                errors.push("공고 만료일은 현재 시간보다 미래여야 합니다.");
+            }
+        }
+        
         return errors;
     };
 
@@ -300,10 +314,8 @@ const PostCreate: React.FC = () => {
         setIsSubmitting(true);
         
         try {
-            // 만료일 설정 (30일 후)
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            const expiryString = expiryDate.toISOString(); // ISO 형식 유지
+            // 사용자가 설정한 만료일을 ISO 형식으로 변환
+            const expiresAtISO = new Date(formData.expiresAt).toISOString();
             
             // 기본 데이터 생성
             const postData = {
@@ -316,7 +328,7 @@ const PostCreate: React.FC = () => {
                 workType: formData.workType,
                 selectedTechStackNames: JSON.stringify(formData.selectedTechStacks),
                 preferredDeveloperTypes: JSON.stringify(formData.selectedPersonalities),
-                expiresAt: expiryString
+                expiresAt: expiresAtISO
             };
             
             console.log('전송할 공고 데이터:', postData);
@@ -543,6 +555,20 @@ const PostCreate: React.FC = () => {
                                     <option value="over50">5,000만원 이상</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label required">공고 만료일</label>
+                            <input
+                                type="datetime-local"
+                                className="form-input"
+                                value={formData.expiresAt}
+                                onChange={(e) => handleInputChange('expiresAt', e.target.value)}
+                                min={new Date().toISOString().slice(0, 16)}
+                            />
+                            <p className="help-text">
+                                공고가 자동으로 마감되는 날짜와 시간을 설정해주세요.
+                            </p>
                         </div>
 
                         <div className="form-group">

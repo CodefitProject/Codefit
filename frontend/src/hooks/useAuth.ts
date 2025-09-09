@@ -8,6 +8,7 @@ type UserInfo = {
     baseUserId: string | null;
     name: string | null;
     role: 'USER' | 'COMPANY' | 'ADMIN';
+    companyId?: string;
 };
 
 export const useAuth = () => {

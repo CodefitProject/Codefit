@@ -31,20 +31,25 @@ public class JwtUtil {
     /**
      * Access Token 생성
      */
-    public String generateAccessToken(String email, String role, long baseUserId, String name) {
+    public String generateAccessToken(String email, String role, long baseUserId, String name, Long companyId) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + accessTokenExpiration);
         
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .claim("baseUserId", baseUserId)
                 .claim("name", name)
                 .claim("type", "access")
                 .issuedAt(now)
-                .expiration(expiration)
-                .signWith(secretKey)
-                .compact();
+                .expiration(expiration);
+        
+        // COMPANY 역할인 경우에만 companyId 추가
+        if ("COMPANY".equals(role) && companyId != null) {
+            builder.claim("companyId", companyId);
+        }
+        
+        return builder.signWith(secretKey).compact();
     }
     
     /**
@@ -120,6 +125,27 @@ public class JwtUtil {
             return null;
         } catch (Exception e) {
             log.error("토큰에서 baseUserId 추출 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 토큰에서 companyId 추출
+     */
+    public Long getCompanyIdFromToken(String token) {
+        try {
+            Claims claims = parseToken(token);
+            Object companyIdObj = claims.get("companyId");
+            if (companyIdObj instanceof Long) {
+                return (Long) companyIdObj;
+            } else if (companyIdObj instanceof Integer) {
+                return Long.valueOf((Integer) companyIdObj);
+            } else if (companyIdObj instanceof String) {
+                return Long.valueOf((String) companyIdObj);
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("토큰에서 companyId 추출 실패: {}", e.getMessage());
             return null;
         }
     }

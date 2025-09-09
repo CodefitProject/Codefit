@@ -170,7 +170,6 @@ const SurveyMbti: React.FC = () => {
 
             // 사용자 정보에 MBTI 추가
             const updatedUserInfo = { ...userInfo, mbti: result.typeCode };
-            AuthService.setUserInfo(updatedUserInfo);
             setUserInfo(updatedUserInfo);
 
             setShowResult(true);
