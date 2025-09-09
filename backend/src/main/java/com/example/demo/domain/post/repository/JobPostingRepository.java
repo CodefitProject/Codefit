@@ -54,6 +54,36 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
                                                 Pageable pageable);
 
     /**
+     * 개발자 성향에 매칭되는 공고 목록 조회 - 필터링 강도별
+     * filterLevel: 1=1개 이상, 2=2개 이상, 3=3개 이상, 4=4개 이상 축 일치
+     * 사용자 성향(예: ARSD)과 공고의 각 선호 성향을 축별로 비교하여 일치하는 축 개수가 filterLevel 이상이면 매칭
+     */
+    @Query(value = """
+        SELECT DISTINCT jp.* FROM job_postings jp,
+        JSON_TABLE(
+            jp.preferred_developer_types, 
+            '$[*]' COLUMNS (
+                preferred_type VARCHAR(10) PATH '$'
+            )
+        ) AS jt
+        WHERE jp.status = 'ACTIVE' 
+        AND jp.expires_at > :now 
+        AND jp.is_deleted = false
+        AND jp.preferred_developer_types IS NOT NULL
+        AND (
+            (SUBSTRING(jt.preferred_type, 1, 1) = SUBSTRING(:developerType, 1, 1)) +
+            (SUBSTRING(jt.preferred_type, 2, 1) = SUBSTRING(:developerType, 2, 1)) +
+            (SUBSTRING(jt.preferred_type, 3, 1) = SUBSTRING(:developerType, 3, 1)) +
+            (SUBSTRING(jt.preferred_type, 4, 1) = SUBSTRING(:developerType, 4, 1))
+        ) >= :filterLevel
+        ORDER BY jp.created_at DESC
+        """, nativeQuery = true)
+    Page<JobPosting> findDeveloperTypeMatchedJobPostings(@Param("developerType") String developerType,
+                                                        @Param("filterLevel") int filterLevel,
+                                                        @Param("now") LocalDateTime now,
+                                                        Pageable pageable);
+
+    /**
      * 특정 기간 내 생성된 공고 수 조회
      */
     @Query("SELECT COUNT(jp) FROM JobPosting jp WHERE jp.createdAt >= :startDate AND jp.createdAt <= :endDate")

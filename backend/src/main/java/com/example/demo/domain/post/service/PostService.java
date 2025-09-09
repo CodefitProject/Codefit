@@ -24,13 +24,14 @@ public interface PostService {
     JobPostingListResponseDto getJobPostings(Pageable pageable);
     
     /**
-     * MBTI 매칭 공고 목록 조회
+     * MBTI 및 성향 매칭 공고 목록 조회
      * 
-     * @param mbtiType 사용자 MBTI 타입
+     * @param userDetails 로그인한 사용자 정보 (JWT 토큰에서 추출)
+     * @param matchFilter 필터링 강도 (0: 필터링 없음, 1: 1개 이상, 2: 2개 이상, 3: 3개 이상, 4: 4개 이상)
      * @param pageable 페이징 정보
      * @return 매칭된 공고 목록
      */
-    JobPostingListResponseDto getMbtiMatchedJobPostings(String mbtiType, Pageable pageable);
+    JobPostingListResponseDto getMbtiMatchedJobPostings(CustomUserDetails userDetails, String matchFilter, Pageable pageable);
     
     /**
      * 공고 상세 조회

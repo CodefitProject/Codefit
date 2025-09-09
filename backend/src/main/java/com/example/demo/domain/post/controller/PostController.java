@@ -76,21 +76,25 @@ public class PostController {
     }
     
     /**
-     * MBTI 매칭 공고 목록 조회
+     * MBTI 및 성향 매칭 공고 목록 조회
      * 
-     * @param mbtiType 사용자 MBTI 타입
+     * @param matchFilter 필터링 강도 (0: 필터링 없음, 1: 1개 이상, 2: 2개 이상, 3: 3개 이상, 4: 4개 이상)
+     * @param userDetails 로그인한 사용자 정보 (JWT 토큰에서 추출)
      * @param pageable 페이징 정보
      * @return 매칭된 공고 목록
      */
     @GetMapping("/mbti-matched")
     public ResponseEntity<JobPostingListResponseDto> getMbtiMatchedJobPostings(
-            @RequestParam String mbtiType,
+            @RequestParam(required = false, defaultValue = "0") String matchFilter,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size = 16) Pageable pageable) {
         
-        log.debug("MBTI 매칭 공고 조회 요청 - 타입: {}", mbtiType);
+        log.debug("MBTI 및 성향 매칭 공고 조회 요청 - 사용자: {}, 필터: {}", 
+                userDetails.getUsername(), matchFilter);
         
-        JobPostingListResponseDto response = postService.getMbtiMatchedJobPostings(mbtiType, pageable);
-        log.debug("MBTI 매칭 공고 조회 완료 - 총 {}개", response.totalCount());
+        JobPostingListResponseDto response = postService.getMbtiMatchedJobPostings(
+                userDetails, matchFilter, pageable);
+        log.debug("MBTI 및 성향 매칭 공고 조회 완료 - 총 {}개", response.totalCount());
         
         return ResponseEntity.ok(response);
     }

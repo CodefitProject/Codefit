@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import postService from '../../services/postService';
+import { useAuth } from '../../contexts/AuthContext.tsx';
 import './PostList.css';
 
 interface JobPosting {
@@ -39,35 +40,22 @@ interface UserInfo {
 
 const PostList: React.FC = () => {
     const navigate = useNavigate();
+    const { userInfo, isLoggedIn } = useAuth();
     const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [mbtiFilter, setMbtiFilter] = useState<string>('0');
     
     const pageSize = 12;
 
     useEffect(() => {
-        checkUserLoginStatus();
-        loadPostList();
-    }, [currentPage, mbtiFilter]);
-
-    const checkUserLoginStatus = () => {
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-                setUserInfo(parsedUserInfo);
-            } catch (e) {
-                setUserInfo(null);
-            }
+        if (mbtiFilter === '0') {
+            loadPostList();
+        } else {
+            loadMbtiFilteredPosts();
         }
-    };
+    }, [currentPage, mbtiFilter]);
 
     const loadPostList = async () => {
         setLoading(true);
@@ -91,7 +79,7 @@ const PostList: React.FC = () => {
     };
 
     const loadMbtiFilteredPosts = async () => {
-        if (!userInfo || userInfo.role === 'COMPANY' || userInfo.mbti === 'ZZZZ' || !userInfo.mbti) {
+        if (!userInfo || userInfo.role !== 'USER') {
             return;
         }
 
@@ -100,8 +88,7 @@ const PostList: React.FC = () => {
             const requestData = {
                 pageIndex: currentPage - 1, // Spring Data JPA는 0부터 시작
                 pageSize: pageSize,
-                mbtiMatchFilter: mbtiFilter,
-                userMbti: userInfo.mbti
+                mbtiMatchFilter: parseInt(mbtiFilter)
             };
 
             const data = await postService.getMbtiMatchedPostList(requestData);
@@ -110,36 +97,26 @@ const PostList: React.FC = () => {
             setJobPostings(data.jobPostings || []);
             setTotalCount(data.totalCount || 0);
         } catch (error) {
-            console.error('MBTI 필터링 공고 로드 실패:', error);
+            // 에러 시 일반 목록으로 폴백
+            loadPostList();
         } finally {
             setLoading(false);
         }
     };
 
     const handleMbtiFilterChange = (value: string) => {
-        if (!userInfo) {
+        if (!isLoggedIn || !userInfo) {
             alert("로그인 후 사용가능한 기능입니다.");
             return;
         }
 
-        if (userInfo.mbti === 'ZZZZ') {
-            alert("mbti 및 성향검사 후 진행 가능합니다.");
-            return;
-        }
-
-        if (userInfo.role === 'COMPANY') {
-            alert("기업회원은 사용 불가능한 기능입니다.");
+        if (userInfo.role !== 'USER') {
+            alert("개인회원만 사용 가능한 기능입니다.");
             return;
         }
 
         setMbtiFilter(value);
         setCurrentPage(1);
-        
-        if (value === '0') {
-            loadPostList();
-        } else {
-            loadMbtiFilteredPosts();
-        }
     };
 
     const openPostDetail = (jobPostingId: string | number) => {
