@@ -117,7 +117,7 @@ const Header: React.FC = () => {
                                 </Link>
                                 <Link 
                                     to="/post"
-                                    className="nav-link" 
+                                    className="nav-link nav-link-company" 
                                     style={{fontSize: '16px', fontWeight: 'bold'}}
                                 >
                                     기업 둘러보기

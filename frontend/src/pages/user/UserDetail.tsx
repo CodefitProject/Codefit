@@ -59,7 +59,7 @@ const UserDetail: React.FC = () => {
         baseUserId: 1,
         name: '김코드',
         career: '주니어 (1~3년)',
-        isMbtiChecked: 0, // 0: 미완료, 1: 완료
+        isMbtiChecked: 1, // 0: 미완료, 1: 완료
         isCodeChecked: 1,
     };
 
