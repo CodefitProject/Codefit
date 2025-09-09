@@ -136,8 +136,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.reasoning && (
             <div className="analysis-section">
               <h3 className="section-title">분석 근거</h3>
-              <div className="section-content">
-                <p className="reasoning-text">{analysisResult.reasoning}</p>
+              <div className="card-grid">
+                {analysisResult.reasoning.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((reason, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {reason.trim().replace(/^[•\-\*]\s*/, '')}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -149,7 +155,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.strengths.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((strength, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {strength.trim()}
+                      {strength.trim().replace(/^[•\-\*]\s*/, '')}
                     </div>
                   </div>
                 ))}
@@ -164,7 +170,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.suggestions.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((suggestion, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {suggestion.trim()}
+                      {suggestion.trim().replace(/^[•\-\*]\s*/, '')}
                     </div>
                   </div>
                 ))}
@@ -179,7 +185,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.codePatterns.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((pattern, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {pattern.trim()}
+                      {pattern.trim().replace(/^[•\-\*]\s*/, '')}
                     </div>
                   </div>
                 ))}
