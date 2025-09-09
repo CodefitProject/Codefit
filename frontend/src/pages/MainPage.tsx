@@ -56,8 +56,7 @@ const MainPage: React.FC = () => {
     };
     
     const handleJobPostingClick = (jobPostingId: string) => {
-        console.log(`채용 공고 ${jobPostingId} 클릭`);
-        alert(`채용 공고 상세 페이지로 이동합니다. (ID: ${jobPostingId})`);
+        navigate(`/post/detail/${jobPostingId}`);
     };
     
     const handleCompanyClick = (company: Company) => {
@@ -228,13 +227,13 @@ const MainPage: React.FC = () => {
                                 >
                                     <div className="position-header">
                                         <img 
-                                            src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/main/default_job.png'}
+                                            src={posting.jobImagePath || '/images/main/default_job.png'}
                                             alt="Job Image"
                                             style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
                                         />
                                     </div>
-                                    <span className="position-company">{posting.name}</span>
-                                    <span className="position-title">{posting.location} · {posting.experienceLevel}</span>
+                                    <span className="position-company">{posting.companyName}</span>
+                                    <span className="position-title">{posting.title}</span>
                                     <div className="dev-type-tag-container">
                                         {posting.preferredDeveloperTypes.slice(0, 4).map((type, idx) => (
                                             <span key={`${posting.jobPostingId}-${idx}`} className="dev-type-tag">{type}</span>

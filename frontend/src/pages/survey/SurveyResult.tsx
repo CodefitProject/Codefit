@@ -219,7 +219,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     </div>
 
                     {/* 분석 근거 */}
-                    <div className="section-item reasoning-section">
+                    <div className="section-item reasoning-section animated">
                         <div className="section-header">분석 근거</div>
                         <div className="reasoning-content">
                             <div className="detailed-reasoning">
@@ -229,7 +229,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     </div>
 
                     {/* 코드 패턴 */}
-                    <div className="section-item patterns-section">
+                    <div className="section-item patterns-section animated">
                         <div className="section-header">발견된 코드 패턴</div>
                         <div className="code-patterns-list">
                             {Array.isArray(detailedAnalysis.code_patterns) && detailedAnalysis.code_patterns.length > 0 ? (
@@ -269,7 +269,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     </div>
 
                     {/* 강점 */}
-                    <div className="section-item strengths-section">
+                    <div className="section-item strengths-section animated">
                         <div className="section-header">개발 강점</div>
                         <div className="strengths-content">
                             {Array.isArray(detailedAnalysis.strengths) && detailedAnalysis.strengths.length > 0 ? (
@@ -290,7 +290,7 @@ const SurveyResult: React.FC<SurveyResultProps> = ({ result, onRestart, userInfo
                     </div>
 
                     {/* 개선 제안 */}
-                    <div className="section-item suggestions-section">
+                    <div className="section-item suggestions-section animated">
                         <div className="section-header">개선 제안</div>
                         <div className="suggestions-content">
                             {Array.isArray(detailedAnalysis.suggestions) && detailedAnalysis.suggestions.length > 0 ? (
