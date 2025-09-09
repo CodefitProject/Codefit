@@ -228,7 +228,7 @@ const MainPage: React.FC = () => {
                                 >
                                     <div className="position-header">
                                         <img 
-                                            src={posting.jobImageFileName ? `/images/company/${posting.jobImageFileName}` : '/images/main/default_job.png'}
+                                            src={posting.jobImagePath || '/images/main/default_job.png'}
                                             alt="Job Image"
                                             style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px'}}
                                         />
