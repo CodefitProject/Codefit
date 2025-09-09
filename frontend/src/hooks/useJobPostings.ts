@@ -4,6 +4,10 @@ import postService from '../services/postService';
 interface JobPosting {
     jobPostingId: string;
     name: string;
+    jobImagePath: string;
+    companyName: string; // Added based on API response
+    title: string; // Added based on API response
+
     location: string;
     experienceLevel: string;
     preferredDeveloperTypes: string[];
