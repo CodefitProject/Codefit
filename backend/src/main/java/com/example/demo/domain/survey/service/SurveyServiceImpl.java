@@ -3,12 +3,14 @@ package com.example.demo.domain.survey.service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
 import com.example.demo.domain.survey.dto.*;
-import com.example.demo.domain.survey.entity.MbtiResult;
 import com.example.demo.domain.survey.entity.SurveyQuestion;
 import com.example.demo.domain.survey.entity.SurveyResponse;
-import com.example.demo.domain.survey.repository.MbtiResultRepository;
 import com.example.demo.domain.survey.repository.SurveyQuestionRepository;
 import com.example.demo.domain.survey.repository.SurveyResponseRepository;
+import com.example.demo.domain.codeanalysis.entity.UsersMbtiTypes;
+import com.example.demo.domain.codeanalysis.entity.CodeAnalysis;
+import com.example.demo.domain.codeanalysis.repository.UsersMbtiTypesRepository;
+import com.example.demo.domain.codeanalysis.repository.CodeAnalysisRepository;
 import com.example.demo.global.exception.BusinessException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,8 @@ public class SurveyServiceImpl implements SurveyService {
     
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final SurveyResponseRepository surveyResponseRepository;
-    private final MbtiResultRepository mbtiResultRepository;
+    private final UsersMbtiTypesRepository usersMbtiTypesRepository;
+    private final CodeAnalysisRepository codeAnalysisRepository;
     private final BaseUserRepository baseUserRepository;
     private final ObjectMapper objectMapper;
     
@@ -137,54 +140,69 @@ public class SurveyServiceImpl implements SurveyService {
             Map<String, Double> surveyScores = calculateSurveyScores(requestDto.answers());
             log.debug("설문 점수 계산 완료: {}", surveyScores);
             
-            // 4. 코드 분석 점수 조회 (현재는 기본값 사용)
-            Map<String, Object> codeScores = new HashMap<>();
-            // TODO: 코드 분석 결과가 구현되면 여기서 조회
+            // 4. 코드 분석 결과 조회
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(requestDto.userId())
+                    .stream().findFirst().orElse(null);
             
-            // 5. 기존 MBTI 결과 확인
-            MbtiResult existingResult = mbtiResultRepository.findByUserBaseUserId(requestDto.userId())
+            // 5. 코드 분석 점수 추출
+            Map<String, Object> codeScores = new HashMap<>();
+            if (codeAnalysis != null) {
+                codeScores.put("developmentStyleScore", codeAnalysis.getDevelopmentStyleScore());
+                codeScores.put("developerPreferenceScore", codeAnalysis.getDeveloperPreferenceScore());
+                log.debug("코드 분석 점수 - 개발 스타일: {}, 개발자 선호도: {}", 
+                         codeAnalysis.getDevelopmentStyleScore(), codeAnalysis.getDeveloperPreferenceScore());
+            } else {
+                log.debug("코드 분석 결과가 없어 기본값 사용");
+            }
+            
+            // 6. 기존 MBTI 결과 확인
+            UsersMbtiTypes existingResult = usersMbtiTypesRepository.findByBaseUser_BaseUserId(requestDto.userId())
                     .orElse(null);
             
-            // 6. 최종 MBTI 타입 계산
+            // 7. 최종 MBTI 타입 계산
             Map<String, Double> finalScores = calculateFinalScores(surveyScores, codeScores);
             String finalTypeCode = calculateTypeCode(finalScores);
             String typeName = TYPE_NAMES.getOrDefault(finalTypeCode, "알 수 없는 유형");
             String typeDescription = generateTypeDescription(finalTypeCode);
             
-            // 7. 답변 분석 수행
-            String analysisResults = analyzeAnswers(requestDto.answers());
+            // 8. 키 인사이트 생성
+            String keyInsights = generateKeyInsights(requestDto.answers());
             
-            MbtiResult savedResult;
+            UsersMbtiTypes savedResult;
             if (existingResult != null) {
                 // 기존 결과 업데이트
-                existingResult.updateMbtiResult(
-                    finalTypeCode, typeName, typeDescription,
-                    finalScores.get("B/A"), finalScores.get("R/I"), 
-                    finalScores.get("S/T"), finalScores.get("D/F")
+                existingResult.setTypeCode(finalTypeCode);
+                existingResult.updateScores(
+                    java.math.BigDecimal.valueOf(finalScores.get("B/A")),
+                    java.math.BigDecimal.valueOf(finalScores.get("R/I")),
+                    java.math.BigDecimal.valueOf(finalScores.get("S/T")),
+                    java.math.BigDecimal.valueOf(finalScores.get("D/F"))
                 );
-                existingResult.updateAnalysisDetails(analysisResults, "", "");
-                savedResult = mbtiResultRepository.save(existingResult);
+                existingResult.markMbtiChecked();
+                if (codeAnalysis != null) {
+                    existingResult.markCodeChecked();
+                }
+                savedResult = usersMbtiTypesRepository.save(existingResult);
                 log.debug("기존 MBTI 결과 업데이트 완료 - 타입: {}", savedResult.getTypeCode());
             } else {
                 // 새 결과 생성
-                MbtiResult newResult = MbtiResult.builder()
-                        .user(user)
+                UsersMbtiTypes newResult = UsersMbtiTypes.builder()
+                        .baseUser(user)
                         .typeCode(finalTypeCode)
-                        .typeName(typeName)
-                        .typeDescription(typeDescription)
-                        .abScore(finalScores.get("B/A"))
-                        .riScore(finalScores.get("R/I"))
-                        .stScore(finalScores.get("S/T"))
-                        .dfScore(finalScores.get("D/F"))
+                        .aBScore(java.math.BigDecimal.valueOf(finalScores.get("B/A")))
+                        .rIScore(java.math.BigDecimal.valueOf(finalScores.get("R/I")))
+                        .sTScore(java.math.BigDecimal.valueOf(finalScores.get("S/T")))
+                        .dFScore(java.math.BigDecimal.valueOf(finalScores.get("D/F")))
                         .isMbtiChecked(true)
-                        .isCodeChecked(false)
+                        .isCodeChecked(codeAnalysis != null)
+                        .analyzedAt(java.time.LocalDateTime.now())
                         .build();
-                newResult.updateAnalysisDetails(analysisResults, "", "");
-                savedResult = mbtiResultRepository.save(newResult);
+                savedResult = usersMbtiTypesRepository.save(newResult);
                 log.debug("새 MBTI 결과 저장 완료 - 타입: {}", savedResult.getTypeCode());
             }
             
-            return MbtiCalculationResultDto.from(savedResult);
+            return MbtiCalculationResultDto.from(savedResult, codeAnalysis, typeName, typeDescription, 
+                                               null, null, keyInsights);
             
         } catch (Exception e) {
             log.error("설문 제출 및 MBTI 계산 중 오류 발생", e);
@@ -198,7 +216,7 @@ public class SurveyServiceImpl implements SurveyService {
         log.debug("사용자 MBTI 타입 조회 - 사용자 ID: {}", userId);
         
         try {
-            MbtiResult result = mbtiResultRepository.findByUserBaseUserId(userId)
+            UsersMbtiTypes result = usersMbtiTypesRepository.findByBaseUser_BaseUserId(userId)
                     .orElse(null);
             
             if (result == null) {
@@ -206,8 +224,34 @@ public class SurveyServiceImpl implements SurveyService {
                 return null;
             }
             
+            // 코드 분석 결과 조회
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(userId)
+                    .stream().findFirst().orElse(null);
+            
+            String typeName = TYPE_NAMES.getOrDefault(result.getTypeCode(), "알 수 없는 유형");
+            String typeDescription = generateTypeDescription(result.getTypeCode());
+            
+            // 기존 설문 응답 조회하여 키 인사이트 생성
+            Optional<SurveyResponse> surveyResponse = surveyResponseRepository.findLatestResponseByUserId(userId);
+            String keyInsights = "[]";
+            
+            if (surveyResponse.isPresent()) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    List<QuestionAnswerDto> answers = objectMapper.readValue(
+                        surveyResponse.get().getResponses(), 
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, QuestionAnswerDto.class)
+                    );
+                    
+                    keyInsights = generateKeyInsights(answers);
+                } catch (Exception e) {
+                    log.warn("기존 설문 응답 파싱 실패", e);
+                }
+            }
+            
             log.debug("MBTI 타입 조회 완료 - 타입: {}", result.getTypeCode());
-            return MbtiCalculationResultDto.from(result);
+            return MbtiCalculationResultDto.from(result, codeAnalysis, typeName, typeDescription, 
+                                               null, null, keyInsights);
             
         } catch (Exception e) {
             log.error("MBTI 타입 조회 중 오류 발생", e);
@@ -290,26 +334,44 @@ public class SurveyServiceImpl implements SurveyService {
     private Map<String, Double> calculateFinalScores(Map<String, Double> surveyScores, 
                                                      Map<String, Object> codeScores) {
         
-        // 코드 분석 점수 추출 (현재는 기본값 사용)
-        double codeStyleScore = 0.0;
-        double codeCollabScore = 0.0;
+        // 코드 분석 점수 추출
+        double codeStyleScore = 0.0;  // B/A 축에 영향
+        double codeInnovationScore = 0.0;  // R/I 축에 영향
+        
+        if (codeScores.containsKey("developmentStyleScore")) {
+            Integer styleScore = (Integer) codeScores.get("developmentStyleScore");
+            if (styleScore != null) {
+                codeStyleScore = styleScore.doubleValue();
+                log.debug("코드 분석 - 개발 스타일 점수: {}", codeStyleScore);
+            }
+        }
+        
+        if (codeScores.containsKey("developerPreferenceScore")) {
+            Integer prefScore = (Integer) codeScores.get("developerPreferenceScore");
+            if (prefScore != null) {
+                codeInnovationScore = prefScore.doubleValue();
+                log.debug("코드 분석 - 개발자 선호도 점수: {}", codeInnovationScore);
+            }
+        }
         
         // B/A 축 계산 (+값: Architect, -값: Builder)
         double surveyBA = surveyScores.getOrDefault("B/A", 0.0);
         double finalBA = (surveyBA * WEIGHT_BA_SURVEY) + (codeStyleScore * WEIGHT_BA_CODE);
         
-        // R/I 축 계산 (+값: Innovate, -값: Refactor)  
+        // R/I 축 계산 (+값: Refactor, -값: Innovate)  
         double surveyRI = surveyScores.getOrDefault("R/I", 0.0);
-        double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (0.0 * WEIGHT_RI_CODE);
+        double finalRI = (surveyRI * WEIGHT_RI_SURVEY) + (codeInnovationScore * WEIGHT_RI_CODE);
         
-        // S/T 축 계산 (+값: Team, -값: Solo)
+        // S/T 축 계산 (+값: Team, -값: Solo) - 코드 분석 영향 없음
         double surveyST = surveyScores.getOrDefault("S/T", 0.0);
-        double finalST = (surveyST * WEIGHT_ST_SURVEY) + (codeCollabScore * WEIGHT_ST_CODE);
+        double finalST = (surveyST * WEIGHT_ST_SURVEY);
         
-        // D/F 축 계산 (+값: Feature, -값: Debug)
+        // D/F 축 계산 (+값: Feature, -값: Debug) - 코드 분석 영향 없음
         double surveyDF = surveyScores.getOrDefault("D/F", 0.0);
-        double finalDF = (surveyDF * WEIGHT_DF_SURVEY) + (0.0 * WEIGHT_DF_CODE);
+        double finalDF = (surveyDF * WEIGHT_DF_SURVEY);
         
+        log.debug("설문 점수 - BA: {}, RI: {}, ST: {}, DF: {}", surveyBA, surveyRI, surveyST, surveyDF);
+        log.debug("코드 분석 점수 - Style: {}, Innovation: {}", codeStyleScore, codeInnovationScore);
         log.debug("최종 계산 점수 - BA: {}, RI: {}, ST: {}, DF: {}", finalBA, finalRI, finalST, finalDF);
         
         Map<String, Double> finalScores = new HashMap<>();
@@ -397,5 +459,45 @@ public class SurveyServiceImpl implements SurveyService {
             return "{}";
         }
     }
+    
+    /**
+     * 주요 인사이트 생성
+     */
+    private String generateKeyInsights(List<QuestionAnswerDto> answers) {
+        try {
+            List<String> insights = new ArrayList<>();
+            
+            // 답변 패턴 분석
+            int strongPreferences = 0;
+            int neutralAnswers = 0;
+            
+            for (QuestionAnswerDto answer : answers) {
+                int value = answer.answerValue();
+                if (value == 1 || value == 7) {
+                    strongPreferences++;
+                } else if (value == 4) {
+                    neutralAnswers++;
+                }
+            }
+            
+            if (strongPreferences > answers.size() * 0.4) {
+                insights.add("명확한 선호도를 가지고 있으며, 자신의 개발 스타일에 대한 확신이 강합니다.");
+            }
+            
+            if (neutralAnswers > answers.size() * 0.3) {
+                insights.add("상황에 따라 유연하게 접근하는 성향을 보이며, 균형잡힌 개발자의 특성을 가지고 있습니다.");
+            }
+            
+            // 총 답변 수를 기반으로 한 분석 완료 메시지
+            insights.add(String.format("%d개의 설문 문항에 대한 응답을 종합적으로 분석하여 개발 성향을 도출했습니다.", answers.size()));
+            
+            return objectMapper.writeValueAsString(insights);
+            
+        } catch (Exception e) {
+            log.error("인사이트 생성 중 오류 발생", e);
+            return "[]";
+        }
+    }
+    
 }
 

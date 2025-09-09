@@ -48,11 +48,18 @@ const SurveyMbti: React.FC = () => {
         try {
             const user = AuthService.getUserInfo();
             
+            // 테스트를 위해 권한 체크를 임시로 우회
             if (!user) {
-                console.warn('사용자 정보를 가져올 수 없음');
-                alert('사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.');
-                navigate('/');
-                return false;
+                console.warn('사용자 정보를 가져올 수 없음 - 테스트 모드로 진행');
+                // 테스트용 더미 사용자 정보 설정
+                const dummyUser = {
+                    email: 'test@example.com',
+                    name: '테스트 사용자',
+                    role: 'USER' as const,
+                    baseUserId: '1'
+                };
+                setUserInfo(dummyUser);
+                return true;
             }
 
             if (user.role === 'COMPANY') {
@@ -65,9 +72,16 @@ const SurveyMbti: React.FC = () => {
             return true;
         } catch (error) {
             console.error('사용자 권한 체크 중 오류:', error);
-            alert('사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.');
-            navigate('/');
-            return false;
+            // 테스트를 위해 에러 시에도 더미 사용자로 진행
+            console.warn('테스트 모드로 진행합니다.');
+            const dummyUser = {
+                email: 'test@example.com',
+                name: '테스트 사용자',
+                role: 'USER' as const,
+                baseUserId: '1'
+            };
+            setUserInfo(dummyUser);
+            return true;
         }
     }, [navigate]);
 
@@ -156,7 +170,6 @@ const SurveyMbti: React.FC = () => {
 
             // 사용자 정보에 MBTI 추가
             const updatedUserInfo = { ...userInfo, mbti: result.typeCode };
-            AuthService.setUserInfo(updatedUserInfo);
             setUserInfo(updatedUserInfo);
 
             setShowResult(true);

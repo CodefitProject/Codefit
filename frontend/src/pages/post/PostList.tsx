@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import postService from '../../services/postService';
+import { useAuth } from '../../contexts/AuthContext.tsx';
 import './PostList.css';
 
 interface JobPosting {
@@ -15,15 +16,14 @@ interface JobPosting {
     location: string;
     workType: string;
     expiresAt: string;
-    postedAt: string;
+    createdAt: string;
     status: string;
     companyName: string;
-    industry: string;
-    empCount: string;
-    techStackNames: string;
+    selectedTechStackNames: string;
     preferredDeveloperTypes: string;
-    jobImageFileName?: string;
-    logoFileName?: string;
+    jobImagePath?: string;
+    logoPath?: string;
+    isApplied: boolean;
 }
 
 interface PostListParams {
@@ -40,37 +40,22 @@ interface UserInfo {
 
 const PostList: React.FC = () => {
     const navigate = useNavigate();
+    const { userInfo, isLoggedIn } = useAuth();
     const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [mbtiFilter, setMbtiFilter] = useState<string>('0');
     
     const pageSize = 12;
 
     useEffect(() => {
-        console.log("채용공고 목록 페이지 로드");
-        checkUserLoginStatus();
-        loadPostList();
-    }, [currentPage, mbtiFilter]);
-
-    const checkUserLoginStatus = () => {
-        const userInfoStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('userInfo='))
-            ?.split('=')[1];
-
-        if (userInfoStr) {
-            try {
-                const parsedUserInfo = JSON.parse(decodeURIComponent(userInfoStr));
-                setUserInfo(parsedUserInfo);
-            } catch (e) {
-                console.error('사용자 정보 파싱 오류:', e);
-                setUserInfo(null);
-            }
+        if (mbtiFilter === '0') {
+            loadPostList();
+        } else {
+            loadMbtiFilteredPosts();
         }
-    };
+    }, [currentPage, mbtiFilter]);
 
     const loadPostList = async () => {
         setLoading(true);
@@ -81,13 +66,11 @@ const PostList: React.FC = () => {
             };
 
             const data = await postService.getPostList(requestData);
-            console.log('공고 목록 응답:', data);
             
             // 표준 REST API 응답 처리
             setJobPostings(data.jobPostings || []);
             setTotalCount(data.totalCount || 0);
         } catch (error) {
-            console.error('공고 목록 로드 실패:', error);
             setJobPostings([]);
             setTotalCount(0);
         } finally {
@@ -96,7 +79,7 @@ const PostList: React.FC = () => {
     };
 
     const loadMbtiFilteredPosts = async () => {
-        if (!userInfo || userInfo.role === 'COMPANY' || userInfo.mbti === 'ZZZZ' || !userInfo.mbti) {
+        if (!userInfo || userInfo.role !== 'USER') {
             return;
         }
 
@@ -105,52 +88,39 @@ const PostList: React.FC = () => {
             const requestData = {
                 pageIndex: currentPage - 1, // Spring Data JPA는 0부터 시작
                 pageSize: pageSize,
-                mbtiMatchFilter: mbtiFilter,
-                userMbti: userInfo.mbti
+                mbtiMatchFilter: parseInt(mbtiFilter)
             };
 
             const data = await postService.getMbtiMatchedPostList(requestData);
-            console.log('MBTI 매칭 공고 응답:', data);
             
             // 표준 REST API 응답 처리
             setJobPostings(data.jobPostings || []);
             setTotalCount(data.totalCount || 0);
         } catch (error) {
-            console.error('MBTI 필터링 공고 로드 실패:', error);
+            // 에러 시 일반 목록으로 폴백
+            loadPostList();
         } finally {
             setLoading(false);
         }
     };
 
     const handleMbtiFilterChange = (value: string) => {
-        if (!userInfo) {
+        if (!isLoggedIn || !userInfo) {
             alert("로그인 후 사용가능한 기능입니다.");
             return;
         }
 
-        if (userInfo.mbti === 'ZZZZ') {
-            alert("mbti 및 성향검사 후 진행 가능합니다.");
-            return;
-        }
-
-        if (userInfo.role === 'COMPANY') {
-            alert("기업회원은 사용 불가능한 기능입니다.");
+        if (userInfo.role !== 'USER') {
+            alert("개인회원만 사용 가능한 기능입니다.");
             return;
         }
 
         setMbtiFilter(value);
         setCurrentPage(1);
-        
-        if (value === '0') {
-            loadPostList();
-        } else {
-            loadMbtiFilteredPosts();
-        }
     };
 
     const openPostDetail = (jobPostingId: string | number) => {
         if (!jobPostingId || String(jobPostingId).trim() === "") {
-            console.error("공고 ID가 없습니다.");
             alert("선택된 공고의 정보를 찾을 수 없습니다.");
             return;
         }
@@ -160,7 +130,6 @@ const PostList: React.FC = () => {
 
     const viewCompany = (e: React.MouseEvent, companyId: string) => {
         e.stopPropagation();
-        console.log("회사 정보 보기:", companyId);
         // TODO: 회사 상세 페이지로 이동
     };
 
@@ -222,93 +191,56 @@ const PostList: React.FC = () => {
         let developerTypeTags: string[] = [];
         if (jobData.preferredDeveloperTypes) {
             try {
+                // Assuming it's a JSON string array '["type1", "type2"]'
                 developerTypeTags = JSON.parse(jobData.preferredDeveloperTypes);
             } catch (e) {
+                // Fallback for comma-separated string "type1, type2"
                 developerTypeTags = jobData.preferredDeveloperTypes.split(',').map(item => item.trim());
             }
         }
 
-        // 이미지 경로 결정
-        let imagePath = '';
-        let imageAlt = '';
-
-        if (jobData.jobImageFileName && jobData.jobImageFileName.trim() !== "" && jobData.jobImageFileName !== "null") {
-            imagePath = `/images/company/${jobData.jobImageFileName}`;
-            imageAlt = `${jobData.title || '공고'} 이미지`;
-        } else if (jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null") {
-            imagePath = `/images/company/${jobData.logoFileName}`;
-            imageAlt = `${jobData.companyName || '회사'} 로고`;
-        } else {
-            imagePath = '/images/default/default_company.png';
-            imageAlt = `${jobData.companyName || '회사'} 기본 이미지`;
-        }
+        // 이미지 경로 결정 (S3 URL 사용)
+        const mainImagePath = (jobData.jobImagePath && jobData.jobImagePath.trim() !== "" && jobData.jobImagePath !== "null")
+            ? jobData.jobImagePath
+            : '/images/default/default_company.png';
+        
+        const logoPath = (jobData.logoPath && jobData.logoPath.trim() !== "" && jobData.logoPath !== "null")
+            ? jobData.logoPath
+            : '/images/default/default_company.png';
 
         return (
             <div 
                 key={jobData.jobPostingId}
-                className="job-card"
+                className="job-card-new" // Use new CSS class
                 onClick={() => openPostDetail(jobData.jobPostingId)}
             >
-                <div className="job-image">
-                    <img 
-                        src={imagePath} 
-                        alt={imageAlt}
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/images/default/default_company.png';
-                        }}
-                    />
-                </div>
-                
-                <div className="job-content">
-                    <div className="job-header">
-                        <div className="job-title">{jobData.title || '제목없음'}</div>
-                    </div>
-                    
-                    <div className="job-company" onClick={(e) => viewCompany(e, jobData.companyId)}>
-                        <img 
-                            src={jobData.logoFileName && jobData.logoFileName.trim() !== "" && jobData.logoFileName !== "null" 
-                                ? `/images/company/${jobData.logoFileName}` 
-                                : '/images/default/default_company.png'
-                            }
+                <img 
+                    src={mainImagePath} 
+                    alt={`${jobData.title || '공고'} 이미지`}
+                    className="main-job-image"
+                    onError={(e) => { 
+                        (e.target as HTMLImageElement).src = '/images/default/default_company.png'; 
+                    }}
+                />
+                <div className="job-info-area">
+                    <h2 className="job-title-new">{jobData.title || '제목없음'}</h2>
+                    <div className="company-info">
+                        <img
+                            src={logoPath}
                             alt={`${jobData.companyName || '회사'} 로고`}
-                            className="company-logo"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/default/default_company.png';
-                            }}
+                            className="company-logo-small"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/default/default_company.png'; }}
                         />
-                        <span>{jobData.companyName || '회사명 정보없음'}</span>
+                        <span className="company-name">{jobData.companyName || '회사명 정보없음'}</span>
                     </div>
-                    
-                    <div className="job-meta">
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">📍</span>
-                            {jobData.location}
-                        </div>
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">💼</span>
-                            {getWorkTypeText(jobData.workType)}
-                        </div>
-                        <div className="job-meta-item">
-                            <span className="job-meta-icon">⭐</span>
-                            {getExperienceLevelText(jobData.experienceLevel)}
-                        </div>
-                    </div>
-                    
-                    {developerTypeTags.length > 0 && (
-                        <div className="tech-tags">
-                            {developerTypeTags.slice(0, 4).map((type, idx) => (
-                                <span key={idx} className="tech-tag">{type}</span>
-                            ))}
-                        </div>
-                    )}
-                    
-                    <div className="job-footer">
-                        <div className="job-salary">
-                            {getSalaryRangeText(jobData.salaryRange)}
-                        </div>
-                        <div className="job-date">
-                            {formatDate(jobData.postedAt)}
-                        </div>
+                    <div className="developer-types">
+                        {developerTypeTags.length > 0 ? (
+                            developerTypeTags.slice(0, 3).map((type, idx) => ( // Show up to 3 tags
+                                <span key={idx} className="dev-type-tag">{type}</span>
+                            ))
+                        ) : (
+                            <span className="dev-type-tag">성향 정보 없음</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -363,7 +295,7 @@ const PostList: React.FC = () => {
     };
 
     return (
-        <div className="main-wrap">
+        <div className="post-list-page">
             <Header />
             
             {/* 필터 섹션 */}

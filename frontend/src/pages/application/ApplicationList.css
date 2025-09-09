@@ -1,0 +1,162 @@
+/* 전체 페이지 */
+.sub_contents {
+  background-color: #f8f9fa;
+  padding: 0;
+}
+
+/* 상단 컨트롤 바 */
+.control-bar {
+  display: flex;
+  justify-content: space-between; /* 좌우 배치 */
+  align-items: center;
+  margin: 20px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 필터 그룹 */
+.filter-group select {
+  padding: 8px 16px;
+  font-size: 1rem;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #ffffff;
+  color: #333;
+  cursor: pointer;
+  min-width: 160px;
+}
+
+/* 버튼 그룹 */
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-approve {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-approve:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.btn-reject {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-reject:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.btn-disabled {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  cursor: not-allowed !important;
+}
+
+/* 테이블 컨테이너 */
+.grid-container {
+  padding: 0 20px 20px 20px;
+}
+
+/* 지원자 테이블 */
+.applicant-grid {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.applicant-grid th,
+.applicant-grid td {
+  border: 1px solid #e9ecef;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.applicant-grid th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+/* 체크박스 */
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 이력서 표시 */
+.resume-link-text {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.resume-none-text {
+  color: #6c757d;
+}
+
+/* 페이지네이션 */
+.pglbox {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pgl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-btn {
+  background: #c0c0c0;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #53afe5;
+  color: #fff;
+}
+
+.page-btn:disabled {
+  background: #c0c0c0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.applicant-grid tr.selected-row {
+  background-color: #f1f3f5;
+}
+
+.applicant-grid tr.selected-row:hover {
+  background-color: #e9ecef;
+}

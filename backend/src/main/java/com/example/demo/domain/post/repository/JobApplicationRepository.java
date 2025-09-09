@@ -4,6 +4,7 @@ import com.example.demo.domain.post.entity.JobApplication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,15 +49,25 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     /**
      * 특정 상태의 지원 내역 조회
      */
-    @Query("SELECT ja FROM JobApplication ja WHERE ja.user.baseUserId = :userId AND ja.status = :status ORDER BY ja.appliedAt DESC")
-    Page<JobApplication> findByUserIdAndStatus(@Param("userId") Long userId, 
-                                               @Param("status") String status, 
-                                               Pageable pageable);
+    @Query("SELECT ja FROM JobApplication ja WHERE ja.user.baseUserId = :userId AND ja.applicationStatus = :applicationStatus ORDER BY ja.appliedAt DESC")
+    Page<JobApplication> findByUserIdAndApplicationStatus(
+            @Param("userId") Long userId,
+            @Param("applicationStatus") String applicationStatus,
+            Pageable pageable
+    );
 
     /**
      * 특정 회사의 모든 지원자 조회
      */
     @Query("SELECT ja FROM JobApplication ja WHERE ja.jobPosting.company.companyId = :companyId ORDER BY ja.appliedAt DESC")
     Page<JobApplication> findByCompanyId(@Param("companyId") Long companyId, Pageable pageable);
+
+    /**
+     * 지원자들의 상태 변경
+     */
+    @Modifying
+    @Query("UPDATE JobApplication j SET j.applicationStatus = :applicationStatus WHERE j.applicationId IN :ids")
+    void updateApplicationStatus(@Param("ids") List<Long> ids, @Param("applicationStatus") String applicationStatus);
+
 }
 

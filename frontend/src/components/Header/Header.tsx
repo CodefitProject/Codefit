@@ -23,7 +23,8 @@ const Header: React.FC = () => {
     const handleLogout = () => {
         AuthService.logout();
         checkAuthStatus();
-        navigate('/', { replace: true });
+        // 로그아웃 후 화면 리렌더링을 위해 페이지 새로고침
+        window.location.href = '/';
     };
 
     const handleLogoClick = () => {
@@ -103,21 +104,21 @@ const Header: React.FC = () => {
                                 <span 
                                     onClick={handleCodeAnalysis}
                                     className="nav-link" 
-                                    style={{marginLeft: '20px', fontSize: '16px', cursor: 'pointer'}}
+                                    style={{marginLeft: '20px', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold'}}
                                 >
                                     코드분석
                                 </span>
                                 <Link 
                                     to="/survey/mbti"
                                     className="nav-link" 
-                                    style={{fontSize: '16px'}}
+                                    style={{fontSize: '16px', fontWeight: 'bold'}}
                                 >
                                     성향분석
                                 </Link>
                                 <Link 
                                     to="/post"
-                                    className="nav-link" 
-                                    style={{fontSize: '16px'}}
+                                    className="nav-link nav-link-company" 
+                                    style={{fontSize: '16px', fontWeight: 'bold'}}
                                 >
                                     기업 둘러보기
                                 </Link>

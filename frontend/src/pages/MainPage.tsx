@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './MainPage.css';
 import Header from '../components/Header/Header.tsx';
 import Footer from '../components/Footer/Footer.tsx';
+import Modal from '../components/Modal/Modal';
+import Login from '../pages/auth/Login';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth.ts';
 import { useUserAuthAndInfo } from '../hooks/useUserAuthAndInfo.ts';
 import { useCompanies } from '../hooks/useCompanies.ts';
 import { useJobPostings } from '../hooks/useJobPostings.ts';
@@ -14,15 +18,21 @@ interface Company {
 }
 
 const MainPage: React.FC = () => {
+    const navigate = useNavigate();
+    const { checkAuthStatus } = useAuth();
     const { userInfo, isLoggedIn, profileCompletion } = useUserAuthAndInfo();
     const { companies } = useCompanies();
     const { jobPostings } = useJobPostings();
+    const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
     // Event Handlers
     const handleMainLoginClick = () => {
-        // Header의 로그인 버튼 클릭과 동일한 동작을 하도록 위임할 수 있습니다.
-        // 혹은 Header의 로그인 모달을 여는 함수를 props로 받아 실행할 수 있습니다.
-        alert("로그인 화면으로 이동합니다.");
+        setShowLoginModal(true);
+    };
+
+    const handleCloseLoginModal = () => {
+        setShowLoginModal(false);
+        checkAuthStatus(); // 로그인 후 UI 업데이트
     };
     
     const handleCard1Click = () => {
@@ -34,7 +44,7 @@ const MainPage: React.FC = () => {
             alert("로그인 후 이용해주세요.");
             return;
         }
-        window.location.href = "/survey/mbti";
+        navigate("/survey/mbti");
     };
     
     const handleCard3Click = () => {
@@ -42,7 +52,7 @@ const MainPage: React.FC = () => {
             alert("로그인 후 이용해주세요.");
             return;
         }
-        alert("코드분석 페이지로 이동합니다.");
+        navigate("/codeanalysis");
     };
     
     const handleJobPostingClick = (jobPostingId: string) => {
@@ -97,18 +107,12 @@ const MainPage: React.FC = () => {
                         ) : (
                             <div className="profile-area">
                                 {/* 사용자 정보 헤더 */}
-                                <div className="profile-header">
-                                    <div className="profile-avatar">
-                                        <img 
-                                            src="/images/main/default_user.png" 
-                                            alt="User Avatar"
-                                            style={{width: '60px', height: '60px', borderRadius: '50%'}}
-                                        />
-                                    </div>
-                                    <div className="profile-info">
-                                        <span className="profile-name">{userInfo?.name}님</span>
-                                    </div>
-                                </div>
+                                <img 
+                                    src="/images/default/default_user.png"
+                                    alt="User Avatar"
+                                    style={{width: '60px', height: '60px', borderRadius: '50%'}}
+                                />
+                                <span className="profile-name">{userInfo?.name}님</span>
                                 
                                 {/* 프로필 완성도 */}
                                 <div className="profile-completion">
@@ -284,6 +288,10 @@ const MainPage: React.FC = () => {
             </section>
 
             <Footer />
+
+            <Modal isOpen={showLoginModal} onClose={handleCloseLoginModal}>
+                <Login onClose={handleCloseLoginModal} />
+            </Modal>
         </div>
     );
 }

@@ -35,12 +35,8 @@
 }
 
 .developer-type-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
+  text-align: center;
+  margin-bottom: 16px;
 }
 
 .developer-type-title {
@@ -48,17 +44,22 @@
   font-weight: 700;
   color: #007bff;
   margin: 0;
-  flex: 1;
+}
+
+.type-code-section {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .type-code-badge {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: #007bff;
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 1px;
+  display: inline-block;
 }
 
 .type-description {
@@ -73,39 +74,6 @@
   text-align: justify;
 }
 
-.characteristics-section {
-  margin-bottom: 32px;
-}
-
-.characteristics-section h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.characteristics-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.characteristic-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 8px 0;
-  font-size: 15px;
-  color: #555;
-  line-height: 1.5;
-}
-
-.check-icon {
-  color: #4CAF50;
-  font-weight: bold;
-  margin-right: 12px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
 
 .scores-section {
   margin-bottom: 32px;
@@ -123,11 +91,6 @@
   gap: 16px;
 }
 
-.score-item:not(.bipolar):not(.single) {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
 
 .score-item.bipolar {
   flex-direction: column;
@@ -174,9 +137,9 @@
 
 .confidence-bar {
   flex: 1;
-  height: 24px;
+  height: 12px;
   background-color: #f0f0f0;
-  border-radius: 12px;
+  border-radius: 6px;
   position: relative;
   display: flex;
   align-items: center;
@@ -184,17 +147,17 @@
 
 .confidence-fill {
   height: 100%;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #fd7e14, #e74c3c);
+  border-radius: 6px;
+  background: #28a745;
   transition: width 0.3s ease;
 }
 
 .confidence-value {
-  position: absolute;
-  right: 12px;
+  margin-left: 12px;
   font-weight: 600;
   color: #333;
   font-size: 12px;
+  min-width: 35px;
 }
 
 /* 양극성 점수 바 스타일 */
@@ -216,9 +179,9 @@
 
 .bipolar-score-bar {
   flex: 1;
-  height: 24px;
+  height: 12px;
   background-color: #f0f0f0;
-  border-radius: 12px;
+  border-radius: 6px;
   position: relative;
   display: flex;
   align-items: center;
@@ -237,30 +200,30 @@
 
 .bipolar-score-fill {
   height: 100%;
-  border-radius: 12px;
+  border-radius: 6px;
   position: absolute;
   top: 0;
   transition: width 0.3s ease;
 }
 
 .bipolar-score-fill.development-style.positive {
-  background: linear-gradient(90deg, rgba(40, 167, 69, 0.3), #28a745);
-  border-radius: 0 12px 12px 0;
+  background: #007bff;
+  border-radius: 0 6px 6px 0;
 }
 
 .bipolar-score-fill.development-style.negative {
-  background: linear-gradient(90deg, #28a745, rgba(40, 167, 69, 0.3));
-  border-radius: 12px 0 0 12px;
+  background: #007bff;
+  border-radius: 6px 0 0 6px;
 }
 
 .bipolar-score-fill.preference.positive {
-  background: linear-gradient(90deg, rgba(0, 123, 255, 0.3), #007bff);
-  border-radius: 0 12px 12px 0;
+  background: #007bff;
+  border-radius: 0 6px 6px 0;
 }
 
 .bipolar-score-fill.preference.negative {
-  background: linear-gradient(90deg, #007bff, rgba(0, 123, 255, 0.3));
-  border-radius: 12px 0 0 12px;
+  background: #007bff;
+  border-radius: 6px 0 0 6px;
 }
 
 .bipolar-score-value {
@@ -276,27 +239,6 @@
   border-radius: 4px;
 }
 
-.comment-section {
-  margin-bottom: 32px;
-}
-
-.comment-section h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 12px;
-}
-
-.analysis-comment {
-  font-size: 15px;
-  color: #666;
-  line-height: 1.6;
-  margin: 0;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-left: 4px solid #007bff;
-  border-radius: 4px;
-}
 
 .analysis-meta {
   display: flex;
@@ -356,32 +298,34 @@
   content: '🔍';
 }
 
-.section-content {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
-  border-left: 4px solid #007bff;
+
+.analysis-section .card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
 }
 
-.reasoning-text {
-  font-size: 15px;
+.analysis-section .analysis-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analysis-section .analysis-card .card-content {
+  font-size: 14px;
   color: #555;
   line-height: 1.7;
   margin: 0;
-  text-align: justify;
+  text-align: left;
+  white-space: pre-line;
 }
 
-.analysis-text {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  background: transparent;
-  border: none;
-  padding: 0;
+.analysis-section .analysis-card .card-content strong,
+.analysis-section .analysis-card .card-content b {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
 }
 
 .error-section {
@@ -411,10 +355,6 @@
     padding: 24px;
   }
   
-  .developer-type-section {
-    flex-direction: column;
-    align-items: flex-start;
-  }
   
   .developer-type-title {
     font-size: 24px;
@@ -451,19 +391,7 @@
     gap: 12px;
   }
   
-  .section-content {
-    padding: 16px;
-  }
-  
   .section-title {
     font-size: 18px;
-  }
-  
-  .analysis-text {
-    font-size: 13px;
-  }
-  
-  .reasoning-text {
-    font-size: 14px;
   }
 }
