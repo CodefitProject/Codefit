@@ -4,6 +4,7 @@ import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
 import AuthService from '../../services/authService.tsx';
 import postService from '../../services/postService';
+import { useNavigate } from 'react-router-dom'; // Added import
 
 interface JobPosting {
   jobPostingId: string;
@@ -34,6 +35,7 @@ interface Statistics {
 }
 
 const CompanyDashboard: React.FC = () => {
+  const navigate = useNavigate(); // Added hook
   const [postVo, setPostVo] = useState<PostVo>({
     pageIndex: 1,
     pageSize: 9,
@@ -166,7 +168,7 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const handleAllPosts = () => {
-    window.location.href = '/company/posts';
+    navigate('/post'); // Changed navigation
   };
 
   const handleCompanyUpdate = () => {
