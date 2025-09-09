@@ -140,9 +140,9 @@ public class SurveyServiceImpl implements SurveyService {
             Map<String, Double> surveyScores = calculateSurveyScores(requestDto.answers());
             log.debug("설문 점수 계산 완료: {}", surveyScores);
             
-            // 4. 코드 분석 결과 조회
-            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(requestDto.userId())
-                    .stream().findFirst().orElse(null);
+            // 4. 코드 분석 결과 조회 (가장 최신 결과)
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findTopByBaseUserIdOrderByCreatedAtDesc(requestDto.userId())
+                    .orElse(null);
             
             // 5. 코드 분석 점수 추출
             Map<String, Object> codeScores = new HashMap<>();
@@ -224,9 +224,9 @@ public class SurveyServiceImpl implements SurveyService {
                 return null;
             }
             
-            // 코드 분석 결과 조회
-            CodeAnalysis codeAnalysis = codeAnalysisRepository.findByBaseUserId(userId)
-                    .stream().findFirst().orElse(null);
+            // 코드 분석 결과 조회 (가장 최신 결과)
+            CodeAnalysis codeAnalysis = codeAnalysisRepository.findTopByBaseUserIdOrderByCreatedAtDesc(userId)
+                    .orElse(null);
             
             String typeName = TYPE_NAMES.getOrDefault(result.getTypeCode(), "알 수 없는 유형");
             String typeDescription = generateTypeDescription(result.getTypeCode());

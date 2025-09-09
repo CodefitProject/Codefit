@@ -24,4 +24,9 @@ public interface CodeAnalysisRepository extends JpaRepository<CodeAnalysis, Long
      * 사용자 ID로 코드 분석 결과 목록 조회
      */
     List<CodeAnalysis> findByBaseUserId(Long baseUserId);
+    
+    /**
+     * 사용자 ID로 가장 최신 코드 분석 결과 조회 (created_at 기준 내림차순)
+     */
+    Optional<CodeAnalysis> findTopByBaseUserIdOrderByCreatedAtDesc(Long baseUserId);
 }
