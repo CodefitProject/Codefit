@@ -52,6 +52,7 @@ export interface AnalysisResult {
     axisContributions?: string;
     answerPattern?: string;
     keyInsights?: string;
+    confidenceScore?: number;
 }
 
 // 축별 기여도 정보 타입

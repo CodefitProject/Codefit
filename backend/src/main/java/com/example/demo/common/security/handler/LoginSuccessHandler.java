@@ -4,6 +4,8 @@ import com.example.demo.common.security.dto.LoginResponse;
 import com.example.demo.common.security.service.RedisService;
 import com.example.demo.common.security.util.JwtUtil;
 import com.example.demo.domain.baseuser.entity.BaseUser;
+import com.example.demo.domain.company.entity.Company;
+import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.common.security.service.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -25,6 +27,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
+    private final CompanyRepository companyRepository;
     
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
@@ -38,8 +41,23 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         String name = baseUser.getName();
         log.info("로그인 성공 - 사용자: {}, 역할: {}", email, role);
         
+        // COMPANY 역할인 경우 companyId 가져오기
+        Long companyId = null;
+        if ("COMPANY".equals(role)) {
+            try {
+                Company company = companyRepository.findByBaseUserBaseUserId(Long.valueOf(baseUserId))
+                    .orElse(null);
+                if (company != null) {
+                    companyId = company.getCompanyId();
+                    log.info("기업 사용자 - companyId: {}", companyId);
+                }
+            } catch (Exception e) {
+                log.warn("companyId 가져오기 실패: {}", e.getMessage());
+            }
+        }
+        
         // JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(email, role, baseUserId, name);
+        String accessToken = jwtUtil.generateAccessToken(email, role, baseUserId, name, companyId);
         String refreshToken = jwtUtil.generateRefreshToken(email);
         
         // Refresh Token을 Redis에 저장

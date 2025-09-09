@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.controller;
 
+import com.example.demo.common.security.service.CustomUserDetails;
 import com.example.demo.domain.post.dto.*;
 import com.example.demo.domain.post.service.PostService;
 import jakarta.validation.Valid;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,21 +76,25 @@ public class PostController {
     }
     
     /**
-     * MBTI 매칭 공고 목록 조회
+     * MBTI 및 성향 매칭 공고 목록 조회
      * 
-     * @param mbtiType 사용자 MBTI 타입
+     * @param matchFilter 필터링 강도 (0: 필터링 없음, 1: 1개 이상, 2: 2개 이상, 3: 3개 이상, 4: 4개 이상)
+     * @param userDetails 로그인한 사용자 정보 (JWT 토큰에서 추출)
      * @param pageable 페이징 정보
      * @return 매칭된 공고 목록
      */
     @GetMapping("/mbti-matched")
     public ResponseEntity<JobPostingListResponseDto> getMbtiMatchedJobPostings(
-            @RequestParam String mbtiType,
+            @RequestParam(required = false, defaultValue = "0") String matchFilter,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size = 16) Pageable pageable) {
         
-        log.debug("MBTI 매칭 공고 조회 요청 - 타입: {}", mbtiType);
+        log.debug("MBTI 및 성향 매칭 공고 조회 요청 - 사용자: {}, 필터: {}", 
+                userDetails.getUsername(), matchFilter);
         
-        JobPostingListResponseDto response = postService.getMbtiMatchedJobPostings(mbtiType, pageable);
-        log.debug("MBTI 매칭 공고 조회 완료 - 총 {}개", response.totalCount());
+        JobPostingListResponseDto response = postService.getMbtiMatchedJobPostings(
+                userDetails, matchFilter, pageable);
+        log.debug("MBTI 및 성향 매칭 공고 조회 완료 - 총 {}개", response.totalCount());
         
         return ResponseEntity.ok(response);
     }
@@ -96,18 +103,15 @@ public class PostController {
      * 공고 상세 조회
      * 
      * @param jobPostingId 공고 ID
-     * @param userId 사용자 ID (선택적, 지원 여부 확인용)
      * @return 공고 상세 정보
      */
     @GetMapping("/{jobPostingId}")
     public ResponseEntity<JobPostingDto> getJobPostingDetail(
             @PathVariable Long jobPostingId,
-            @RequestParam(required = false) Long userId) {
-        
-        log.debug("공고 상세 조회 요청 - 공고 ID: {}, 사용자 ID: {}", jobPostingId, userId);
-        
-        JobPostingDto response = postService.getJobPostingDetail(jobPostingId, userId);
-        log.debug("공고 상세 조회 완료 - 제목: {}", response.title());
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("CustomUserDetails : {}", userDetails);
+        JobPostingDto response = postService.getJobPostingDetail(jobPostingId, userDetails);
+        log.info("공고 상세 조회 완료 - 제목: {}", response.title());
         
         return ResponseEntity.ok(response);
     }

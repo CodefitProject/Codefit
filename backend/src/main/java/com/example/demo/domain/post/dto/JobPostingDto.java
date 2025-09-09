@@ -29,6 +29,7 @@ public record JobPostingDto(
     String logoPath,
     LocalDateTime createdAt,
     Boolean isApplied,
+    Boolean isOwner, // 공고 소유자 여부 추가
     String selectedTechStackNames // 기술스택 정보 추가
 ) {
     public static JobPostingDto from(JobPosting jobPosting) {
@@ -54,6 +55,7 @@ public record JobPostingDto(
                 .logoPath(jobPosting.getCompany().getLogoPath())
                 .createdAt(jobPosting.getCreatedAt())
                 .isApplied(false) // 기본값, 실제로는 Service에서 계산
+                .isOwner(false) // 기본값, 실제로는 Service에서 계산
                 .selectedTechStackNames(techStackNames) // 기술스택 정보 설정
                 .build();
     }

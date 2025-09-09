@@ -21,7 +21,7 @@ public class UserProfile {
     private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "base_user_id", unique = true, nullable = false) // FK → base_users.base_user_id (UNIQUE)
+    @JoinColumn(name = "base_user_id", unique = true, nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)) // FK → base_users.base_user_id (UNIQUE)
     private BaseUser baseUser;
 
     // ERD 컬럼 대응

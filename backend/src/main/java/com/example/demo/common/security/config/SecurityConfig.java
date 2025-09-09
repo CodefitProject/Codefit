@@ -75,6 +75,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/codefit/signup/**").permitAll()
                         .requestMatchers("/api/posts/tech-stacks").permitAll()
+                        .requestMatchers("/api/scout/**").permitAll()
+                        .requestMatchers("/api/application/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                         .anyRequest().authenticated()

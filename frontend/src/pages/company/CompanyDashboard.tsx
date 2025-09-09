@@ -81,10 +81,18 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const initializeDashboard = () => {
-    // 임시 회사 ID 설정 (권한 확인 제거)
-    const tempCompanyId = "temp-company-001";
-    setPostVo(prev => ({ ...prev, companyId: tempCompanyId }));
-    loadPostList(tempCompanyId);
+    // 사용자 정보에서 companyId 가져오기
+    const userInfo = AuthService.getUserInfo();
+    const companyId = userInfo?.companyId;
+    
+    if (!companyId) {
+      alert('회사 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+      window.location.href = '/';
+      return;
+    }
+    
+    setPostVo(prev => ({ ...prev, companyId }));
+    loadPostList(companyId);
   };
 
   const loadPostList = async (companyId: string) => {
@@ -101,9 +109,9 @@ const CompanyDashboard: React.FC = () => {
       
       const allPosts = data.jobPostings || [];
       
-      // 현재 회사의 공고만 필터링 (임시로 companyId 1 사용)
+      // 현재 회사의 공고만 필터링
       const companyPosts = allPosts.filter((post: any) => 
-        post.companyId === 1 || post.companyId === "1"
+        post.companyId === parseInt(companyId) || post.companyId === companyId
       );
       
       setPostList(companyPosts);
@@ -166,9 +174,17 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    // 임시 회사 ID로 새로고침
-    const tempCompanyId = "temp-company-001";
-    loadPostList(tempCompanyId);
+    // 현재 회사 ID로 새로고침
+    const userInfo = AuthService.getUserInfo();
+    const companyId = userInfo?.companyId;
+    
+    if (!companyId) {
+      alert('회사 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+      window.location.href = '/';
+      return;
+    }
+    
+    loadPostList(companyId);
   };
 
   const handlePageChange = (pageIndex: number) => {

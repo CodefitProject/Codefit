@@ -28,7 +28,10 @@ interface JobPosting {
     preferredDeveloperTypes: string;
     jobImageFileName?: string;
     logoFileName?: string;
+    jobImagePath?: string;
+    logoPath?: string;
     isApplied?: boolean;
+    isOwner?: boolean;
 }
 
 interface UserInfo {
@@ -62,16 +65,7 @@ const PostDetail: React.FC = () => {
         // AuthService 사용하여 일관된 사용자 정보 가져오기
         const userInfo = AuthService.getUserInfo();
         console.log('PostDetail - 사용자 정보:', userInfo);
-        
-        if (userInfo) {
-            // 임시로 기업 사용자의 경우 companyId: "1" 설정 (테스트용)
-            const enrichedUserInfo = userInfo.role === 'COMPANY' 
-                ? { ...userInfo, companyId: "1" }
-                : userInfo;
-            setUserInfo(enrichedUserInfo);
-        } else {
-            setUserInfo(null);
-        }
+        setUserInfo(userInfo);
     };
 
     const loadPostDetail = async (id: string) => {
@@ -157,8 +151,11 @@ const PostDetail: React.FC = () => {
     };
 
     const handleViewApplicants = () => {
-        // TODO: 지원자 목록 페이지로 이동
-        alert("지원자 목록 페이지로 이동합니다.");
+        navigate(`/post/applicant/${jobPostingId}`);
+    };
+
+    const handleViewScout = () => {
+        navigate(`/post/scout/${jobPostingId}`);
     };
 
     const getExperienceLevelText = (experienceLevel: string): string => {
@@ -242,15 +239,11 @@ const PostDetail: React.FC = () => {
         alert(`MBTI 성향 정보:\n\n개발자의 코딩 스타일과 업무 방식을 나타내는 지표입니다.\n각 성향별로 다른 특성을 가지고 있어 팀 매칭에 활용됩니다.`);
     };
 
-    // 소유자 확인 로직 (데이터 타입 고려)
-    const isOwner = userInfo?.role === 'COMPANY' && 
-                   (String(userInfo?.companyId) === String(jobPosting?.companyId) || 
-                    parseInt(userInfo?.companyId) === parseInt(jobPosting?.companyId));
+    // 소유자 확인은 백엔드에서 처리된 값 사용
+    const isOwner = jobPosting?.isOwner || false;
                    
     console.log('권한 체크:', {
         userRole: userInfo?.role,
-        userCompanyId: userInfo?.companyId,
-        postCompanyId: jobPosting?.companyId,
         isOwner: isOwner
     });
 
@@ -358,10 +351,13 @@ const PostDetail: React.FC = () => {
                                         <button className="btn-applicant_details" onClick={handleViewApplicants}>
                                             지원자 보기
                                         </button>
+                                        <button className="btn-applicant_scout" onClick={handleViewScout}>
+                                            스카웃 하기
+                                        </button>
                                     </>
                                 ) : userInfo.role === 'COMPANY' ? (
                                     // 다른 기업의 공고를 보는 경우
-                                    <button className="btn-scout">
+                                    <button className="btn-scout" onClick={handleViewScout}>
                                         매칭 제안하기
                                     </button>
                                 ) : (
@@ -385,8 +381,8 @@ const PostDetail: React.FC = () => {
                     {/* 공고 내용 */}
                     <section className="job-content">
                         {/* 기술스택 */}
-                        <h2 className="section-title">기술스택</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">기술스택</h2>
+                        <div className="post-detail-section-content">
                             {jobPosting.selectedTechStackNames ? (
                                 <div className="tech-tags">
                                     {renderTechStackTags(jobPosting.selectedTechStackNames)}
@@ -397,13 +393,13 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 선호 개발자 성향 */}
-                        <h2 className="section-title">
+                        <h2 className="post-detail-section-title">
                             선호 개발자 성향
                             <button className="mbti-info-button" onClick={showMbtiInfo}>
                                 ?
                             </button>
                         </h2>
-                        <div className="section-content">
+                        <div className="post-detail-section-content">
                             {jobPosting.preferredDeveloperTypes ? (
                                 <div className="dev-type-tags">
                                     {renderDeveloperTypeTags(jobPosting.preferredDeveloperTypes)}
@@ -414,8 +410,8 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 기본 정보 */}
-                        <h2 className="section-title">기본 정보</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">기본 정보</h2>
+                        <div className="post-detail-section-content">
                             <div className="info-tags">
                                 <div className="info-tag-item">
                                     <span className="info-tag-label">근무 지역</span>
@@ -445,8 +441,8 @@ const PostDetail: React.FC = () => {
                         </div>
 
                         {/* 상세 설명 */}
-                        <h2 className="section-title">상세 설명</h2>
-                        <div className="section-content">
+                        <h2 className="post-detail-section-title">상세 설명</h2>
+                        <div className="post-detail-section-content">
                             {jobPosting.description ? (
                                 <div className="description-content">
                                     {jobPosting.description.split('\n').map((line, index) => (
@@ -461,8 +457,8 @@ const PostDetail: React.FC = () => {
                         {/* 우대사항 */}
                         {jobPosting.preferred && (
                             <>
-                                <h2 className="section-title">우대사항</h2>
-                                <div className="section-content">
+                                <h2 className="post-detail-section-title">우대사항</h2>
+                                <div className="post-detail-section-content">
                                     <div className="description-content">
                                         {jobPosting.preferred.split('\n').map((line, index) => (
                                             <p key={index}>{line}</p>
@@ -475,8 +471,8 @@ const PostDetail: React.FC = () => {
                         {/* 복리후생 */}
                         {jobPosting.benefits && (
                             <>
-                                <h2 className="section-title">복리후생</h2>
-                                <div className="section-content">
+                                <h2 className="post-detail-section-title">복리후생</h2>
+                                <div className="post-detail-section-content">
                                     <div className="description-content">
                                         {jobPosting.benefits.split('\n').map((line, index) => (
                                             <p key={index}>{line}</p>
