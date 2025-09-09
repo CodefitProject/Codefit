@@ -61,6 +61,8 @@ const AnalysisResult: React.FC = () => {
         <div className="analysis-info-card">
           <div className="developer-type-section">
             <h2 className="developer-type-title">{analysisResult.typeName}</h2>
+          </div>
+          <div className="type-code-section">
             <div className="type-code-badge">{analysisResult.typeCode}</div>
           </div>
 
