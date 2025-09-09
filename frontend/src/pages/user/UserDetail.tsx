@@ -60,10 +60,10 @@ const UserDetail: React.FC = () => {
     return (
         <>
             <Header />
+            {isLoading && <LoadingSpinner message="사용자 정보를 불러오는 중..." overlay={true} size="large" />}
             <div className="user-detail-page-container">
                 <Sidebar userInfo={userInfo} />
                 <main className="user-detail-main-area">
-                    {isLoading && <LoadingSpinner message="사용자 정보를 불러오는 중..." />}
                     {error && <div>오류: {error}</div>}
                     {userInfo && <Outlet context={{ userInfo }} />} {/* 중첩된 라우트의 컴포넌트가 여기에 렌더링됩니다. */}
                 </main>
