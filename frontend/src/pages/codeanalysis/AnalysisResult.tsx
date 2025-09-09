@@ -145,8 +145,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.strengths && (
             <div className="analysis-section">
               <h3 className="section-title">강점</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.strengths}</pre>
+              <div className="card-grid">
+                {analysisResult.strengths.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((strength, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {strength.trim()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -154,8 +160,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.suggestions && (
             <div className="analysis-section">
               <h3 className="section-title">개선 제안</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.suggestions}</pre>
+              <div className="card-grid">
+                {analysisResult.suggestions.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((suggestion, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {suggestion.trim()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -163,8 +175,14 @@ const AnalysisResult: React.FC = () => {
           {analysisResult.codePatterns && (
             <div className="analysis-section">
               <h3 className="section-title">코드 패턴 분석</h3>
-              <div className="section-content">
-                <pre className="analysis-text">{analysisResult.codePatterns}</pre>
+              <div className="card-grid">
+                {analysisResult.codePatterns.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((pattern, index) => (
+                  <div key={index} className="analysis-card">
+                    <div className="card-content">
+                      {pattern.trim()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

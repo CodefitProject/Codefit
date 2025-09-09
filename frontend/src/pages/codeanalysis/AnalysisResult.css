@@ -384,6 +384,27 @@
   padding: 0;
 }
 
+.analysis-section .card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+.analysis-section .analysis-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #007bff;
+}
+
+.analysis-section .analysis-card .card-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
 .error-section {
   max-width: 600px;
   margin: 100px auto;
