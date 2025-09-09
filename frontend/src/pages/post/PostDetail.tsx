@@ -299,7 +299,7 @@ const PostDetail: React.FC = () => {
                                     <img 
                                         src={jobPosting.jobImagePath}
                                         alt={`${jobPosting.title} 공고 이미지`}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = '/images/default/default_company.png';
                                         }}
@@ -356,10 +356,8 @@ const PostDetail: React.FC = () => {
                                         </button>
                                     </>
                                 ) : userInfo.role === 'COMPANY' ? (
-                                    // 다른 기업의 공고를 보는 경우
-                                    <button className="btn-scout" onClick={handleViewScout}>
-                                        매칭 제안하기
-                                    </button>
+                                    // 다른 기업의 공고를 보는 경우 - 매칭 제안하기 버튼 숨김
+                                    null
                                 ) : (
                                     // 개발자 사용자인 경우
                                     <button 

@@ -11,6 +11,7 @@ import ApplicationService, {
   ScoutRequestDto,
 } from "../../services/applicationService.ts";
 import AuthService from "../../services/authService.tsx";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner.tsx";
 
 type ExtendedScoutDto = ScoutDto & {
   chk?: boolean;
@@ -41,6 +42,7 @@ const ApplicantScout: React.FC = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isScoutSending, setIsScoutSending] = useState(false);
 
   const checkAccess = () => {
     try {
@@ -151,6 +153,7 @@ const ApplicantScout: React.FC = () => {
   }) => {
     const selected = scouts.filter((s) => s.chk);
 
+    setIsScoutSending(true);
     try {
       await fetch(`/api/scout/${jobPostingId}/recommend`, {
         method: "POST",
@@ -167,6 +170,9 @@ const ApplicantScout: React.FC = () => {
       fetchScouts();
     } catch (err) {
       console.error("스카웃 추천 실패:", err);
+      alert("스카웃 추천 전송 중 오류가 발생했습니다.");
+    } finally {
+      setIsScoutSending(false);
     }
   };
 
@@ -359,6 +365,13 @@ const ApplicantScout: React.FC = () => {
             onClose={() => setShowScoutModal(false)}
             type="scout"
             onConfirm={handleConfirmScout}
+          />
+        )}
+        
+        {isScoutSending && (
+          <LoadingSpinner
+            message="스카웃 메일 발송 중..."
+            overlay={true}
           />
         )}
       </div>
