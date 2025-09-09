@@ -38,18 +38,37 @@ class PostService {
      * @param {Object} params - 매칭 조회 파라미터
      * @param {number} params.pageIndex - 페이지 번호
      * @param {number} params.pageSize - 페이지 크기
-     * @param {string} params.userMbti - 사용자 MBTI
-     * @param {string} params.mbtiMatchFilter - 매칭 필터
+     * @param {number} params.mbtiMatchFilter - 매칭 필터
      * @returns {Promise<Object>} MBTI 매칭 공고 목록 데이터
      */
     async getMbtiMatchedPostList(params) {
         try {
-            const { pageIndex = 0, pageSize = 16, userMbti } = params || {};
-            const response = await fetch(`${API_BASE_URL}/posts/mbti-matched?mbtiType=${userMbti}&page=${pageIndex}&size=${pageSize}`, {
+            const { pageIndex = 0, pageSize = 16, mbtiMatchFilter } = params || {};
+            
+            // URL 쿼리 매개변수 구성
+            const queryParams = new URLSearchParams({
+                page: pageIndex.toString(),
+                size: pageSize.toString()
+            });
+            
+            // 필터링 강도가 있으면 추가
+            if (mbtiMatchFilter && mbtiMatchFilter !== 0) {
+                queryParams.append('matchFilter', mbtiMatchFilter.toString());
+            }
+            
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/posts/mbti-matched?${queryParams.toString()}`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
             });
 
             if (!response.ok) {

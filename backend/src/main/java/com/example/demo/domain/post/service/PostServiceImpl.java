@@ -4,6 +4,10 @@ import com.example.demo.common.security.service.CustomUserDetails;
 import com.example.demo.common.service.S3Service;
 import com.example.demo.domain.baseuser.entity.BaseUser;
 import com.example.demo.domain.baseuser.repository.BaseUserRepository;
+import com.example.demo.domain.codeanalysis.entity.UsersMbtiTypes;
+import com.example.demo.domain.codeanalysis.repository.UsersMbtiTypesRepository;
+import com.example.demo.domain.survey.entity.MbtiResult;
+import com.example.demo.domain.survey.repository.MbtiResultRepository;
 import com.example.demo.domain.company.entity.Company;
 import com.example.demo.domain.company.repository.CompanyRepository;
 import com.example.demo.domain.post.dto.*;
@@ -48,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final JobApplicationRepository jobApplicationRepository;
     private final CompanyRepository companyRepository;
     private final BaseUserRepository baseUserRepository;
+    private final UsersMbtiTypesRepository usersMbtiTypesRepository;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
     
@@ -93,18 +98,49 @@ public class PostServiceImpl implements PostService {
     
     @Override
     @Transactional(readOnly = true)
-    public JobPostingListResponseDto getMbtiMatchedJobPostings(String mbtiType, Pageable pageable) {
-        log.debug("MBTI 매칭 공고 목록 조회 - 타입: {}", mbtiType);
+    public JobPostingListResponseDto getMbtiMatchedJobPostings(CustomUserDetails userDetails, String matchFilter, Pageable pageable) {
+        log.debug("MBTI 및 성향 매칭 공고 조회 - 사용자: {}, 필터: {}", userDetails.getUsername(), matchFilter);
         
         try {
-            Page<JobPosting> jobPostingPage = jobPostingRepository.findMbtiMatchedJobPostings(
-                    mbtiType, LocalDateTime.now(), pageable);
+            // matchFilter가 "0"인 경우 일반 공고 목록 반환 (페이징만 적용)
+            if ("0".equals(matchFilter)) {
+                log.debug("필터링 없음 - 일반 공고 목록 조회");
+                return getJobPostings(pageable);
+            }
+            
+            // 1 이상인 경우 MBTI 및 성향 필터링 적용
+            int filterLevel = Integer.parseInt(matchFilter);
+            log.debug("필터링 강도: {} 적용", filterLevel);
+            
+            // 사용자 정보 조회
+            BaseUser user = userDetails.baseUser();
+            
+            // 사용자의 MBTI 성향 정보 조회
+            UsersMbtiTypes usersMbtiTypes = usersMbtiTypesRepository.findByBaseUser_BaseUserId(user.getBaseUserId())
+                    .orElse(null);
+            
+            String userDeveloperType = null;
+            if (usersMbtiTypes != null) {
+                userDeveloperType = usersMbtiTypes.getTypeCode();
+            }
+            
+            log.debug("사용자 성향: {}", userDeveloperType);
+            
+            // 성향 정보가 없는 경우 일반 목록 반환
+            if (userDeveloperType == null || userDeveloperType.isEmpty()) {
+                log.debug("사용자 성향 정보 없음 - 일반 공고 목록 조회");
+                return getJobPostings(pageable);
+            }
+            
+            // 성향 매칭 공고 조회
+            Page<JobPosting> jobPostingPage = jobPostingRepository.findDeveloperTypeMatchedJobPostings(
+                    userDeveloperType, filterLevel, LocalDateTime.now(), pageable);
             
             List<JobPostingDto> jobPostings = jobPostingPage.getContent().stream()
                     .map(JobPostingDto::from)
                     .collect(Collectors.toList());
             
-            log.debug("MBTI 매칭 공고 조회 완료 - 총 {}개", jobPostingPage.getTotalElements());
+            log.debug("성향 매칭 공고 조회 완료 - 총 {}개", jobPostingPage.getTotalElements());
             
             return JobPostingListResponseDto.builder()
                     .jobPostings(jobPostings)
@@ -113,9 +149,13 @@ public class PostServiceImpl implements PostService {
                     .totalPages(jobPostingPage.getTotalPages())
                     .build();
                     
+        } catch (NumberFormatException e) {
+            log.error("잘못된 필터 값: {}", matchFilter, e);
+            // 잘못된 필터 값인 경우 일반 목록 반환
+            return getJobPostings(pageable);
         } catch (Exception e) {
-            log.error("MBTI 매칭 공고 조회 중 오류 발생", e);
-            throw new BusinessException("MBTI 매칭 공고 조회 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("성향 매칭 공고 조회 중 오류 발생", e);
+            throw new BusinessException("성향 매칭 공고 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
