@@ -140,7 +140,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.reasoning.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((reason, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {reason.trim().replace(/^[•\-\*]\s*/, '')}
+                      {reason.trim()}
                     </div>
                   </div>
                 ))}
@@ -155,7 +155,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.strengths.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((strength, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {strength.trim().replace(/^[•\-\*]\s*/, '')}
+                      {strength.trim()}
                     </div>
                   </div>
                 ))}
@@ -170,7 +170,7 @@ const AnalysisResult: React.FC = () => {
                 {analysisResult.suggestions.split(/\n(?=\S)/).filter(item => item.trim() !== '').map((suggestion, index) => (
                   <div key={index} className="analysis-card">
                     <div className="card-content">
-                      {suggestion.trim().replace(/^[•\-\*]\s*/, '')}
+                      {suggestion.trim()}
                     </div>
                   </div>
                 ))}
@@ -186,9 +186,8 @@ const AnalysisResult: React.FC = () => {
                   <div key={index} className="analysis-card">
                     <div className="card-content" dangerouslySetInnerHTML={{
                       __html: pattern.trim()
-                        .replace(/^[•\-\*]\s*/, '')
                         .replace(/^(\d+\.\s*[^설명\n]*?)(?=\s*설명:)/g, '<strong>$1</strong>')
-                        .replace(/(\s*영향도:\s*\d+)$/g, '\n\n$1')
+                        .replace(/(\s*영향도:\s*\d+)$/g, '\n<strong>$1</strong>')
                     }}>
                     </div>
                   </div>
